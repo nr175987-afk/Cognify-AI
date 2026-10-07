@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}
+Personalized Learning Plan | CognifyAI
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container py-5">
+
+    <!-- HEADER -->
+
+    <div class="text-center mb-5">
+
+        <div style="font-size:70px;">
+            🧠
+        </div>
+
+        <h1 class="fw-bold">
+            Your Personalized Learning Plan
+        </h1>
+
+        <p class="text-muted">
+            CognifyAI analyzed your assessment history
+            and created a study plan specifically for you.
+        </p>
+
+    </div>
+
+
+    {% if not has_data %}
+
+        <div class="feature-card text-center p-5">
+
+            <div style="font-size:60px;">
+                📚
+            </div>
+
+            <h3 class="fw-bold mt-3">
+                We Need More Learning Data
+            </h3>
+
+            <p class="text-muted">
+
+                Complete at least one assessment before
+                generating your personalized learning plan.
+
+            </p>
+
+            <a
+                href="{% url 'assessment_home' %}"
+                class="btn btn-primary rounded-pill px-4"
+            >
+                Start Assessment
+            </a>
+
+        </div>
+
+    {% else %}
+
+
+        <!-- SUMMARY -->
+
+        <div class="row g-4 mb-5">
+
+            <div class="col-md-4">
+
+                <div class="feature-card p-4 text-center">
+
+                    <p class="text-muted">
+                        Average Score
+                    </p>
+
+                    <h2 class="fw-bold text-primary">
+                        {{ average_score }}%
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <div class="feature-card p-4 text-center">
+
+                    <p class="text-muted">
+                        Assessments
+                    </p>
+
+                    <h2 class="fw-bold">
+                        {{ total_attempts }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <div class="feature-card p-4 text-center">
+
+                    <p class="text-muted">
+                        Learning Trend
+                    </p>
+
+                    <h4 class="fw-bold text-success">
+                        📈 {{ trend }}
+                    </h4>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- AI PLAN -->
+
+        <div
+            class="feature-card p-5"
+            style="
+                border-radius:24px;
+                box-shadow:
+                0 10px 35px rgba(0,0,0,0.08);
+            "
+        >
+
+            <div class="d-flex align-items-center mb-4">
+
+                <div
+                    class="d-flex align-items-center
+                    justify-content-center rounded-4 me-3"
+                    style="
+                        width:55px;
+                        height:55px;
+                        background:#eef2ff;
+                        font-size:28px;
+                    "
+                >
+                    🤖
+                </div>
+
+                <div>
+
+                    <h3 class="fw-bold mb-0">
+                        CognifyAI Recommendation
+                    </h3>
+
+                    <small class="text-muted">
+                        Generated from your actual learning performance
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- GEMINI OUTPUT -->
+
+            <div
+                class="ai-plan-content"
+                style="
+                    line-height:1.8;
+                    font-size:16px;
+                "
+            >
+
+                {{ plan|linebreaks }}
+
+            </div>
+
+        </div>
+
+
+        <!-- ACTIONS -->
+
+        <div class="text-center mt-5">
+
+            <a
+                href="{% url 'assessment_home' %}"
+                class="btn btn-primary rounded-pill px-4 me-2"
+            >
+                📝 Take Assessment
+            </a>
+
+
+            <a
+                href="{% url 'learning_analysis' %}"
+                class="btn btn-outline-primary rounded-pill px-4"
+            >
+                📊 View Analysis
+            </a>
+
+        </div>
+
+
+    {% endif %}
+
+
+</div>
+
+{% endblock %}

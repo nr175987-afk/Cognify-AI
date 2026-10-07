@@ -1,0 +1,438 @@
+{% extends "base.html" %}
+
+{% block title %}
+Learning Analysis | CognifyAI
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <!-- HEADER -->
+
+    <div class="mb-5">
+
+        <h2 class="fw-bold">
+            🧠 Your Learning Analysis
+        </h2>
+
+        <p class="text-muted">
+            CognifyAI analyzes your assessment performance
+            to understand how you learn.
+        </p>
+
+    </div>
+
+
+    {% if not has_data %}
+
+        <div class="feature-card text-center p-5">
+
+            <div style="font-size: 70px;">
+                🧠
+            </div>
+
+            <h3 class="fw-bold mt-3">
+                Not Enough Data Yet
+            </h3>
+
+            <p class="text-muted">
+                Complete a few assessments and CognifyAI
+                will automatically analyze your learning pattern.
+            </p>
+
+            <a
+                href="{% url 'assessment_home' %}"
+                class="btn btn-primary rounded-pill px-4"
+            >
+                Start Assessment
+            </a>
+
+        </div>
+
+    {% else %}
+
+
+    <!-- ===================================== -->
+    <!-- OVERALL SCORE -->
+    <!-- ===================================== -->
+
+    <div class="row g-4 mb-5">
+
+        <div class="col-md-4">
+
+            <div class="feature-card p-4">
+
+                <p class="text-muted">
+                    Overall Performance
+                </p>
+
+                <h1 class="fw-bold text-primary">
+
+                    {{ average_score }}%
+
+                </h1>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-4">
+
+            <div class="feature-card p-4">
+
+                <p class="text-muted">
+                    Assessments Completed
+                </p>
+
+                <h1 class="fw-bold">
+
+                    {{ total_attempts }}
+
+                </h1>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-4">
+
+            <div class="feature-card p-4">
+
+                <p class="text-muted">
+                    Learning Trend
+                </p>
+
+
+                {% if trend == "improving" %}
+
+                    <h3 class="text-success fw-bold">
+                        📈 Improving
+                    </h3>
+
+                {% elif trend == "declining" %}
+
+                    <h3 class="text-danger fw-bold">
+                        📉 Needs Attention
+                    </h3>
+
+                {% elif trend == "stable" %}
+
+                    <h3 class="text-warning fw-bold">
+                        ➡ Stable
+                    </h3>
+
+                {% else %}
+
+                    <h3 class="fw-bold">
+                        Collecting Data
+                    </h3>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================== -->
+    <!-- STRONG & WEAK AREAS -->
+    <!-- ===================================== -->
+
+    <div class="row g-4 mb-5">
+
+
+        <!-- STRONG -->
+
+        <div class="col-lg-6">
+
+            <div class="feature-card p-4 h-100">
+
+                <h4 class="fw-bold text-success">
+                    💪 Strong Areas
+                </h4>
+
+                <p class="text-muted">
+                    Topics where you're performing well.
+                </p>
+
+
+                {% if strong_topics %}
+
+                    {% for topic in strong_topics %}
+
+                        <div
+                            class="d-flex justify-content-between
+                            align-items-center p-3 mb-2 rounded-3"
+                            style="background:#ecfdf5;"
+                        >
+
+                            <strong>
+                                {{ topic.topic }}
+                            </strong>
+
+                            <span class="badge bg-success">
+
+                                {{ topic.average }}%
+
+                            </span>
+
+                        </div>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <p class="text-muted">
+                        No strong areas identified yet.
+                    </p>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- WEAK -->
+
+        <div class="col-lg-6">
+
+            <div class="feature-card p-4 h-100">
+
+                <h4 class="fw-bold text-danger">
+                    🎯 Needs Improvement
+                </h4>
+
+                <p class="text-muted">
+                    Topics that require more practice.
+                </p>
+
+
+                {% if weak_topics %}
+
+                    {% for topic in weak_topics %}
+
+                        <div
+                            class="d-flex justify-content-between
+                            align-items-center p-3 mb-2 rounded-3"
+                            style="background:#fef2f2;"
+                        >
+
+                            <strong>
+                                {{ topic.topic }}
+                            </strong>
+
+                            <span class="badge bg-danger">
+
+                                {{ topic.average }}%
+
+                            </span>
+
+                        </div>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <p class="text-success">
+                        🎉 No major weak areas detected!
+                    </p>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================== -->
+    <!-- DIFFICULTY ANALYSIS -->
+    <!-- ===================================== -->
+
+    <div class="feature-card p-4 mb-5">
+
+        <h4 class="fw-bold">
+            🎚️ Difficulty Analysis
+        </h4>
+
+        <p class="text-muted">
+            How you perform at different difficulty levels.
+        </p>
+
+
+        <div class="row g-3 mt-2">
+
+            {% for item in difficulty_analysis %}
+
+            <div class="col-md-4">
+
+                <div
+                    class="p-4 rounded-4 text-center"
+                    style="background:#f8fafc;"
+                >
+
+                    <h5 class="fw-bold">
+
+                        {{ item.difficulty }}
+
+                    </h5>
+
+                    <h2 class="fw-bold text-primary">
+
+                        {{ item.average }}%
+
+                    </h2>
+
+                    <small class="text-muted">
+
+                        {{ item.attempts }}
+                        assessment{{ item.attempts|pluralize }}
+
+                    </small>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================== -->
+    <!-- RECOMMENDED FOCUS -->
+    <!-- ===================================== -->
+
+    <div
+        class="feature-card p-4 mb-5"
+        style="
+            background:
+            linear-gradient(
+                135deg,
+                #eef2ff,
+                #f5f3ff
+            );
+        "
+    >
+
+        <h4 class="fw-bold">
+            🎯 Recommended Focus Areas
+        </h4>
+
+        <p class="text-muted">
+            Based on your current assessment performance,
+            these topics should receive more attention.
+        </p>
+
+
+        {% for topic in recommended_topics %}
+
+            <div
+                class="d-flex justify-content-between
+                align-items-center p-3 mb-2 bg-white rounded-3"
+            >
+
+                <div>
+
+                    <strong>
+                        {{ topic.topic }}
+                    </strong>
+
+                    <br>
+
+                    <small class="text-muted">
+                        Current average:
+                        {{ topic.average }}%
+                    </small>
+
+                </div>
+
+
+                <span class="badge bg-primary">
+
+                    Priority {{ forloop.counter }}
+
+                </span>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    <!-- ===================================== -->
+    <!-- FUTURE AI ANALYSIS -->
+    <!-- ===================================== -->
+
+    <div
+    class="feature-card p-5 text-center"
+    style="
+        background:
+        linear-gradient(
+            135deg,
+            #eef2ff,
+            #f5f3ff
+        );
+        border-radius:24px;
+    "
+>
+
+    <div style="font-size:60px;">
+        🤖
+    </div>
+
+    <h3 class="fw-bold mt-3">
+        Generate Your AI Study Plan
+    </h3>
+
+    <p class="text-muted">
+
+        CognifyAI will analyze your actual performance
+        and automatically create a personalized learning plan.
+
+    </p>
+
+    <a
+        href="{% url 'personalized_plan' %}"
+        class="btn btn-primary rounded-pill px-4"
+    >
+
+        ✨ Generate My Learning Plan
+
+    </a>
+
+</div>
+
+
+    {% endif %}
+
+
+    <!-- BACK -->
+
+    <div class="text-center mt-4 mb-5">
+
+        <a
+            href="{% url 'dashboard' %}"
+            class="text-muted text-decoration-none"
+        >
+
+            ← Back to Dashboard
+
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

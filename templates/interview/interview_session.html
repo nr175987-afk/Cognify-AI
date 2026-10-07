@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    .interview-page {
+        max-width: 850px;
+        margin: 40px auto;
+        padding: 30px;
+        font-family: Arial, Helvetica, sans-serif;
+        color: #000000;
+    }
+
+    .interview-header {
+        border-bottom: 2px solid #000000;
+        padding-bottom: 15px;
+        margin-bottom: 25px;
+    }
+
+    .interview-header h1 {
+        margin: 0 0 8px 0;
+        font-size: 28px;
+    }
+
+    .interview-details {
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .progress-box {
+        border: 1px solid #000000;
+        padding: 15px;
+        margin-bottom: 25px;
+        font-size: 14px;
+    }
+
+    .question-card {
+        border: 1px solid #000000;
+        padding: 25px;
+        margin-bottom: 20px;
+    }
+
+    .question-number {
+        font-size: 13px;
+        font-weight: bold;
+        margin-bottom: 12px;
+    }
+
+    .question-text {
+        font-size: 18px;
+        line-height: 1.6;
+        font-weight: bold;
+        margin-bottom: 25px;
+    }
+
+    .answer-label {
+        display: block;
+        font-size: 14px;
+        font-weight: bold;
+        margin-bottom: 8px;
+    }
+
+    .answer-box {
+        width: 100%;
+        min-height: 180px;
+        padding: 12px;
+        border: 1px solid #000000;
+        box-sizing: border-box;
+        resize: vertical;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 14px;
+        color: #000000;
+        background: #ffffff;
+    }
+
+    .answer-box:focus {
+        outline: none;
+        border: 2px solid #000000;
+    }
+
+    .submit-button {
+        margin-top: 15px;
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #000000;
+        background: #000000;
+        color: #ffffff;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .submit-button:hover {
+        background: #333333;
+    }
+
+    .notice {
+        border: 1px solid #000000;
+        padding: 15px;
+        margin-top: 20px;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+</style>
+
+
+<div class="interview-page">
+
+
+    <!-- =========================================
+         INTERVIEW HEADER
+    ========================================== -->
+
+    <div class="interview-header">
+
+        <h1>
+            AI Mock Interview
+        </h1>
+
+        <div class="interview-details">
+
+            <strong>Role:</strong>
+            {{ session.role }}
+
+            &nbsp; | &nbsp;
+
+            <strong>Difficulty:</strong>
+            {{ session.difficulty }}
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================
+         INTERVIEW PROGRESS
+    ========================================== -->
+
+    <div class="progress-box">
+
+        <strong>Interview Progress:</strong>
+
+        {{ session.completed_questions }}
+        /
+        {{ session.total_questions }}
+
+        questions completed
+
+    </div>
+
+
+    <!-- =========================================
+         QUESTION CARD
+    ========================================== -->
+
+    <div class="question-card">
+
+
+        <!-- Question Number -->
+
+        <div class="question-number">
+
+            QUESTION
+            {{ current_question.question_number }}
+
+            OF
+            {{ session.total_questions }}
+
+        </div>
+
+
+        <!-- Question -->
+
+        <div class="question-text">
+
+            {{ current_question.question }}
+
+        </div>
+
+
+        <!-- =====================================
+             ANSWER FORM
+        ====================================== -->
+
+        <form
+            method="POST"
+            action="{% url 'submit_answer' session.id %}"
+        >
+
+            {% csrf_token %}
+
+
+            <!-- Hidden Question ID -->
+
+            <input
+                type="hidden"
+                name="question_id"
+                value="{{ current_question.id }}"
+            >
+
+
+            <!-- Answer Label -->
+
+            <label
+                for="answer"
+                class="answer-label"
+            >
+                Your Answer
+            </label>
+
+
+            <!-- Answer Box -->
+
+            <textarea
+                id="answer"
+                name="user_answer"
+                class="answer-box"
+                placeholder="Type your answer here..."
+                required
+            ></textarea>
+
+
+            <!-- Submit Button -->
+
+            <button
+                type="submit"
+                class="submit-button"
+            >
+                Submit Answer
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- =========================================
+         INTERVIEW TIP
+    ========================================== -->
+
+    <div class="notice">
+
+        <strong>Interview Tip:</strong>
+
+        Explain your answer clearly and include examples
+        or reasoning whenever appropriate.
+
+    </div>
+
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,793 @@
+{% extends "base.html" %}
+
+{% block title %}Resume Preview | CognifyAI{% endblock %}
+
+{% block content %}
+
+<style>
+    .resume-wrapper {
+        max-width: 950px;
+        margin: 0 auto;
+    }
+
+    .resume-paper {
+        background: #ffffff;
+        color: #222222;
+        border-radius: 8px;
+        padding: 50px 60px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .resume-name {
+        font-size: 30px;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 8px;
+        color: #111827;
+        letter-spacing: 0.5px;
+    }
+
+    .resume-contact {
+        text-align: center;
+        font-size: 13px;
+        color: #555555;
+        line-height: 1.8;
+    }
+
+    .resume-contact a {
+        color: #2563eb;
+        text-decoration: none;
+    }
+
+    .resume-contact a:hover {
+        text-decoration: underline;
+    }
+
+    .resume-divider {
+        border: 0;
+        border-top: 2px solid #222222;
+        margin: 20px 0 25px;
+    }
+
+    .resume-section {
+        margin-top: 24px;
+    }
+
+    .resume-section-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1f2937;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #d1d5db;
+        padding-bottom: 5px;
+        margin-bottom: 14px;
+    }
+
+    .summary {
+        font-size: 13.5px;
+        line-height: 1.7;
+        color: #333333;
+        text-align: justify;
+    }
+
+    .education-item,
+    .project-item,
+    .experience-item,
+    .certification-item,
+    .achievement-item {
+        margin-bottom: 18px;
+    }
+
+    .item-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 3px;
+    }
+
+    .item-subtitle {
+        font-size: 13px;
+        color: #555555;
+        margin-bottom: 5px;
+    }
+
+    .item-description {
+        font-size: 13px;
+        line-height: 1.6;
+        color: #333333;
+        margin-bottom: 5px;
+    }
+
+    .year {
+        float: right;
+        font-weight: 500;
+        color: #555555;
+    }
+
+    /* =====================================================
+       TECHNICAL SKILLS
+       ===================================================== */
+
+    .skills-container {
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+    }
+
+    .skill-row {
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .skill-category {
+        display: inline-block;
+        background: #2563eb;
+        color: white;
+        font-weight: 600;
+        padding: 3px 9px;
+        border-radius: 4px;
+        margin-right: 7px;
+        font-size: 12px;
+    }
+
+    .skill-list {
+        color: #333333;
+    }
+
+    /* =====================================================
+       PROJECT TECHNOLOGIES
+       ===================================================== */
+
+    .tech-stack {
+        margin-top: 5px;
+        font-size: 12.5px;
+        color: #444444;
+    }
+
+    .tech-label {
+        font-weight: 700;
+    }
+
+    /* =====================================================
+       LINKS
+       ===================================================== */
+
+    .project-links {
+        margin-top: 5px;
+        font-size: 12px;
+    }
+
+    .project-links a {
+        color: #2563eb;
+        text-decoration: none;
+        margin-right: 12px;
+    }
+
+    /* =====================================================
+       ACHIEVEMENTS
+       ===================================================== */
+
+    .achievement-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .verified-badge {
+        display: inline-block;
+        margin-left: 6px;
+        font-size: 11px;
+        color: #15803d;
+        font-weight: 600;
+    }
+
+    /* =====================================================
+       TOP BUTTONS
+       ===================================================== */
+
+    .resume-actions {
+        max-width: 950px;
+        margin: 0 auto 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+    }
+
+    @media (max-width: 768px) {
+
+        .resume-paper {
+            padding: 30px 22px;
+        }
+
+        .resume-name {
+            font-size: 24px;
+        }
+
+        .resume-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .year {
+            float: none;
+            display: block;
+        }
+    }
+</style>
+
+
+<div class="container py-4">
+
+    <!-- =====================================================
+         ACTION BAR
+         ===================================================== -->
+
+    <div class="resume-actions">
+
+        <div>
+            <h3 class="fw-bold mb-1">
+                Resume Preview
+            </h3>
+
+            <p class="text-muted mb-0">
+                Professional AI-generated resume
+            </p>
+        </div>
+
+        <div class="d-flex gap-2">
+
+            <a
+                href="{% url 'resume_home' %}"
+                class="btn btn-outline-secondary"
+            >
+                <i class="bi bi-pencil"></i>
+                Edit
+            </a>
+
+            <a
+                href="{% url 'download_resume_pdf' %}"
+                class="btn btn-primary"
+            >
+                <i class="bi bi-file-earmark-pdf"></i>
+                Download PDF
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         RESUME
+         ===================================================== -->
+
+    <div class="resume-wrapper">
+
+        <div class="resume-paper">
+
+
+            <!-- =================================================
+                 HEADER
+                 ================================================= -->
+
+            <div class="resume-name">
+
+                {% if user.get_full_name %}
+                    {{ user.get_full_name }}
+                {% else %}
+                    {{ user.username }}
+                {% endif %}
+
+            </div>
+
+
+            <div class="resume-contact">
+
+                {% if profile.phone %}
+                    {{ profile.phone }}
+                {% endif %}
+
+                {% if profile.phone and user.email %}
+                    |
+                {% endif %}
+
+                {% if user.email %}
+                    {{ user.email }}
+                {% endif %}
+
+                {% if profile.location %}
+                    |
+                    {{ profile.location }}
+                {% endif %}
+
+                <br>
+
+
+                {% if profile.linkedin_url %}
+
+                    <a
+                        href="{{ profile.linkedin_url }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        LinkedIn
+                    </a>
+
+                {% endif %}
+
+
+                {% if profile.github_url %}
+
+                    {% if profile.linkedin_url %}
+                        |
+                    {% endif %}
+
+                    <a
+                        href="{{ profile.github_url }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        GitHub
+                    </a>
+
+                {% endif %}
+
+
+                {% if profile.leetcode_url %}
+
+                    {% if profile.linkedin_url or profile.github_url %}
+                        |
+                    {% endif %}
+
+                    <a
+                        href="{{ profile.leetcode_url }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        LeetCode
+                    </a>
+
+                {% endif %}
+
+
+                {% if profile.portfolio_url %}
+
+                    {% if profile.linkedin_url or profile.github_url or profile.leetcode_url %}
+                        |
+                    {% endif %}
+
+                    <a
+                        href="{{ profile.portfolio_url }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Portfolio
+                    </a>
+
+                {% endif %}
+
+            </div>
+
+
+            <hr class="resume-divider">
+
+
+            <!-- =================================================
+                 PROFESSIONAL SUMMARY
+                 ================================================= -->
+
+            {% if ai_resume.professional_summary %}
+
+                <section class="resume-section">
+
+                    <div class="resume-section-title">
+                        Professional Summary
+                    </div>
+
+                    <div class="summary">
+                        {{ ai_resume.professional_summary }}
+                    </div>
+
+                </section>
+
+            {% endif %}
+
+
+            <!-- =================================================
+                 EDUCATION
+                 ================================================= -->
+
+            {% if education %}
+
+                <section class="resume-section">
+
+                    <div class="resume-section-title">
+                        Education
+                    </div>
+
+
+                    {% for item in education %}
+
+                        <div class="education-item">
+
+                            <div class="item-title">
+
+                                {{ item.institution }}
+
+                                {% if item.start_year or item.end_year %}
+
+                                    <span class="year">
+
+                                        {% if item.start_year %}
+                                            {{ item.start_year }}
+                                        {% endif %}
+
+                                        {% if item.start_year and item.end_year %}
+                                            -
+                                        {% endif %}
+
+                                        {% if item.end_year %}
+                                            {{ item.end_year }}
+                                        {% endif %}
+
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <div class="item-subtitle">
+
+                                {{ item.degree }}
+
+                                {% if item.field_of_study %}
+                                    — {{ item.field_of_study }}
+                                {% endif %}
+
+                            </div>
+
+
+                            {% if item.percentage_or_cgpa %}
+
+                                <div class="item-description">
+
+                                    CGPA / Percentage:
+                                    {{ item.percentage_or_cgpa }}
+
+                                </div>
+
+                            {% endif %}
+
+
+                            {% if item.description %}
+
+                                <div class="item-description">
+                                    {{ item.description }}
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    {% endfor %}
+
+                </section>
+
+            {% endif %}
+
+
+            <!-- =================================================
+                 TECHNICAL SKILLS
+                 ================================================= -->
+
+            {% if ai_resume.technical_skills %}
+
+                <section class="resume-section">
+
+                    <div class="resume-section-title">
+                        Technical Skills
+                    </div>
+
+
+                    <div class="skills-container">
+
+                        {% for category in ai_resume.technical_skills %}
+
+                            {% if category.skills %}
+
+                                <div class="skill-row">
+
+                                    <span class="skill-category">
+                                        {{ category.category }}
+                                    </span>
+
+                                    <span class="skill-list">
+
+                                        {% for skill in category.skills %}
+
+                                            {{ skill }}{% if not forloop.last %}, {% endif %}
+
+                                        {% endfor %}
+
+                                    </span>
+
+                                </div>
+
+                            {% endif %}
+
+                        {% endfor %}
+
+                    </div>
+
+                </section>
+
+            {% endif %}
+
+
+            <!-- =================================================
+                 PROJECTS
+                 ================================================= -->
+
+            {% if ai_resume.projects %}
+
+                <section class="resume-section">
+
+                    <div class="resume-section-title">
+                        Projects
+                    </div>
+
+
+                    {% for project in ai_resume.projects %}
+
+                        <div class="project-item">
+
+                            <div class="item-title">
+                                {{ project.title }}
+                            </div>
+
+
+                            {% if project.description %}
+
+                                <div class="item-description">
+                                    {{ project.description }}
+                                </div>
+
+                            {% endif %}
+
+
+                            {% if project.technologies %}
+
+                                <div class="tech-stack">
+
+                                    <span class="tech-label">
+                                        Tech Stack:
+                                    </span>
+
+                                    {% for technology in project.technologies %}
+
+                                        {{ technology }}{% if not forloop.last %}, {% endif %}
+
+                                    {% endfor %}
+
+                                </div>
+
+                            {% endif %}
+
+
+                            <div class="project-links">
+
+                                {% for original_project in projects %}
+
+                                    {% if original_project.title == project.title %}
+
+                                        {% if original_project.github_url %}
+
+                                            <a
+                                                href="{{ original_project.github_url }}"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                GitHub
+                                            </a>
+
+                                        {% endif %}
+
+
+                                        {% if original_project.live_url %}
+
+                                            <a
+                                                href="{{ original_project.live_url }}"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                Live Demo
+                                            </a>
+
+                                        {% endif %}
+
+                                    {% endif %}
+
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </section>
+
+            {% endif %}
+
+
+            <!-- =================================================
+                 EXPERIENCE
+                 ================================================= -->
+
+            {% if ai_resume.experience %}
+
+                <section class="resume-section">
+
+                    <div class="resume-section-title">
+                        Experience
+                    </div>
+
+
+                    {% for item in ai_resume.experience %}
+
+                        <div class="experience-item">
+
+                            <div class="item-title">
+                                {{ item.job_title }}
+                            </div>
+
+
+                            <div class="item-subtitle">
+
+                                {{ item.company }}
+
+                                {% if item.location %}
+                                    — {{ item.location }}
+                                {% endif %}
+
+                            </div>
+
+
+                            {% if item.description %}
+
+                                <div class="item-description">
+                                    {{ item.description }}
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    {% endfor %}
+
+                </section>
+
+            {% endif %}
+
+
+            <!-- =================================================
+                 CERTIFICATIONS
+                 ================================================= -->
+
+            {% if ai_resume.certifications %}
+
+                <section class="resume-section">
+
+                    <div class="resume-section-title">
+                        Certifications
+                    </div>
+
+
+                    {% for item in ai_resume.certifications %}
+
+                        <div class="certification-item">
+
+                            <div class="item-title">
+                                {{ item.name }}
+                            </div>
+
+
+                            <div class="item-subtitle">
+
+                                {{ item.issuing_organization }}
+
+                                {% if item.credential_id %}
+
+                                    |
+                                    Credential ID:
+                                    {{ item.credential_id }}
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </section>
+
+            {% endif %}
+
+
+            <!-- =================================================
+                 VERIFIED ACHIEVEMENTS
+                 ================================================= -->
+
+            {% if achievements %}
+
+                <section class="resume-section">
+
+                    <div class="resume-section-title">
+                        Verified Achievements
+                    </div>
+
+
+                    {% for achievement in achievements %}
+
+                        <div class="achievement-item">
+
+                            <div class="achievement-title">
+
+                                {{ achievement.title }}
+
+                                <span class="verified-badge">
+                                    ✓ Verified
+                                </span>
+
+                            </div>
+
+
+                            {% if achievement.description %}
+
+                                <div class="item-description">
+
+                                    {{ achievement.description }}
+
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    {% endfor %}
+
+                </section>
+
+            {% endif %}
+
+
+            <!-- =================================================
+                 VERSION
+                 ================================================= -->
+
+            {% if version_number %}
+
+                <div class="text-end mt-4 pt-3 border-top">
+
+                    <small class="text-muted">
+
+                        Resume Version {{ version_number }}
+
+                    </small>
+
+                </div>
+
+            {% endif %}
+
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

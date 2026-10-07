@@ -1,0 +1,1863 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {% block title %}CognifyAI{% endblock %}
+    </title>
+
+
+    <!-- Bootstrap -->
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+
+    <!-- Bootstrap Icons -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    >
+
+
+    <!-- Google Font -->
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+
+    <style>
+
+        :root {
+
+            --primary: #635bff;
+            --primary-dark: #4f46e5;
+            --purple: #7c3aed;
+
+            --sidebar: #17143b;
+            --sidebar-light: #211c4d;
+
+            --background: #f5f7fc;
+
+            --card: #ffffff;
+
+            --text: #20243a;
+            --muted: #747993;
+
+            --border: #e8eaf2;
+
+            --success: #16a34a;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #2563eb;
+
+            --shadow:
+                0 10px 30px rgba(32, 36, 58, 0.07);
+
+            --radius: 18px;
+        }
+
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+
+            margin: 0;
+
+            font-family: "Inter", sans-serif;
+
+            color: var(--text);
+
+            background: var(--background);
+
+        }
+
+
+        a {
+            text-decoration: none;
+        }
+
+
+        /* =====================================================
+           APP LAYOUT
+        ===================================================== */
+
+        .app-shell {
+
+            min-height: 100vh;
+
+            display: flex;
+
+        }
+
+
+        /* =====================================================
+           SIDEBAR
+        ===================================================== */
+
+        .sidebar {
+
+            width: 250px;
+
+            min-height: 100vh;
+
+            position: fixed;
+
+            left: 0;
+
+            top: 0;
+
+            bottom: 0;
+
+            z-index: 1000;
+
+            background:
+                linear-gradient(
+                    180deg,
+                    #17143b 0%,
+                    #211c4d 100%
+                );
+
+            color: white;
+
+            padding: 24px 16px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            box-shadow:
+                8px 0 30px rgba(31, 24, 75, 0.12);
+
+        }
+
+
+        .brand {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            padding: 4px 10px 28px;
+
+        }
+
+
+        .brand-logo {
+
+            width: 42px;
+
+            height: 42px;
+
+            border-radius: 13px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 21px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #8b5cf6,
+                    #6366f1
+                );
+
+            box-shadow:
+                0 8px 20px rgba(99, 91, 255, 0.35);
+
+        }
+
+
+        .brand-name {
+
+            font-size: 20px;
+
+            font-weight: 800;
+
+            letter-spacing: -0.5px;
+
+        }
+
+
+        .brand-small {
+
+            color: #aaa6ce;
+
+            font-size: 10px;
+
+            letter-spacing: 1.5px;
+
+            text-transform: uppercase;
+
+            margin-top: 2px;
+
+        }
+
+
+        .nav-title {
+
+            color: #8f8aaa;
+
+            font-size: 10px;
+
+            font-weight: 700;
+
+            letter-spacing: 1.2px;
+
+            text-transform: uppercase;
+
+            padding: 0 12px;
+
+            margin: 8px 0 10px;
+
+        }
+
+
+        .sidebar-nav {
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 5px;
+
+        }
+
+
+        .sidebar-link {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            padding: 11px 13px;
+
+            border-radius: 12px;
+
+            color: #c7c4dc;
+
+            font-size: 13px;
+
+            font-weight: 600;
+
+            transition: 0.2s ease;
+
+        }
+
+
+        .sidebar-link i {
+
+            width: 20px;
+
+            font-size: 16px;
+
+        }
+
+
+        .sidebar-link:hover {
+
+            color: white;
+
+            background: rgba(255,255,255,0.08);
+
+            transform: translateX(2px);
+
+        }
+
+
+        .sidebar-link.active {
+
+            color: white;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #6d5dfc,
+                    #7654e8
+                );
+
+            box-shadow:
+                0 8px 18px rgba(99, 91, 255, 0.28);
+
+        }
+
+
+        .sidebar-bottom {
+
+            margin-top: auto;
+
+        }
+
+
+        .sidebar-profile {
+
+            padding: 13px;
+
+            border-radius: 15px;
+
+            background: rgba(255,255,255,0.06);
+
+            border: 1px solid rgba(255,255,255,0.08);
+
+            margin-bottom: 12px;
+
+        }
+
+
+        .sidebar-user {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+        }
+
+
+        .user-avatar {
+
+            width: 38px;
+
+            height: 38px;
+
+            border-radius: 50%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            color: white;
+
+            font-weight: 700;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #8b5cf6,
+                    #06b6d4
+                );
+
+        }
+
+
+        .sidebar-username {
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            color: white;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+            white-space: nowrap;
+
+            max-width: 145px;
+
+        }
+
+
+        .sidebar-email {
+
+            color: #9692b2;
+
+            font-size: 10px;
+
+            margin-top: 2px;
+
+            overflow: hidden;
+
+            text-overflow: ellipsis;
+
+            white-space: nowrap;
+
+            max-width: 145px;
+
+        }
+
+
+        /* =====================================================
+           MAIN AREA
+        ===================================================== */
+
+        .main-area {
+
+            margin-left: 250px;
+
+            width: calc(100% - 250px);
+
+            min-height: 100vh;
+
+        }
+
+
+        .topbar {
+
+            height: 72px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            padding: 0 32px;
+
+            background: rgba(255,255,255,0.92);
+
+            border-bottom: 1px solid var(--border);
+
+            position: sticky;
+
+            top: 0;
+
+            z-index: 900;
+
+            backdrop-filter: blur(12px);
+
+        }
+
+
+        .topbar-left {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 14px;
+
+        }
+
+
+        .topbar-title {
+
+            font-weight: 700;
+
+            font-size: 14px;
+
+        }
+
+
+        .topbar-subtitle {
+
+            color: var(--muted);
+
+            font-size: 11px;
+
+            margin-top: 2px;
+
+        }
+
+
+        .topbar-user {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            font-size: 13px;
+
+            font-weight: 600;
+
+        }
+
+
+        .page-content {
+
+            max-width: 1450px;
+
+            margin: auto;
+
+            padding: 34px 34px 50px;
+
+        }
+
+
+        /* =====================================================
+           COMMON CARDS
+        ===================================================== */
+
+        .glass-card,
+
+        .feature-card,
+
+        .stat-card,
+
+        .content-card {
+
+            background: var(--card);
+
+            border: 1px solid var(--border);
+
+            border-radius: var(--radius);
+
+            box-shadow: var(--shadow);
+
+        }
+
+
+        .feature-card {
+
+            padding: 25px;
+
+            height: 100%;
+
+            transition: 0.25s ease;
+
+        }
+
+
+        .feature-card:hover {
+
+            transform: translateY(-4px);
+
+            box-shadow:
+                0 18px 38px rgba(32,36,58,0.10);
+
+        }
+
+
+        .feature-icon {
+
+            width: 50px;
+
+            height: 50px;
+
+            border-radius: 15px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background: #eeedff;
+
+            color: var(--primary);
+
+            font-size: 22px;
+
+            margin-bottom: 17px;
+
+        }
+
+
+        .feature-card h5 {
+
+            font-weight: 700;
+
+            margin-bottom: 8px;
+
+        }
+
+
+        .feature-card p {
+
+            color: var(--muted);
+
+            font-size: 13px;
+
+            line-height: 1.7;
+
+        }
+
+
+        /* =====================================================
+           BUTTONS
+        ===================================================== */
+
+        .btn-ai {
+
+            border: none;
+
+            color: white;
+
+            font-weight: 600;
+
+            border-radius: 11px;
+
+            padding: 10px 17px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--primary),
+                    var(--purple)
+                );
+
+            box-shadow:
+                0 8px 18px rgba(99,91,255,0.20);
+
+            transition: 0.2s ease;
+
+        }
+
+
+        .btn-ai:hover {
+
+            color: white;
+
+            transform: translateY(-1px);
+
+            box-shadow:
+                0 12px 24px rgba(99,91,255,0.28);
+
+        }
+
+
+        .btn-soft {
+
+            border: 1px solid #dddff0;
+
+            color: var(--text);
+
+            background: white;
+
+            font-weight: 600;
+
+            border-radius: 11px;
+
+            padding: 10px 17px;
+
+        }
+
+
+        .btn-soft:hover {
+
+            background: #f7f7ff;
+
+            color: var(--primary);
+
+        }
+
+
+        /* =====================================================
+           FORMS
+        ===================================================== */
+
+        .form-label {
+
+            color: var(--text);
+
+            font-size: 13px;
+
+            font-weight: 600;
+
+        }
+
+
+        .form-control,
+
+        .form-select {
+
+            border: 1px solid #dfe1eb;
+
+            border-radius: 12px;
+
+            padding: 12px 14px;
+
+            color: var(--text);
+
+            background: white;
+
+            font-size: 14px;
+
+        }
+
+
+        .form-control:focus,
+
+        .form-select:focus {
+
+            border-color: var(--primary);
+
+            box-shadow:
+                0 0 0 4px rgba(99,91,255,0.10);
+
+        }
+
+
+        .text-muted {
+
+            color: var(--muted) !important;
+
+        }
+
+
+        /* =====================================================
+           FLASH MESSAGES
+        ===================================================== */
+
+        .flash-stack {
+
+            position: relative;
+
+            z-index: 10;
+
+            margin-bottom: 20px;
+
+        }
+
+
+        .flash {
+
+            padding: 13px 17px;
+
+            border-radius: 12px;
+
+            margin-bottom: 10px;
+
+            font-size: 13px;
+
+            font-weight: 600;
+
+            border: 1px solid;
+
+        }
+
+
+        .flash-success {
+
+            color: #166534;
+
+            background: #f0fdf4;
+
+            border-color: #bbf7d0;
+
+        }
+
+
+        .flash-error,
+
+        .flash-danger {
+
+            color: #991b1b;
+
+            background: #fef2f2;
+
+            border-color: #fecaca;
+
+        }
+
+
+        .flash-warning {
+
+            color: #92400e;
+
+            background: #fffbeb;
+
+            border-color: #fde68a;
+
+        }
+
+
+        .flash-info {
+
+            color: #1e40af;
+
+            background: #eff6ff;
+
+            border-color: #bfdbfe;
+
+        }
+
+
+        /* =====================================================
+           AUTH PAGES
+        ===================================================== */
+
+        .public-shell {
+
+            min-height: 100vh;
+
+            background:
+                radial-gradient(
+                    circle at top left,
+                    #e9e7ff,
+                    transparent 32%
+                ),
+                #f6f7fc;
+
+        }
+
+
+        .public-nav {
+
+            height: 76px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            padding: 0 6%;
+
+            background: rgba(255,255,255,0.88);
+
+            border-bottom: 1px solid var(--border);
+
+            backdrop-filter: blur(12px);
+
+        }
+
+
+        .public-brand {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
+
+            color: var(--text);
+
+            font-size: 20px;
+
+            font-weight: 800;
+
+        }
+
+
+        .public-brand-icon {
+
+            width: 39px;
+
+            height: 39px;
+
+            border-radius: 12px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            color: white;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #7c3aed,
+                    #6366f1
+                );
+
+        }
+
+
+        .public-nav-links {
+
+            display: flex;
+
+            gap: 10px;
+
+        }
+
+
+        .public-content {
+
+            padding: 30px 20px 60px;
+
+        }
+
+
+        .auth-container {
+
+            max-width: 1100px;
+
+            min-height: 650px;
+
+            margin: 25px auto;
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            background: white;
+
+            border: 1px solid var(--border);
+
+            border-radius: 28px;
+
+            overflow: hidden;
+
+            box-shadow:
+                0 25px 70px rgba(40,35,80,0.12);
+
+        }
+
+
+        .auth-brand-panel {
+
+            position: relative;
+
+            padding: 55px;
+
+            color: white;
+
+            overflow: hidden;
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #17143b,
+                    #4f46e5 65%,
+                    #7c3aed
+                );
+
+        }
+
+
+        .auth-brand-panel::before {
+
+            content: "";
+
+            position: absolute;
+
+            width: 280px;
+
+            height: 280px;
+
+            border-radius: 50%;
+
+            right: -100px;
+
+            top: -90px;
+
+            background: rgba(255,255,255,0.10);
+
+        }
+
+
+        .auth-brand-panel::after {
+
+            content: "";
+
+            position: absolute;
+
+            width: 220px;
+
+            height: 220px;
+
+            border-radius: 50%;
+
+            left: -100px;
+
+            bottom: -80px;
+
+            background: rgba(255,255,255,0.08);
+
+        }
+
+
+        .auth-badge {
+
+            display: inline-flex;
+
+            padding: 7px 12px;
+
+            border-radius: 30px;
+
+            background: rgba(255,255,255,0.12);
+
+            border: 1px solid rgba(255,255,255,0.16);
+
+            font-size: 11px;
+
+            font-weight: 700;
+
+        }
+
+
+        .auth-brand-panel h1 {
+
+            font-size: 38px;
+
+            line-height: 1.15;
+
+            font-weight: 800;
+
+            margin-top: 30px;
+
+        }
+
+
+        .auth-brand-panel p {
+
+            color: #d9d7ef;
+
+            line-height: 1.8;
+
+            font-size: 14px;
+
+        }
+
+
+        .auth-points {
+
+            margin-top: 40px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 16px;
+
+        }
+
+
+        .auth-point {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            font-size: 13px;
+
+            font-weight: 600;
+
+        }
+
+
+        .auth-point i {
+
+            width: 32px;
+
+            height: 32px;
+
+            border-radius: 10px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background: rgba(255,255,255,0.12);
+
+        }
+
+
+        .auth-form-panel {
+
+            padding: 55px;
+
+            display: flex;
+
+            align-items: center;
+
+        }
+
+
+        .auth-form-inner {
+
+            width: 100%;
+
+            max-width: 430px;
+
+            margin: auto;
+
+        }
+
+
+        .auth-form-inner h2 {
+
+            font-size: 30px;
+
+            font-weight: 800;
+
+            margin-bottom: 8px;
+
+        }
+
+
+        .auth-form-inner .subtitle {
+
+            color: var(--muted);
+
+            font-size: 13px;
+
+            margin-bottom: 30px;
+
+        }
+
+
+        .auth-logo-large {
+
+            width: 54px;
+
+            height: 54px;
+
+            border-radius: 16px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            font-size: 25px;
+
+            color: white;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #7c3aed,
+                    #6366f1
+                );
+
+            margin-bottom: 20px;
+
+        }
+
+
+        .auth-link {
+
+            color: var(--primary);
+
+            font-weight: 700;
+
+        }
+
+
+        .auth-link:hover {
+
+            color: var(--purple);
+
+        }
+
+
+        /* =====================================================
+           MOBILE
+        ===================================================== */
+
+        .menu-button {
+
+            display: none;
+
+            border: none;
+
+            background: #f0efff;
+
+            color: var(--primary);
+
+            width: 40px;
+
+            height: 40px;
+
+            border-radius: 10px;
+
+        }
+
+
+        .sidebar-overlay {
+
+            display: none;
+
+        }
+
+
+        @media (max-width: 1000px) {
+
+            .sidebar {
+
+                transform: translateX(-100%);
+
+                transition: 0.25s ease;
+
+            }
+
+
+            .sidebar-open .sidebar {
+
+                transform: translateX(0);
+
+            }
+
+
+            .sidebar-overlay {
+
+                position: fixed;
+
+                inset: 0;
+
+                z-index: 999;
+
+                background: rgba(10,8,30,0.45);
+
+            }
+
+
+            .sidebar-open .sidebar-overlay {
+
+                display: block;
+
+            }
+
+
+            .main-area {
+
+                margin-left: 0;
+
+                width: 100%;
+
+            }
+
+
+            .menu-button {
+
+                display: flex;
+
+                align-items: center;
+
+                justify-content: center;
+
+            }
+
+
+            .topbar {
+
+                padding: 0 20px;
+
+            }
+
+
+            .page-content {
+
+                padding: 25px 20px 40px;
+
+            }
+
+
+            .auth-container {
+
+                grid-template-columns: 1fr;
+
+                max-width: 600px;
+
+            }
+
+
+            .auth-brand-panel {
+
+                padding: 40px;
+
+            }
+
+
+            .auth-brand-panel h1 {
+
+                font-size: 30px;
+
+            }
+
+        }
+
+
+        @media (max-width: 600px) {
+
+            .topbar-user {
+
+                display: none;
+
+            }
+
+
+            .public-nav {
+
+                padding: 0 18px;
+
+            }
+
+
+            .public-nav-links .btn-soft {
+
+                display: none;
+
+            }
+
+
+            .auth-brand-panel,
+
+            .auth-form-panel {
+
+                padding: 30px 24px;
+
+            }
+
+
+            .auth-brand-panel h1 {
+
+                font-size: 27px;
+
+            }
+
+
+            .auth-container {
+
+                margin: 10px auto;
+
+                border-radius: 20px;
+
+            }
+
+        }
+
+    </style>
+
+
+    {% block extra_css %}{% endblock %}
+
+</head>
+
+
+<body>
+
+{% if request.user.is_authenticated %}
+
+<div class="app-shell">
+
+
+    <!-- =====================================================
+         SIDEBAR
+    ====================================================== -->
+
+    <aside class="sidebar" id="sidebar">
+
+
+        <div class="brand">
+
+            <div class="brand-logo">
+                <i class="bi bi-brain"></i>
+            </div>
+
+            <div>
+
+                <div class="brand-name">
+                    CognifyAI
+                </div>
+
+                <div class="brand-small">
+                    Adaptive Learning
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="nav-title">
+            Main Menu
+        </div>
+
+
+        <nav class="sidebar-nav">
+
+
+            <a
+                href="{% url 'dashboard' %}"
+                class="sidebar-link
+                {% if request.resolver_match.url_name == 'dashboard' %}
+                    active
+                {% endif %}"
+            >
+
+                <i class="bi bi-grid-1x2-fill"></i>
+
+                Dashboard
+
+            </a>
+
+
+            <a
+                href="{% url 'assessment_home' %}"
+                class="sidebar-link
+                {% if request.resolver_match.url_name == 'assessment_home' %}
+                    active
+                {% endif %}"
+            >
+
+                <i class="bi bi-clipboard2-check-fill"></i>
+
+                Assessment
+
+            </a>
+
+
+            <a
+                href="{% url 'learning_analysis' %}"
+                class="sidebar-link
+                {% if request.resolver_match.url_name == 'learning_analysis' %}
+                    active
+                {% endif %}"
+            >
+
+                <i class="bi bi-graph-up-arrow"></i>
+
+                Analytics
+
+            </a>
+
+
+            <a
+                href="{% url 'assessment_history' %}"
+                class="sidebar-link
+                {% if request.resolver_match.url_name == 'assessment_history' %}
+                    active
+                {% endif %}"
+            >
+
+                <i class="bi bi-clock-history"></i>
+
+                History
+
+            </a>
+
+
+            <a
+                href="{% url 'personalized_plan' %}"
+                class="sidebar-link
+                {% if request.resolver_match.url_name == 'personalized_plan' %}
+                    active
+                {% endif %}"
+            >
+
+                <i class="bi bi-journal-check"></i>
+
+                Personalized Plan
+
+            </a>
+
+
+            <a
+                href="{% url 'adaptive_learning' %}"
+                class="sidebar-link
+                {% if request.resolver_match.url_name == 'adaptive_learning' %}
+                    active
+                {% endif %}"
+            >
+
+                <i class="bi bi-stars"></i>
+
+                Adaptive Learning
+
+            </a>
+
+            <a href="{% url 'resume_home' %}" class="sidebar-link">
+                <i class="bi bi-file-earmark-person"></i>
+                <span>Resume Builder</span>
+            </a>
+
+            <a
+                href="{% url 'interview_home' %}"
+                class="sidebar-link
+                {% if request.resolver_match.url_name == 'interview_home' %}
+                    active
+                {% endif %}"
+            >
+                <i class="bi bi-person-video3"></i>
+
+                <span>AI Mock Interview</span>
+            </a>
+
+            <div class="nav-title mt-3">
+                Account
+            </div>
+
+            <a
+                href="{% url 'profile' %}"
+                class="sidebar-link
+                {% if request.resolver_match.url_name == 'profile' %}
+                    active
+                {% endif %}"
+            >
+
+                <i class="bi bi-person-circle"></i>
+
+                Profile
+
+            </a>
+
+
+        </nav>
+
+
+        <div class="sidebar-bottom">
+
+
+            <div class="sidebar-profile">
+
+                <div class="sidebar-user">
+
+
+                    <div class="user-avatar">
+
+                        {{ request.user.username|first|upper }}
+
+                    </div>
+
+
+                    <div>
+
+                        <div class="sidebar-username">
+
+                            {{ request.user.username }}
+
+                        </div>
+
+                        <div class="sidebar-email">
+
+                            {{ request.user.email }}
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+            <a
+                href="{% url 'logout' %}"
+                class="sidebar-link"
+            >
+
+                <i class="bi bi-box-arrow-right"></i>
+
+                Logout
+
+            </a>
+
+
+        </div>
+
+
+    </aside>
+
+
+    <div
+        class="sidebar-overlay"
+        id="sidebarOverlay"
+    ></div>
+
+
+    <!-- =====================================================
+         MAIN
+    ====================================================== -->
+
+    <div class="main-area">
+
+
+        <header class="topbar">
+
+
+            <div class="topbar-left">
+
+
+                <button
+                    class="menu-button"
+                    id="menuToggle"
+                    type="button"
+                >
+
+                    <i class="bi bi-list"></i>
+
+                </button>
+
+
+                <div>
+
+                    <div class="topbar-title">
+
+                        {% block page_heading %}
+                            Adaptive Learning Workspace
+                        {% endblock %}
+
+                    </div>
+
+                    <div class="topbar-subtitle">
+
+                        Learn smarter with CognifyAI
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+            <div class="topbar-user">
+
+                <div class="user-avatar">
+
+                    {{ request.user.username|first|upper }}
+
+                </div>
+
+                {{ request.user.username }}
+
+            </div>
+
+
+        </header>
+
+
+        <main class="page-content">
+
+
+{% else %}
+
+
+<div class="public-shell">
+
+
+    <nav class="public-nav">
+
+
+        <a
+            href="{% url 'home' %}"
+            class="public-brand"
+        >
+
+            <span class="public-brand-icon">
+
+                <i class="bi bi-brain"></i>
+
+            </span>
+
+            CognifyAI
+
+        </a>
+
+
+        <div class="public-nav-links">
+
+            <a
+                href="{% url 'login' %}"
+                class="btn btn-soft"
+            >
+
+                Login
+
+            </a>
+
+
+            <a
+                href="{% url 'register' %}"
+                class="btn btn-ai"
+            >
+
+                Get Started
+
+            </a>
+
+        </div>
+
+
+    </nav>
+
+
+    <main class="public-content">
+
+{% endif %}
+
+
+        <!-- =================================================
+             MESSAGES
+        ================================================== -->
+
+        {% if messages %}
+
+            <div class="flash-stack">
+
+                {% for message in messages %}
+
+                    <div class="flash flash-{{ message.tags }}">
+
+                        {{ message }}
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+
+        {% block content %}{% endblock %}
+
+
+{% if request.user.is_authenticated %}
+
+        </main>
+
+    </div>
+
+</div>
+
+
+{% else %}
+
+    </main>
+
+</div>
+
+{% endif %}
+
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+></script>
+
+
+<script>
+
+    const menuToggle =
+        document.getElementById("menuToggle");
+
+    const sidebarOverlay =
+        document.getElementById("sidebarOverlay");
+
+
+    if (menuToggle) {
+
+        menuToggle.addEventListener(
+            "click",
+            function () {
+
+                document.body.classList.toggle(
+                    "sidebar-open"
+                );
+
+            }
+        );
+
+    }
+
+
+    if (sidebarOverlay) {
+
+        sidebarOverlay.addEventListener(
+            "click",
+            function () {
+
+                document.body.classList.remove(
+                    "sidebar-open"
+                );
+
+            }
+        );
+
+    }
+
+
+    document
+        .querySelectorAll(".sidebar-link")
+        .forEach(function(link) {
+
+            link.addEventListener(
+                "click",
+                function() {
+
+                    document.body.classList.remove(
+                        "sidebar-open"
+                    );
+
+                }
+            );
+
+        });
+
+
+    /* Password visibility */
+
+    document
+        .querySelectorAll("[data-toggle-password]")
+        .forEach(function(button) {
+
+            button.addEventListener(
+                "click",
+                function() {
+
+                    const targetId =
+                        this.getAttribute(
+                            "data-toggle-password"
+                        );
+
+                    const input =
+                        document.getElementById(
+                            targetId
+                        );
+
+                    const icon =
+                        this.querySelector("i");
+
+
+                    if (input.type === "password") {
+
+                        input.type = "text";
+
+                        icon.className =
+                            "bi bi-eye-slash";
+
+                    } else {
+
+                        input.type = "password";
+
+                        icon.className =
+                            "bi bi-eye";
+
+                    }
+
+                }
+            );
+
+        });
+
+</script>
+
+
+{% block extra_js %}{% endblock %}
+
+</body>
+
+</html>

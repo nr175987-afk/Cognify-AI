@@ -1,0 +1,497 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    .version-page {
+        max-width: 900px;
+        margin: 30px auto;
+        padding: 30px;
+        background: #ffffff;
+        color: #000000;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .resume-header {
+        text-align: center;
+        border-bottom: 2px solid #000000;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+
+    .resume-name {
+        font-size: 28px;
+        font-weight: bold;
+        margin-bottom: 8px;
+    }
+
+    .contact {
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    .version-info {
+        border: 1px solid #000000;
+        padding: 12px;
+        margin-bottom: 25px;
+        font-size: 14px;
+    }
+
+    .section {
+        margin-top: 25px;
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: bold;
+        border-bottom: 1px solid #000000;
+        padding-bottom: 5px;
+        margin-bottom: 12px;
+    }
+
+    .summary {
+        font-size: 14px;
+        line-height: 1.7;
+    }
+
+    .education-item,
+    .project-item,
+    .experience-item,
+    .certification-item,
+    .achievement-item {
+        margin-bottom: 16px;
+    }
+
+    .item-title {
+        font-size: 15px;
+        font-weight: bold;
+        margin-bottom: 3px;
+    }
+
+    .item-subtitle {
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+
+    .item-description {
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .skills-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .skills-table td {
+        border: 1px solid #000000;
+        padding: 8px;
+        vertical-align: top;
+        font-size: 14px;
+    }
+
+    .skill-category {
+        width: 25%;
+        font-weight: bold;
+    }
+
+    .buttons {
+        margin-top: 30px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .button {
+        display: inline-block;
+        padding: 10px 16px;
+        border: 1px solid #000000;
+        color: #000000;
+        text-decoration: none;
+        background: #ffffff;
+        font-size: 14px;
+    }
+
+    .button:hover {
+        background: #eeeeee;
+    }
+</style>
+
+<div class="version-page">
+
+    <!-- VERSION INFORMATION -->
+    <div class="version-info">
+        <strong>Resume Version {{ version.version_number }}</strong><br>
+
+        Created:
+        {{ version.created_at|date:"d M Y, h:i A" }}
+
+        {% if version.change_summary %}
+            <br>
+            {{ version.change_summary }}
+        {% endif %}
+    </div>
+
+
+    <!-- HEADER -->
+    <div class="resume-header">
+
+        <div class="resume-name">
+            {{ profile_data.resume_name|default:"Resume" }}
+        </div>
+
+        <div class="contact">
+
+            {% if profile_data.email %}
+                {{ profile_data.email }}
+            {% endif %}
+
+            {% if profile_data.phone %}
+                | {{ profile_data.phone }}
+            {% endif %}
+
+            {% if profile_data.location %}
+                | {{ profile_data.location }}
+            {% endif %}
+
+        </div>
+
+        <div class="contact">
+
+            {% if profile_data.linkedin_url %}
+                LinkedIn: {{ profile_data.linkedin_url }}
+            {% endif %}
+
+            {% if profile_data.github_url %}
+                | GitHub: {{ profile_data.github_url }}
+            {% endif %}
+
+            {% if profile_data.leetcode_url %}
+                | LeetCode: {{ profile_data.leetcode_url }}
+            {% endif %}
+
+            {% if profile_data.portfolio_url %}
+                | Portfolio: {{ profile_data.portfolio_url }}
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- PROFESSIONAL SUMMARY -->
+    {% if professional_summary %}
+
+    <div class="section">
+
+        <div class="section-title">
+            PROFESSIONAL SUMMARY
+        </div>
+
+        <div class="summary">
+            {{ professional_summary }}
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- EDUCATION -->
+    {% if education %}
+
+    <div class="section">
+
+        <div class="section-title">
+            EDUCATION
+        </div>
+
+        {% for item in education %}
+
+        <div class="education-item">
+
+            <div class="item-title">
+                {{ item.institution }}
+            </div>
+
+            <div class="item-subtitle">
+
+                {{ item.degree }}
+
+                {% if item.field_of_study %}
+                    in {{ item.field_of_study }}
+                {% endif %}
+
+                {% if item.start_year or item.end_year %}
+                    |
+                    {% if item.start_year %}
+                        {{ item.start_year }}
+                    {% endif %}
+
+                    {% if item.end_year %}
+                        - {{ item.end_year }}
+                    {% endif %}
+                {% endif %}
+
+            </div>
+
+            {% if item.percentage_or_cgpa %}
+
+            <div class="item-description">
+                CGPA / Percentage:
+                {{ item.percentage_or_cgpa }}
+            </div>
+
+            {% endif %}
+
+            {% if item.description %}
+
+            <div class="item-description">
+                {{ item.description }}
+            </div>
+
+            {% endif %}
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- TECHNICAL SKILLS -->
+    {% if technical_skills %}
+
+    <div class="section">
+
+        <div class="section-title">
+            TECHNICAL SKILLS
+        </div>
+
+        <table class="skills-table">
+
+            {% for category in technical_skills %}
+
+                {% if category.skills %}
+
+                <tr>
+
+                    <td class="skill-category">
+                        {{ category.category }}
+                    </td>
+
+                    <td>
+                        {% for skill in category.skills %}
+
+                            {{ skill }}{% if not forloop.last %}, {% endif %}
+
+                        {% endfor %}
+                    </td>
+
+                </tr>
+
+                {% endif %}
+
+            {% endfor %}
+
+        </table>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- PROJECTS -->
+    {% if ai_projects %}
+
+    <div class="section">
+
+        <div class="section-title">
+            PROJECTS
+        </div>
+
+        {% for project in ai_projects %}
+
+        <div class="project-item">
+
+            <div class="item-title">
+                {{ project.title }}
+            </div>
+
+            {% if project.technologies %}
+
+            <div class="item-subtitle">
+
+                <strong>Technologies:</strong>
+
+                {% for technology in project.technologies %}
+
+                    {{ technology }}{% if not forloop.last %}, {% endif %}
+
+                {% endfor %}
+
+            </div>
+
+            {% endif %}
+
+            <div class="item-description">
+                {{ project.description }}
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- EXPERIENCE -->
+    {% if ai_experience %}
+
+    <div class="section">
+
+        <div class="section-title">
+            EXPERIENCE
+        </div>
+
+        {% for item in ai_experience %}
+
+        <div class="experience-item">
+
+            <div class="item-title">
+                {{ item.job_title }}
+            </div>
+
+            <div class="item-subtitle">
+
+                {{ item.company }}
+
+                {% if item.location %}
+                    | {{ item.location }}
+                {% endif %}
+
+            </div>
+
+            <div class="item-description">
+                {{ item.description }}
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- CERTIFICATIONS -->
+    {% if ai_certifications %}
+
+    <div class="section">
+
+        <div class="section-title">
+            CERTIFICATIONS
+        </div>
+
+        {% for item in ai_certifications %}
+
+        <div class="certification-item">
+
+            <div class="item-title">
+                {{ item.name }}
+            </div>
+
+            {% if item.issuing_organization %}
+
+            <div class="item-subtitle">
+                {{ item.issuing_organization }}
+            </div>
+
+            {% endif %}
+
+            {% if item.credential_id %}
+
+            <div class="item-description">
+                Credential ID: {{ item.credential_id }}
+            </div>
+
+            {% endif %}
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ACHIEVEMENTS -->
+    {% if ai_achievements %}
+
+    <div class="section">
+
+        <div class="section-title">
+            ACHIEVEMENTS
+        </div>
+
+        {% for achievement in ai_achievements %}
+
+        <div class="achievement-item">
+
+            {% if achievement.title %}
+
+                <div class="item-title">
+                    {{ achievement.title }}
+                </div>
+
+                {% if achievement.description %}
+                    <div class="item-description">
+                        {{ achievement.description }}
+                    </div>
+                {% endif %}
+
+            {% else %}
+
+                <div class="item-description">
+                    {{ achievement }}
+                </div>
+
+            {% endif %}
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- BUTTONS -->
+    <div class="buttons">
+
+        <a
+            href="{% url 'resume_versions' %}"
+            class="button"
+        >
+            Back to Resume Versions
+        </a>
+
+        <a
+            href="{% url 'resume_home' %}"
+            class="button"
+        >
+            Resume Builder
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

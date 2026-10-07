@@ -1,0 +1,1005 @@
+```html
+{% extends "base.html" %}
+
+{% block title %}
+My Performance | CognifyAI
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <!-- ========================================= -->
+    <!-- HEADER -->
+    <!-- ========================================= -->
+
+    <div class="mb-5">
+
+        <div class="d-flex align-items-center gap-3">
+
+            <div
+                class="d-flex align-items-center justify-content-center rounded-4"
+                style="
+                    width: 60px;
+                    height: 60px;
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                    color: white;
+                    font-size: 28px;
+                "
+            >
+                📊
+            </div>
+
+            <div>
+
+                <h2 class="fw-bold mb-1">
+                    My Learning Performance
+                </h2>
+
+                <p class="text-muted mb-0">
+                    Track your progress and understand your learning patterns.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================= -->
+    <!-- STATISTICS CARDS -->
+    <!-- ========================================= -->
+
+    <div class="row g-4 mb-5">
+
+
+        <!-- TOTAL ASSESSMENTS -->
+
+        <div class="col-md-4">
+
+            <div
+                class="feature-card p-4 h-100"
+                style="
+                    border: none;
+                    border-radius: 20px;
+                    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+                "
+            >
+
+                <div class="d-flex justify-content-between align-items-center">
+
+                    <div>
+
+                        <p class="text-muted mb-2">
+                            Total Assessments
+                        </p>
+
+                        <h2 class="fw-bold mb-0">
+                            {{ total_assessments }}
+                        </h2>
+
+                        <small class="text-muted">
+                            Completed assessments
+                        </small>
+
+                    </div>
+
+                    <div
+                        class="rounded-4 d-flex align-items-center justify-content-center"
+                        style="
+                            width: 55px;
+                            height: 55px;
+                            background: #eef2ff;
+                            font-size: 25px;
+                        "
+                    >
+                        📝
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- AVERAGE SCORE -->
+
+        <div class="col-md-4">
+
+            <div
+                class="feature-card p-4 h-100"
+                style="
+                    border: none;
+                    border-radius: 20px;
+                    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+                "
+            >
+
+                <div class="d-flex justify-content-between align-items-center">
+
+                    <div>
+
+                        <p class="text-muted mb-2">
+                            Average Score
+                        </p>
+
+                        <h2 class="fw-bold text-primary mb-0">
+                            {{ average_score|floatformat:1 }}%
+                        </h2>
+
+                        <small class="text-muted">
+                            Overall performance
+                        </small>
+
+                    </div>
+
+                    <div
+                        class="rounded-4 d-flex align-items-center justify-content-center"
+                        style="
+                            width: 55px;
+                            height: 55px;
+                            background: #eef2ff;
+                            font-size: 25px;
+                        "
+                    >
+                        📈
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- BEST SCORE -->
+
+        <div class="col-md-4">
+
+            <div
+                class="feature-card p-4 h-100"
+                style="
+                    border: none;
+                    border-radius: 20px;
+                    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+                "
+            >
+
+                <div class="d-flex justify-content-between align-items-center">
+
+                    <div>
+
+                        <p class="text-muted mb-2">
+                            Best Score
+                        </p>
+
+                        <h2 class="fw-bold text-success mb-0">
+                            {{ best_score|floatformat:1 }}%
+                        </h2>
+
+                        <small class="text-muted">
+                            Your highest score
+                        </small>
+
+                    </div>
+
+                    <div
+                        class="rounded-4 d-flex align-items-center justify-content-center"
+                        style="
+                            width: 55px;
+                            height: 55px;
+                            background: #ecfdf5;
+                            font-size: 25px;
+                        "
+                    >
+                        🏆
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================= -->
+    <!-- CHARTS -->
+    <!-- ========================================= -->
+
+    <div class="row g-4 mb-5">
+
+
+        <!-- TOPIC PERFORMANCE -->
+
+        <div class="col-lg-7">
+
+            <div
+                class="feature-card p-4 h-100"
+                style="
+                    border: none;
+                    border-radius: 20px;
+                    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+                "
+            >
+
+                <div class="mb-4">
+
+                    <h5 class="fw-bold mb-1">
+                        📚 Topic Performance
+                    </h5>
+
+                    <p class="text-muted mb-0">
+                        Average score across the topics you have studied.
+                    </p>
+
+                </div>
+
+
+                {% if topic_performance %}
+
+                <div style="height: 330px;">
+
+                    <canvas
+                        id="topicPerformanceChart"
+                    ></canvas>
+
+                </div>
+
+                {% else %}
+
+                <div class="text-center py-5">
+
+                    <div style="font-size: 50px;">
+                        📚
+                    </div>
+
+                    <p class="text-muted mt-3 mb-0">
+                        Complete an assessment to see topic performance.
+                    </p>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+
+        <!-- SCORE TREND -->
+
+        <div class="col-lg-5">
+
+            <div
+                class="feature-card p-4 h-100"
+                style="
+                    border: none;
+                    border-radius: 20px;
+                    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+                "
+            >
+
+                <div class="mb-4">
+
+                    <h5 class="fw-bold mb-1">
+                        📈 Score Trend
+                    </h5>
+
+                    <p class="text-muted mb-0">
+                        Your performance over recent assessments.
+                    </p>
+
+                </div>
+
+
+                {% if recent_attempts %}
+
+                <div style="height: 330px;">
+
+                    <canvas
+                        id="scoreTrendChart"
+                    ></canvas>
+
+                </div>
+
+                {% else %}
+
+                <div class="text-center py-5">
+
+                    <div style="font-size: 50px;">
+                        📈
+                    </div>
+
+                    <p class="text-muted mt-3 mb-0">
+                        Complete assessments to see your progress.
+                    </p>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================= -->
+    <!-- TOPIC PERFORMANCE DETAILS -->
+    <!-- ========================================= -->
+
+    {% if topic_performance %}
+
+    <div
+        class="feature-card p-4 mb-5"
+        style="
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+        "
+    >
+
+        <div class="mb-4">
+
+            <h5 class="fw-bold mb-1">
+                🎯 Topic Analysis
+            </h5>
+
+            <p class="text-muted mb-0">
+                Understand your strengths and areas that need improvement.
+            </p>
+
+        </div>
+
+
+        <div class="row g-4">
+
+            {% for item in topic_performance %}
+
+            <div class="col-md-6 col-lg-4">
+
+                <div
+                    class="p-4 rounded-4"
+                    style="
+                        background: #f8fafc;
+                        border: 1px solid #e5e7eb;
+                    "
+                >
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+
+                        <h6 class="fw-bold mb-0">
+                            {{ item.topic }}
+                        </h6>
+
+
+                        {% if item.average >= 80 %}
+
+                            <span class="badge bg-success">
+                                Strong
+                            </span>
+
+                        {% elif item.average >= 60 %}
+
+                            <span class="badge bg-warning text-dark">
+                                Good
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge bg-danger">
+                                Improve
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <div class="d-flex justify-content-between mb-2">
+
+                        <span class="text-muted">
+                            Average Score
+                        </span>
+
+                        <strong>
+                            {{ item.average }}%
+                        </strong>
+
+                    </div>
+
+
+                    <!-- Progress bar -->
+
+                    <div
+                        class="progress"
+                        style="height: 8px;"
+                    >
+
+                        <div
+                            class="progress-bar
+                            {% if item.average >= 80 %}
+                                bg-success
+                            {% elif item.average >= 60 %}
+                                bg-warning
+                            {% else %}
+                                bg-danger
+                            {% endif %}"
+                            role="progressbar"
+                            style="width: {{ item.average }}%;"
+                        >
+                        </div>
+
+                    </div>
+
+
+                    <small class="text-muted d-block mt-3">
+
+                        {{ item.attempts }}
+
+                        assessment{{ item.attempts|pluralize }}
+
+                    </small>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ========================================= -->
+    <!-- ASSESSMENT HISTORY -->
+    <!-- ========================================= -->
+
+    <div
+        class="feature-card p-4"
+        style="
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+        "
+    >
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+
+            <div>
+
+                <h5 class="fw-bold mb-1">
+                    📋 Assessment History
+                </h5>
+
+                <p class="text-muted mb-0">
+                    Your previous AI-generated assessments.
+                </p>
+
+            </div>
+
+
+            <a
+                href="{% url 'assessment_home' %}"
+                class="btn btn-primary rounded-pill px-4"
+            >
+
+                <i class="bi bi-plus-circle me-2"></i>
+
+                New Assessment
+
+            </a>
+
+        </div>
+
+
+        {% if attempts %}
+
+        <div class="table-responsive">
+
+            <table class="table align-middle">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Date
+                        </th>
+
+                        <th>
+                            Subject
+                        </th>
+
+                        <th>
+                            Topic
+                        </th>
+
+                        <th>
+                            Difficulty
+                        </th>
+
+                        <th>
+                            Questions
+                        </th>
+
+                        <th>
+                            Score
+                        </th>
+
+                        <th>
+                            Performance
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for attempt in attempts %}
+
+                    <tr>
+
+                        <!-- DATE -->
+
+                        <td>
+
+                            <span class="text-muted">
+
+                                {{ attempt.created_at|date:"d M Y" }}
+
+                            </span>
+
+                        </td>
+
+
+                        <!-- SUBJECT -->
+
+                        <td>
+
+                            <strong>
+                                {{ attempt.subject }}
+                            </strong>
+
+                        </td>
+
+
+                        <!-- TOPIC -->
+
+                        <td>
+
+                            {{ attempt.topic }}
+
+                        </td>
+
+
+                        <!-- DIFFICULTY -->
+
+                        <td>
+
+                            {% if attempt.difficulty == "Easy" %}
+
+                                <span class="badge bg-success">
+                                    Easy
+                                </span>
+
+                            {% elif attempt.difficulty == "Medium" %}
+
+                                <span class="badge bg-warning text-dark">
+                                    Medium
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge bg-danger">
+                                    Hard
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <!-- QUESTIONS -->
+
+                        <td>
+
+                            {{ attempt.correct_answers }}
+
+                            /
+
+                            {{ attempt.total_questions }}
+
+                        </td>
+
+
+                        <!-- SCORE -->
+
+                        <td>
+
+                            <strong>
+
+                                {{ attempt.score|floatformat:0 }}%
+
+                            </strong>
+
+                        </td>
+
+
+                        <!-- PERFORMANCE -->
+
+                        <td>
+
+                            {% if attempt.score >= 80 %}
+
+                                <span class="badge bg-success">
+                                    Excellent
+                                </span>
+
+                            {% elif attempt.score >= 60 %}
+
+                                <span class="badge bg-warning text-dark">
+                                    Good
+                                </span>
+
+                            {% else %}
+
+                                <span class="badge bg-danger">
+                                    Needs Improvement
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        {% else %}
+
+        <!-- EMPTY STATE -->
+
+        <div class="text-center py-5">
+
+            <div
+                style="
+                    font-size: 70px;
+                "
+            >
+                📚
+            </div>
+
+
+            <h4 class="fw-bold mt-3">
+                No assessments yet
+            </h4>
+
+
+            <p class="text-muted mb-4">
+
+                Complete your first AI assessment to start
+                building your personalized learning profile.
+
+            </p>
+
+
+            <a
+                href="{% url 'assessment_home' %}"
+                class="btn btn-primary rounded-pill px-4"
+            >
+
+                <i class="bi bi-stars me-2"></i>
+
+                Start Your First Assessment
+
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- ========================================= -->
+    <!-- BACK TO DASHBOARD -->
+    <!-- ========================================= -->
+
+    <div class="text-center mt-4 mb-5">
+
+        <a
+            href="{% url 'dashboard' %}"
+            class="text-decoration-none text-muted"
+        >
+
+            ← Back to Dashboard
+
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================= -->
+<!-- CHART.JS -->
+<!-- ========================================= -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<script>
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+
+        // =====================================
+        // TOPIC PERFORMANCE DATA
+        // =====================================
+
+        const topicLabels = [
+
+            {% for item in topic_performance %}
+
+                "{{ item.topic|escapejs }}",
+
+            {% endfor %}
+
+        ];
+
+
+        const topicScores = [
+
+            {% for item in topic_performance %}
+
+                {{ item.average }},
+
+            {% endfor %}
+
+        ];
+
+
+        // =====================================
+        // SCORE TREND DATA
+        // =====================================
+
+        const trendLabels = [
+
+            {% for attempt in recent_attempts %}
+
+                "{{ attempt.created_at|date:'d M' }}",
+
+            {% endfor %}
+
+        ];
+
+
+        const trendScores = [
+
+            {% for attempt in recent_attempts %}
+
+                {{ attempt.score }},
+
+            {% endfor %}
+
+        ];
+
+
+        // =====================================
+        // TOPIC BAR CHART
+        // =====================================
+
+        const topicCanvas =
+            document.getElementById(
+                "topicPerformanceChart"
+            );
+
+
+        if (
+            topicCanvas &&
+            topicLabels.length > 0
+        ) {
+
+            new Chart(
+                topicCanvas,
+                {
+
+                    type: "bar",
+
+                    data: {
+
+                        labels: topicLabels,
+
+                        datasets: [
+
+                            {
+
+                                label:
+                                    "Average Score (%)",
+
+                                data:
+                                    topicScores,
+
+                                borderRadius: 8,
+
+                            }
+
+                        ]
+
+                    },
+
+
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: false,
+
+                        plugins: {
+
+                            legend: {
+
+                                display: false
+
+                            }
+
+                        },
+
+
+                        scales: {
+
+                            y: {
+
+                                beginAtZero: true,
+
+                                max: 100,
+
+                                ticks: {
+
+                                    callback:
+                                        function(value) {
+
+                                            return value + "%";
+
+                                        }
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+            );
+
+        }
+
+
+        // =====================================
+        // SCORE TREND LINE CHART
+        // =====================================
+
+        const trendCanvas =
+            document.getElementById(
+                "scoreTrendChart"
+            );
+
+
+        if (
+            trendCanvas &&
+            trendLabels.length > 0
+        ) {
+
+            new Chart(
+                trendCanvas,
+                {
+
+                    type: "line",
+
+                    data: {
+
+                        labels: trendLabels,
+
+                        datasets: [
+
+                            {
+
+                                label:
+                                    "Score (%)",
+
+                                data:
+                                    trendScores,
+
+                                tension: 0.35,
+
+                                fill: true,
+
+                                pointRadius: 5,
+
+                                pointHoverRadius: 7,
+
+                            }
+
+                        ]
+
+                    },
+
+
+                    options: {
+
+                        responsive: true,
+
+                        maintainAspectRatio: false,
+
+                        plugins: {
+
+                            legend: {
+
+                                display: false
+
+                            }
+
+                        },
+
+
+                        scales: {
+
+                            y: {
+
+                                beginAtZero: true,
+
+                                max: 100,
+
+                                ticks: {
+
+                                    callback:
+                                        function(value) {
+
+                                            return value + "%";
+
+                                        }
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+            );
+
+        }
+
+    }
+
+);
+
+</script>
+
+{% endblock %}
+```

@@ -1,0 +1,1308 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ topic }} | CognifyAI
+{% endblock %}
+
+{% block content %}
+
+<style>
+
+.content-page {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.content-hero {
+    background: linear-gradient(
+        135deg,
+        #eef2ff 0%,
+        #f5f3ff 50%,
+        #ecfeff 100%
+    );
+
+    border: 1px solid #e0e7ff;
+    border-radius: 28px;
+    padding: 30px;
+
+    margin-bottom: 28px;
+
+    position: relative;
+    overflow: hidden;
+}
+
+.content-hero::after {
+    content: "";
+    position: absolute;
+
+    width: 180px;
+    height: 180px;
+
+    border-radius: 50%;
+
+    background: rgba(99, 102, 241, 0.10);
+
+    right: -50px;
+    top: -60px;
+}
+
+.back-link {
+    color: #64748b;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.back-link:hover {
+    color: #4f46e5;
+}
+
+.topic-icon {
+    width: 70px;
+    height: 70px;
+
+    border-radius: 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: white;
+
+    font-size: 36px;
+
+    box-shadow:
+        0 10px 25px rgba(15, 23, 42, 0.08);
+}
+
+.topic-title {
+    font-weight: 800;
+    color: #172033;
+}
+
+.topic-subtitle {
+    color: #64748b;
+}
+
+/* =========================================================
+   SCORE
+   ========================================================= */
+
+.score-box {
+    background: rgba(255,255,255,0.75);
+
+    border: 1px solid rgba(255,255,255,0.9);
+
+    border-radius: 20px;
+
+    padding: 18px 22px;
+
+    text-align: center;
+
+    min-width: 150px;
+}
+
+.score-number {
+    color: #4f46e5;
+    font-size: 30px;
+    font-weight: 800;
+}
+
+.level-badge {
+    display: inline-flex;
+
+    padding: 7px 13px;
+
+    border-radius: 999px;
+
+    background: #eef2ff;
+    color: #4338ca;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* =========================================================
+   CONTENT CARD
+   ========================================================= */
+
+.content-card {
+    background: #ffffff;
+
+    border: 1px solid #e8edf5;
+
+    border-radius: 24px;
+
+    box-shadow:
+        0 10px 30px rgba(15, 23, 42, 0.05);
+
+    padding: 30px;
+}
+
+.content-heading {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    margin-bottom: 25px;
+}
+
+.content-heading-icon {
+    width: 54px;
+    height: 54px;
+
+    border-radius: 16px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 27px;
+
+    background: #eef2ff;
+}
+
+.content-heading h2 {
+    margin: 0;
+
+    font-size: 24px;
+    font-weight: 800;
+
+    color: #172033;
+}
+
+.content-heading p {
+    margin: 4px 0 0;
+
+    color: #64748b;
+}
+
+/* =========================================================
+   STUDY CONTENT
+   ========================================================= */
+
+.study-content {
+    background: #fbfcff;
+
+    border: 1px solid #edf1f7;
+
+    border-radius: 20px;
+
+    padding: 35px;
+
+    color: #334155;
+
+    line-height: 1.85;
+
+    font-size: 16px;
+}
+
+.study-content h1,
+.study-content h2,
+.study-content h3,
+.study-content h4 {
+    color: #172033;
+
+    font-weight: 800;
+
+    margin-top: 28px;
+    margin-bottom: 14px;
+}
+
+.study-content h1 {
+    font-size: 30px;
+}
+
+.study-content h2 {
+    font-size: 24px;
+}
+
+.study-content h3 {
+    font-size: 20px;
+}
+
+.study-content p {
+    margin-bottom: 15px;
+}
+
+.study-content li {
+    margin-bottom: 7px;
+}
+
+.study-content code {
+    background: #eef2ff;
+    color: #4338ca;
+
+    padding: 3px 7px;
+
+    border-radius: 6px;
+}
+
+.study-content pre {
+    background: #172033;
+    color: #e2e8f0;
+
+    padding: 20px;
+
+    border-radius: 14px;
+
+    overflow-x: auto;
+}
+
+/* =========================================================
+   VIDEO CARDS
+   ========================================================= */
+
+.video-card {
+    height: 100%;
+
+    background: #ffffff;
+
+    border: 1px solid #e8edf5;
+
+    border-radius: 20px;
+
+    overflow: hidden;
+
+    transition: all 0.25s ease;
+
+    box-shadow:
+        0 8px 25px rgba(15, 23, 42, 0.05);
+}
+
+.video-card:hover {
+    transform: translateY(-5px);
+
+    box-shadow:
+        0 18px 40px rgba(15, 23, 42, 0.10);
+}
+
+.video-thumbnail {
+    width: 100%;
+    height: 210px;
+
+    object-fit: cover;
+}
+
+.video-body {
+    padding: 22px;
+}
+
+.video-title {
+    color: #172033;
+
+    font-weight: 750;
+
+    line-height: 1.4;
+}
+
+.video-channel {
+    color: #4f46e5;
+
+    font-size: 14px;
+
+    font-weight: 600;
+}
+
+.video-description {
+    color: #64748b;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+}
+
+/* =========================================================
+   WORKSPACE
+   ========================================================= */
+
+.workspace {
+    margin-top: 30px;
+
+    background: #172033;
+
+    border-radius: 24px;
+
+    padding: 25px;
+
+    color: white;
+}
+
+.workspace-header {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-bottom: 18px;
+}
+
+.workspace-title {
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.workspace-subtitle {
+    color: #94a3b8;
+
+    font-size: 13px;
+}
+
+.code-editor {
+    width: 100%;
+
+    min-height: 400px;
+
+    resize: vertical;
+
+    background: #0f172a;
+
+    color: #e2e8f0;
+
+    border: 1px solid #334155;
+
+    border-radius: 16px;
+
+    padding: 20px;
+
+    font-family:
+        Consolas,
+        Monaco,
+        monospace;
+
+    font-size: 15px;
+
+    line-height: 1.6;
+
+    outline: none;
+}
+
+.code-editor:focus {
+    border-color: #818cf8;
+}
+
+/* =========================================================
+   ADAPTIVE MESSAGE
+   ========================================================= */
+
+.adaptive-message {
+    margin-top: 25px;
+
+    background: #f8fafc;
+
+    border: 1px solid #e8edf5;
+
+    border-radius: 20px;
+
+    padding: 22px;
+}
+
+.adaptive-message h5 {
+    color: #172033;
+
+    font-weight: 800;
+}
+
+.adaptive-message p {
+    color: #64748b;
+
+    margin: 0;
+}
+
+/* =========================================================
+   NEXT CONTENT
+   ========================================================= */
+
+.next-section {
+    margin-top: 35px;
+}
+
+.next-section-title {
+    font-weight: 800;
+
+    color: #172033;
+
+    margin-bottom: 18px;
+}
+
+.next-card {
+    display: block;
+
+    height: 100%;
+
+    padding: 22px;
+
+    border-radius: 20px;
+
+    text-decoration: none;
+
+    background: #ffffff;
+
+    border: 1px solid #e8edf5;
+
+    transition: all 0.25s ease;
+
+    box-shadow:
+        0 8px 25px rgba(15, 23, 42, 0.04);
+}
+
+.next-card:hover {
+    transform: translateY(-4px);
+
+    border-color: #c7d2fe;
+
+    box-shadow:
+        0 15px 30px rgba(79, 70, 229, 0.10);
+}
+
+.next-icon {
+    font-size: 32px;
+
+    margin-bottom: 12px;
+}
+
+.next-title {
+    color: #172033;
+
+    font-weight: 800;
+}
+
+.next-description {
+    color: #64748b;
+
+    font-size: 14px;
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    .content-hero {
+        padding: 22px;
+    }
+
+    .content-card {
+        padding: 20px;
+    }
+
+    .study-content {
+        padding: 22px;
+    }
+
+    .workspace-header {
+        align-items: flex-start;
+
+        flex-direction: column;
+    }
+
+    .video-thumbnail {
+        height: 190px;
+    }
+
+}
+
+</style>
+
+
+<div class="content-page">
+
+    <!-- =====================================================
+         BACK
+    ===================================================== -->
+
+    <div class="mb-4">
+
+        <a
+            href="{% url 'adaptive_learning' %}"
+            class="back-link"
+        >
+
+            <i class="bi bi-arrow-left me-2"></i>
+
+            Back to Adaptive Learning
+
+        </a>
+
+    </div>
+
+
+    <!-- =====================================================
+         HEADER
+    ===================================================== -->
+
+    <section class="content-hero">
+
+        <div class="row align-items-center">
+
+            <div class="col-lg-8">
+
+                <div class="d-flex align-items-center gap-3">
+
+                    <div class="topic-icon">
+
+                        🧠
+
+                    </div>
+
+                    <div>
+
+                        <div
+                            class="text-uppercase small fw-bold mb-1"
+                            style="color:#6366f1;"
+                        >
+
+                            Adaptive Learning
+
+                        </div>
+
+                        <h1 class="topic-title mb-1">
+
+                            {{ topic }}
+
+                        </h1>
+
+                        <p class="topic-subtitle mb-0">
+
+                            Personalized content based on your
+                            current performance.
+
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="col-lg-4 mt-4 mt-lg-0
+                       d-flex justify-content-lg-end"
+            >
+
+                <div class="score-box">
+
+                    <div class="small text-muted">
+
+                        Your current score
+
+                    </div>
+
+                    <div class="score-number">
+
+                        {{ score }}%
+
+                    </div>
+
+                    <span class="level-badge">
+
+                        {{ difficulty }}
+
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         NOTES
+    ===================================================== -->
+
+    {% if content_type == "notes" %}
+
+    <section class="content-card">
+
+        <div class="content-heading">
+
+            <div class="content-heading-icon">
+
+                📖
+
+            </div>
+
+            <div>
+
+                <h2>
+                    Personalized Study Notes
+                </h2>
+
+                <p>
+                    {{ difficulty }}-level material
+                    generated for your current performance.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="study-content">
+
+            {{ content_html|safe }}
+
+        </div>
+
+    </section>
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         QUESTIONS
+    ===================================================== -->
+
+    {% if content_type == "questions" %}
+
+    <section class="content-card">
+
+        <div class="content-heading">
+
+            <div class="content-heading-icon">
+
+                📝
+
+            </div>
+
+            <div>
+
+                <h2>
+                    Adaptive Practice Test
+                </h2>
+
+                <p>
+                    12 questions designed for your
+                    {{ difficulty }} level.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="study-content">
+
+            {{ content_html|safe }}
+
+        </div>
+
+
+        <div class="adaptive-message">
+
+            <h5>
+
+                <i class="bi bi-lightbulb-fill me-2"></i>
+
+                Test yourself first
+
+            </h5>
+
+            <p>
+
+                The answer key and explanations appear
+                only at the end of the practice test.
+
+            </p>
+
+        </div>
+
+    </section>
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         VIDEOS
+    ===================================================== -->
+
+    {% if content_type == "videos" %}
+
+    <section class="content-card">
+
+        <div class="content-heading">
+
+            <div class="content-heading-icon">
+
+                🎥
+
+            </div>
+
+            <div>
+
+                <h2>
+                    Personalized Videos
+                </h2>
+
+                <p>
+                    Videos selected according to your
+                    topic and learning level.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if videos %}
+
+        <div class="row g-4">
+
+            {% for video in videos %}
+
+            <div class="col-lg-6">
+
+                <div class="video-card">
+
+                    {% if video.thumbnail %}
+
+                    <img
+                        src="{{ video.thumbnail }}"
+                        class="video-thumbnail"
+                        alt="{{ video.title }}"
+                    >
+
+                    {% endif %}
+
+
+                    <div class="video-body">
+
+                        <h5 class="video-title">
+
+                            {{ video.title }}
+
+                        </h5>
+
+
+                        <div class="video-channel mb-3">
+
+                            <i class="bi bi-youtube me-1"></i>
+
+                            {{ video.channel }}
+
+                        </div>
+
+
+                        <p class="video-description">
+
+                            {{ video.description|truncatechars:180 }}
+
+                        </p>
+
+
+                        <a
+                            href="{{ video.url }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="btn btn-primary rounded-pill px-4"
+                        >
+
+                            <i class="bi bi-play-fill me-1"></i>
+
+                            Watch Video
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        {% else %}
+
+        <div class="text-center py-5">
+
+            <div style="font-size:60px;">
+                🎥
+            </div>
+
+            <h4 class="fw-bold mt-3">
+                No relevant videos found
+            </h4>
+
+            <p class="text-muted">
+
+                Try again later or check whether your
+                topic has enough relevant YouTube content.
+
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         REAL WORLD
+    ===================================================== -->
+
+    {% if content_type == "realworld" %}
+
+    <section class="content-card">
+
+        <div class="content-heading">
+
+            <div class="content-heading-icon">
+
+                🌍
+
+            </div>
+
+            <div>
+
+                <h2>
+                    Real-World Challenges
+                </h2>
+
+                <p>
+
+                    Practical {{ difficulty }}-level
+                    problems based on {{ topic }}.
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="study-content">
+
+            {{ content_html|safe }}
+
+        </div>
+
+
+        <!-- =================================================
+             CODING WORKSPACE
+        ================================================= -->
+
+        <div class="workspace">
+
+            <div class="workspace-header">
+
+                <div>
+
+                    <div class="workspace-title">
+
+                        <i class="bi bi-code-slash me-2"></i>
+
+                        Coding Workspace
+
+                    </div>
+
+                    <div class="workspace-subtitle">
+
+                        Implement your solution here.
+
+                    </div>
+
+                </div>
+
+
+                <select
+                    id="language"
+                    class="form-select"
+                    style="width:160px;"
+                >
+
+                    <option>Python</option>
+                    <option>C</option>
+                    <option>C++</option>
+                    <option>Java</option>
+                    <option>JavaScript</option>
+
+                </select>
+
+            </div>
+
+
+            <textarea
+                id="codeEditor"
+                class="code-editor"
+                spellcheck="false"
+                placeholder="# Write your solution here..."
+            ></textarea>
+
+
+            <div class="mt-3 d-flex gap-2 flex-wrap">
+
+                <button
+                    type="button"
+                    class="btn btn-success rounded-pill px-4"
+                    onclick="saveWorkspace()"
+                >
+
+                    <i class="bi bi-save me-1"></i>
+
+                    Save
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="btn btn-outline-light rounded-pill px-4"
+                    onclick="resetWorkspace()"
+                >
+
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>
+
+                    Reset
+
+                </button>
+
+            </div>
+
+
+            <div
+                id="workspaceMessage"
+                class="mt-3"
+                style="display:none;"
+            ></div>
+
+        </div>
+
+    </section>
+
+    {% endif %}
+
+
+    <!-- =====================================================
+         ADAPTIVE MESSAGE
+    ===================================================== -->
+
+    <div class="adaptive-message">
+
+        {% if score >= 100 %}
+
+        <h5>
+
+            🏆 Mastery achieved!
+
+        </h5>
+
+        <p>
+
+            You've mastered the current level.
+            CognifyAI is moving you toward expert-level
+            concepts and real-world challenges.
+
+        </p>
+
+
+        {% elif score >= 80 %}
+
+        <h5>
+
+            🚀 Excellent performance!
+
+        </h5>
+
+        <p>
+
+            You're ready for advanced concepts,
+            challenging questions and practical applications.
+
+        </p>
+
+
+        {% elif score >= 60 %}
+
+        <h5>
+
+            📈 Good progress!
+
+        </h5>
+
+        <p>
+
+            Your foundation is developing.
+            Continue strengthening your concepts
+            to reach the advanced level.
+
+        </p>
+
+
+        {% else %}
+
+        <h5>
+
+            🌱 Build your foundation!
+
+        </h5>
+
+        <p>
+
+            Focus on the fundamentals first.
+            CognifyAI will gradually increase the
+            difficulty as your performance improves.
+
+        </p>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- =====================================================
+         CONTINUE LEARNING
+    ===================================================== -->
+
+    <section class="next-section">
+
+        <h3 class="next-section-title">
+
+            Continue Learning
+
+        </h3>
+
+
+        <div class="row g-3">
+
+            <!-- NOTES -->
+
+            <div class="col-sm-6 col-xl-3">
+
+                <a
+                    href="{% url 'adaptive_content' %}?topic={{ topic|urlencode }}&type=notes"
+                    class="next-card"
+                >
+
+                    <div class="next-icon">
+                        📖
+                    </div>
+
+                    <div class="next-title">
+                        Study Notes
+                    </div>
+
+                    <div class="next-description">
+                        Learn concepts at your current level.
+                    </div>
+
+                </a>
+
+            </div>
+
+
+            <!-- VIDEOS -->
+
+            <div class="col-sm-6 col-xl-3">
+
+                <a
+                    href="{% url 'adaptive_content' %}?topic={{ topic|urlencode }}&type=videos"
+                    class="next-card"
+                >
+
+                    <div class="next-icon">
+                        🎥
+                    </div>
+
+                    <div class="next-title">
+                        Videos
+                    </div>
+
+                    <div class="next-description">
+                        Watch topic-specific tutorials.
+                    </div>
+
+                </a>
+
+            </div>
+
+
+            <!-- QUESTIONS -->
+
+            <div class="col-sm-6 col-xl-3">
+
+                <a
+                    href="{% url 'adaptive_content' %}?topic={{ topic|urlencode }}&type=questions"
+                    class="next-card"
+                >
+
+                    <div class="next-icon">
+                        📝
+                    </div>
+
+                    <div class="next-title">
+                        Practice
+                    </div>
+
+                    <div class="next-description">
+                        Test your understanding with 12 questions.
+                    </div>
+
+                </a>
+
+            </div>
+
+
+            <!-- REAL WORLD -->
+
+            <div class="col-sm-6 col-xl-3">
+
+                <a
+                    href="{% url 'adaptive_content' %}?topic={{ topic|urlencode }}&type=realworld"
+                    class="next-card"
+                >
+
+                    <div class="next-icon">
+                        🌍
+                    </div>
+
+                    <div class="next-title">
+                        Real World
+                    </div>
+
+                    <div class="next-description">
+                        Solve practical challenges.
+                    </div>
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <div class="text-center mt-5 mb-4">
+
+        <a
+            href="{% url 'adaptive_learning' %}"
+            class="back-link"
+        >
+
+            <i class="bi bi-arrow-left me-2"></i>
+
+            Back to Adaptive Learning
+
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     WORKSPACE JAVASCRIPT
+========================================================= -->
+
+{% if content_type == "realworld" %}
+
+<script>
+
+const workspaceKey =
+    "cognify_workspace_{{ topic|escapejs }}";
+
+
+function saveWorkspace() {
+
+    const editor =
+        document.getElementById(
+            "codeEditor"
+        );
+
+    const code =
+        editor.value;
+
+    localStorage.setItem(
+        workspaceKey,
+        code
+    );
+
+    const message =
+        document.getElementById(
+            "workspaceMessage"
+        );
+
+    message.style.display =
+        "block";
+
+    message.style.color =
+        "#86efac";
+
+    message.innerHTML =
+        "✅ Workspace saved in this browser.";
+
+}
+
+
+function resetWorkspace() {
+
+    const editor =
+        document.getElementById(
+            "codeEditor"
+        );
+
+    editor.value = "";
+
+    localStorage.removeItem(
+        workspaceKey
+    );
+
+    const message =
+        document.getElementById(
+            "workspaceMessage"
+        );
+
+    message.style.display =
+        "block";
+
+    message.style.color =
+        "#fca5a5";
+
+    message.innerHTML =
+        "Workspace reset.";
+
+}
+
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function () {
+
+        const saved =
+            localStorage.getItem(
+                workspaceKey
+            );
+
+        if (saved) {
+
+            document.getElementById(
+                "codeEditor"
+            ).value = saved;
+
+        }
+
+    }
+);
+
+</script>
+
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,486 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+My Profile | CognifyAI
+{% endblock %}
+
+
+{% block content %}
+
+
+<!-- ======================================================
+     HEADER
+======================================================= -->
+
+<div class="mb-4">
+
+    <div class="small text-uppercase fw-semibold gradient-text">
+
+        Your Account
+
+    </div>
+
+
+    <h2 class="fw-bold mt-1">
+
+        My Profile 👤
+
+    </h2>
+
+
+    <p class="muted">
+
+        Help CognifyAI understand your goals and
+        personalize your learning experience.
+
+    </p>
+
+</div>
+
+
+<div class="row g-4">
+
+
+    <!-- ==================================================
+         PROFILE SUMMARY
+    =================================================== -->
+
+    <div class="col-lg-4">
+
+        <div class="feature-card h-100 text-center">
+
+
+            <div
+                class="avatar mx-auto mb-4"
+                style="
+                    width: 100px;
+                    height: 100px;
+                    font-size: 38px;
+                "
+            >
+
+                {{ request.user.username|first|upper }}
+
+            </div>
+
+
+            <h3 class="fw-bold">
+
+                {{ request.user.username }}
+
+            </h3>
+
+
+            <p class="muted">
+
+                {{ request.user.email }}
+
+            </p>
+
+
+            <div
+                class="mt-4 p-3 text-start"
+                style="
+                    background:
+                        rgba(255,255,255,0.035);
+                    border-radius: 15px;
+                "
+            >
+
+                <div class="mb-3">
+
+                    <small class="muted">
+                        Department
+                    </small>
+
+                    <div class="fw-semibold mt-1">
+
+                        {{ profile.department|default:"Not added yet" }}
+
+                    </div>
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    <small class="muted">
+                        Semester
+                    </small>
+
+                    <div class="fw-semibold mt-1">
+
+                        Semester {{ profile.semester }}
+
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    <small class="muted">
+                        Career Goal
+                    </small>
+
+                    <div class="fw-semibold mt-1">
+
+                        {{ profile.career_goal|default:"Not added yet" }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="mt-4 p-3"
+                style="
+                    border:
+                        1px solid
+                        rgba(99,102,241,0.18);
+                    border-radius: 15px;
+                    background:
+                        rgba(99,102,241,0.06);
+                "
+            >
+
+                <i
+                    class="bi bi-stars"
+                    style="
+                        color:#a5b4fc;
+                        font-size:22px;
+                    "
+                ></i>
+
+
+                <p class="muted small mb-0 mt-2">
+
+                    Keep your profile updated so
+                    CognifyAI can provide more
+                    personalized recommendations.
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==================================================
+         PROFILE FORM
+    =================================================== -->
+
+    <div class="col-lg-8">
+
+        <div class="feature-card">
+
+
+            <div class="d-flex align-items-center mb-4">
+
+                <div class="feature-icon mb-0 me-3">
+
+                    <i class="bi bi-person-vcard-fill"></i>
+
+                </div>
+
+
+                <div>
+
+                    <h4 class="fw-bold mb-1">
+
+                        Student Information
+
+                    </h4>
+
+
+                    <p class="muted mb-0">
+
+                        Update your details and learning preferences.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+
+                <!-- DEPARTMENT -->
+
+                <div class="mb-4">
+
+                    <label class="form-label fw-semibold">
+
+                        Department
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        name="department"
+                        class="form-control"
+                        value="{{ profile.department }}"
+                        placeholder="e.g. Artificial Intelligence and Machine Learning"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="row">
+
+
+                    <!-- SEMESTER -->
+
+                    <div class="col-md-6 mb-4">
+
+                        <label class="form-label fw-semibold">
+
+                            Semester
+
+                        </label>
+
+
+                        <select
+                            name="semester"
+                            class="form-select"
+                        >
+
+                            {% for number in "12345678" %}
+
+                            <option
+                                value="{{ number }}"
+                                {% if profile.semester|stringformat:"s" == number %}
+                                    selected
+                                {% endif %}
+                            >
+
+                                Semester {{ number }}
+
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- STUDY HOURS -->
+
+                    <div class="col-md-6 mb-4">
+
+                        <label class="form-label fw-semibold">
+
+                            Daily Study Hours
+
+                        </label>
+
+
+                        <input
+                            type="number"
+                            name="study_hours"
+                            class="form-control"
+                            value="{{ profile.study_hours }}"
+                            min="0"
+                            max="24"
+                            step="0.5"
+                            placeholder="e.g. 3"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- SKILLS -->
+
+                <div class="mb-4">
+
+                    <label class="form-label fw-semibold">
+
+                        Skills
+
+                    </label>
+
+
+                    <textarea
+                        name="skills"
+                        class="form-control"
+                        rows="3"
+                        placeholder="Python, Machine Learning, SQL, Django..."
+                    >{{ profile.skills }}</textarea>
+
+
+                    <small class="muted">
+
+                        Separate multiple skills using commas.
+
+                    </small>
+
+                </div>
+
+
+                <!-- INTERESTS -->
+
+                <div class="mb-4">
+
+                    <label class="form-label fw-semibold">
+
+                        Interests
+
+                    </label>
+
+
+                    <textarea
+                        name="interests"
+                        class="form-control"
+                        rows="3"
+                        placeholder="AI, Generative AI, Robotics..."
+                    >{{ profile.interests }}</textarea>
+
+                </div>
+
+
+                <!-- CAREER GOAL -->
+
+                <div class="mb-4">
+
+                    <label class="form-label fw-semibold">
+
+                        Career Goal
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        name="career_goal"
+                        class="form-control"
+                        value="{{ profile.career_goal }}"
+                        placeholder="e.g. Machine Learning Engineer"
+                    >
+
+                </div>
+
+
+                <!-- LEARNING METHOD -->
+
+                <div class="mb-4">
+
+                    <label class="form-label fw-semibold">
+
+                        Preferred Learning Method
+
+                    </label>
+
+
+                    <select
+                        name="preferred_learning_method"
+                        class="form-select"
+                    >
+
+                        <option value="">
+
+                            Select your preferred method
+
+                        </option>
+
+
+                        <option
+                            value="Videos"
+                            {% if profile.preferred_learning_method == "Videos" %}
+                                selected
+                            {% endif %}
+                        >
+
+                            🎥 Videos
+
+                        </option>
+
+
+                        <option
+                            value="Reading"
+                            {% if profile.preferred_learning_method == "Reading" %}
+                                selected
+                            {% endif %}
+                        >
+
+                            📖 Reading
+
+                        </option>
+
+
+                        <option
+                            value="Practical"
+                            {% if profile.preferred_learning_method == "Practical" %}
+                                selected
+                            {% endif %}
+                        >
+
+                            💻 Practical / Coding
+
+                        </option>
+
+
+                        <option
+                            value="Visual"
+                            {% if profile.preferred_learning_method == "Visual" %}
+                                selected
+                            {% endif %}
+                        >
+
+                            🎨 Visual Learning
+
+                        </option>
+
+
+                        <option
+                            value="Mixed"
+                            {% if profile.preferred_learning_method == "Mixed" %}
+                                selected
+                            {% endif %}
+                        >
+
+                            🧠 Mixed
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- SAVE -->
+
+                <button
+                    type="submit"
+                    class="btn btn-primary px-4 py-3"
+                >
+
+                    <i class="bi bi-check-circle me-2"></i>
+
+                    Save Profile
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+{% endblock %}

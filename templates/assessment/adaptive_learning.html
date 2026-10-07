@@ -1,0 +1,1118 @@
+{% extends "base.html" %}
+
+{% block title %}
+Adaptive Learning | CognifyAI
+{% endblock %}
+
+
+{% block page_heading %}
+Adaptive Learning
+{% endblock %}
+
+
+{% block extra_css %}
+
+<style>
+
+    .adaptive-hero {
+
+        background:
+            linear-gradient(
+                135deg,
+                #ffffff,
+                #f0efff
+            );
+
+        border: 1px solid #dfddff;
+
+        border-radius: 22px;
+
+        padding: 30px;
+
+        box-shadow:
+            0 10px 30px rgba(32,36,58,0.05);
+
+        margin-bottom: 25px;
+
+    }
+
+
+    .adaptive-hero-icon {
+
+        width: 58px;
+
+        height: 58px;
+
+        border-radius: 17px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        background:
+            linear-gradient(
+                135deg,
+                #635bff,
+                #8b5cf6
+            );
+
+        color: white;
+
+        font-size: 26px;
+
+        box-shadow:
+            0 10px 22px rgba(99,91,255,0.22);
+
+    }
+
+
+    .adaptive-title {
+
+        font-size: 30px;
+
+        font-weight: 800;
+
+        margin: 0;
+
+        color: #20243a;
+
+    }
+
+
+    .adaptive-subtitle {
+
+        color: #747993;
+
+        font-size: 13px;
+
+        line-height: 1.7;
+
+        margin-top: 6px;
+
+    }
+
+
+    .info-banner {
+
+        background: white;
+
+        border: 1px solid #e8eaf2;
+
+        border-radius: 18px;
+
+        padding: 22px 25px;
+
+        box-shadow:
+            0 8px 25px rgba(32,36,58,0.05);
+
+        margin-bottom: 25px;
+
+    }
+
+
+    .info-banner h5 {
+
+        color: #20243a;
+
+        font-weight: 800;
+
+        margin-bottom: 7px;
+
+    }
+
+
+    .info-banner p {
+
+        color: #747993;
+
+        font-size: 13px;
+
+        margin: 0;
+
+        line-height: 1.7;
+
+    }
+
+
+    .level-section {
+
+        background: white;
+
+        border: 1px solid #e8eaf2;
+
+        border-radius: 20px;
+
+        padding: 23px;
+
+        box-shadow:
+            0 8px 25px rgba(32,36,58,0.05);
+
+        margin-bottom: 30px;
+
+    }
+
+
+    .section-heading-adaptive {
+
+        display: flex;
+
+        align-items: center;
+
+        gap: 10px;
+
+        color: #20243a;
+
+        font-size: 17px;
+
+        font-weight: 800;
+
+        margin-bottom: 18px;
+
+    }
+
+
+    .level-grid {
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(5, 1fr);
+
+        gap: 12px;
+
+    }
+
+
+    .level-box {
+
+        text-align: center;
+
+        border-radius: 15px;
+
+        padding: 18px 10px;
+
+        border: 1px solid #e7e8ef;
+
+        background: #fafaff;
+
+        transition: 0.2s ease;
+
+    }
+
+
+    .level-box:hover {
+
+        transform: translateY(-3px);
+
+        box-shadow:
+            0 10px 25px rgba(32,36,58,0.08);
+
+    }
+
+
+    .level-icon {
+
+        font-size: 25px;
+
+        margin-bottom: 8px;
+
+    }
+
+
+    .level-name {
+
+        font-size: 13px;
+
+        font-weight: 800;
+
+        color: #20243a;
+
+    }
+
+
+    .level-range {
+
+        color: #747993;
+
+        font-size: 11px;
+
+        margin-top: 4px;
+
+    }
+
+
+    .beginner {
+
+        background: #f0fdf4;
+
+        border-color: #bbf7d0;
+
+    }
+
+
+    .easy {
+
+        background: #eff6ff;
+
+        border-color: #bfdbfe;
+
+    }
+
+
+    .medium {
+
+        background: #fffbeb;
+
+        border-color: #fde68a;
+
+    }
+
+
+    .advanced {
+
+        background: #fff7ed;
+
+        border-color: #fed7aa;
+
+    }
+
+
+    .mastery {
+
+        background: #f5f3ff;
+
+        border-color: #ddd6fe;
+
+    }
+
+
+    .topic-section {
+
+        margin-top: 25px;
+
+    }
+
+
+    .topic-heading {
+
+        margin-bottom: 18px;
+
+    }
+
+
+    .topic-heading h4 {
+
+        color: #20243a;
+
+        font-weight: 800;
+
+        margin-bottom: 5px;
+
+    }
+
+
+    .topic-heading p {
+
+        color: #747993;
+
+        font-size: 13px;
+
+    }
+
+
+    .topic-card {
+
+        background: white;
+
+        border: 1px solid #e5e7ef;
+
+        border-radius: 20px;
+
+        padding: 24px;
+
+        height: 100%;
+
+        box-shadow:
+            0 8px 25px rgba(32,36,58,0.05);
+
+        transition: 0.25s ease;
+
+    }
+
+
+    .topic-card:hover {
+
+        transform: translateY(-4px);
+
+        box-shadow:
+            0 17px 35px rgba(32,36,58,0.09);
+
+        border-color: #d7d4ff;
+
+    }
+
+
+    .topic-top {
+
+        display: flex;
+
+        justify-content: space-between;
+
+        align-items: flex-start;
+
+        gap: 12px;
+
+    }
+
+
+    .subject-name {
+
+        color: #8a8da0;
+
+        font-size: 11px;
+
+        font-weight: 600;
+
+        margin-bottom: 5px;
+
+    }
+
+
+    .topic-name {
+
+        color: #20243a;
+
+        font-size: 19px;
+
+        font-weight: 800;
+
+    }
+
+
+    .level-badge {
+
+        padding: 6px 11px;
+
+        border-radius: 20px;
+
+        background: #eeedff;
+
+        color: #5147d9;
+
+        font-size: 11px;
+
+        font-weight: 800;
+
+        white-space: nowrap;
+
+    }
+
+
+    .accuracy-row {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        margin-top: 22px;
+
+        margin-bottom: 8px;
+
+    }
+
+
+    .accuracy-label {
+
+        color: #8a8da0;
+
+        font-size: 11px;
+
+    }
+
+
+    .accuracy-value {
+
+        color: #20243a;
+
+        font-size: 14px;
+
+        font-weight: 800;
+
+    }
+
+
+    .topic-progress {
+
+        height: 8px;
+
+        border-radius: 20px;
+
+        background: #ececf3;
+
+        overflow: hidden;
+
+    }
+
+
+    .topic-progress-bar {
+
+        height: 100%;
+
+        border-radius: 20px;
+
+        background:
+            linear-gradient(
+                90deg,
+                #635bff,
+                #a855f7
+            );
+
+    }
+
+
+    .recommendation {
+
+        background: #f8f8fc;
+
+        border: 1px solid #ececf2;
+
+        border-radius: 13px;
+
+        padding: 13px;
+
+        margin-top: 18px;
+
+    }
+
+
+    .recommendation-title {
+
+        color: #20243a;
+
+        font-size: 11px;
+
+        font-weight: 800;
+
+        margin-bottom: 5px;
+
+    }
+
+
+    .recommendation-text {
+
+        color: #747993;
+
+        font-size: 12px;
+
+        line-height: 1.6;
+
+    }
+
+
+    .content-title {
+
+        color: #20243a;
+
+        font-size: 12px;
+
+        font-weight: 800;
+
+        margin-top: 20px;
+
+        margin-bottom: 10px;
+
+    }
+
+
+    .content-buttons {
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, 1fr);
+
+        gap: 8px;
+
+    }
+
+
+    .content-button {
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        gap: 7px;
+
+        padding: 10px;
+
+        border-radius: 10px;
+
+        border: 1px solid #e2e3eb;
+
+        color: #45485c;
+
+        background: white;
+
+        font-size: 11px;
+
+        font-weight: 700;
+
+        transition: 0.2s ease;
+
+    }
+
+
+    .content-button:hover {
+
+        color: #635bff;
+
+        border-color: #cfcaff;
+
+        background: #f8f7ff;
+
+    }
+
+
+    .content-button.primary {
+
+        color: white;
+
+        border-color: transparent;
+
+        background:
+            linear-gradient(
+                135deg,
+                #635bff,
+                #7c3aed
+            );
+
+    }
+
+
+    .empty-adaptive {
+
+        text-align: center;
+
+        padding: 60px 20px;
+
+        background: white;
+
+        border: 1px solid #e8eaf2;
+
+        border-radius: 20px;
+
+    }
+
+
+    .empty-adaptive-icon {
+
+        width: 70px;
+
+        height: 70px;
+
+        margin: auto;
+
+        border-radius: 20px;
+
+        display: flex;
+
+        align-items: center;
+
+        justify-content: center;
+
+        background: #eeedff;
+
+        color: #635bff;
+
+        font-size: 28px;
+
+        margin-bottom: 17px;
+
+    }
+
+
+    @media (max-width: 1000px) {
+
+        .level-grid {
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+        }
+
+    }
+
+
+    @media (max-width: 600px) {
+
+        .level-grid {
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+        }
+
+
+        .adaptive-title {
+
+            font-size: 24px;
+
+        }
+
+
+        .content-buttons {
+
+            grid-template-columns: 1fr;
+
+        }
+
+    }
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+
+<!-- PAGE HEADER -->
+
+<div class="adaptive-hero">
+
+    <div class="d-flex align-items-center gap-3">
+
+        <div class="adaptive-hero-icon">
+
+            <i class="bi bi-stars"></i>
+
+        </div>
+
+
+        <div>
+
+            <h1 class="adaptive-title">
+
+                Adaptive Learning Hub
+
+            </h1>
+
+            <div class="adaptive-subtitle">
+
+                CognifyAI automatically adjusts your learning
+                level based on your actual performance.
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- INFORMATION -->
+
+<div class="info-banner">
+
+    <div class="d-flex align-items-start gap-3">
+
+        <div
+            style="
+                font-size: 25px;
+                color: #635bff;
+            "
+        >
+
+            🎯
+
+        </div>
+
+
+        <div>
+
+            <h5>
+
+                Your learning path adapts to you
+
+            </h5>
+
+
+            <p>
+
+                You don't have to study everything at the same
+                level. CognifyAI identifies your performance
+                for each topic and recommends the right
+                difficulty automatically.
+
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- LEVEL SYSTEM -->
+
+<div class="level-section">
+
+
+    <div class="section-heading-adaptive">
+
+        <i class="bi bi-lightning-charge-fill text-warning"></i>
+
+        How your level is determined
+
+    </div>
+
+
+    <div class="level-grid">
+
+
+        <div class="level-box beginner">
+
+            <div class="level-icon">
+                🌱
+            </div>
+
+            <div class="level-name">
+                Beginner
+            </div>
+
+            <div class="level-range">
+                0–39%
+            </div>
+
+        </div>
+
+
+        <div class="level-box easy">
+
+            <div class="level-icon">
+                📘
+            </div>
+
+            <div class="level-name">
+                Easy
+            </div>
+
+            <div class="level-range">
+                40–59%
+            </div>
+
+        </div>
+
+
+        <div class="level-box medium">
+
+            <div class="level-icon">
+                📗
+            </div>
+
+            <div class="level-name">
+                Medium
+            </div>
+
+            <div class="level-range">
+                60–79%
+            </div>
+
+        </div>
+
+
+        <div class="level-box advanced">
+
+            <div class="level-icon">
+                🔥
+            </div>
+
+            <div class="level-name">
+                Advanced
+            </div>
+
+            <div class="level-range">
+                80–99%
+            </div>
+
+        </div>
+
+
+        <div class="level-box mastery">
+
+            <div class="level-icon">
+                🚀
+            </div>
+
+            <div class="level-name">
+                Mastery
+            </div>
+
+            <div class="level-range">
+                100%
+            </div>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+<!-- TOPICS -->
+
+<div class="topic-section">
+
+
+    <div class="topic-heading">
+
+        <h4>
+
+            📚 Choose what you want to learn
+
+        </h4>
+
+
+        <p>
+
+            Your recommended level is calculated separately
+            for every topic.
+
+        </p>
+
+    </div>
+
+
+    {% if topics %}
+
+
+    <div class="row g-4">
+
+
+        {% for item in topics %}
+
+
+        <div class="col-xl-6 col-lg-6">
+
+
+            <div class="topic-card">
+
+
+                <div class="topic-top">
+
+
+                    <div>
+
+                        <div class="subject-name">
+
+                            {{ item.subject }}
+
+                        </div>
+
+
+                        <div class="topic-name">
+
+                            {{ item.topic }}
+
+                        </div>
+
+                    </div>
+
+
+                    <span class="level-badge">
+
+                        {{ item.level }}
+
+                    </span>
+
+
+                </div>
+
+
+                <!-- SCORE -->
+
+                <div class="accuracy-row">
+
+                    <span class="accuracy-label">
+
+                        Your accuracy
+
+                    </span>
+
+
+                    <span class="accuracy-value">
+
+                        {{ item.score|floatformat:1 }}%
+
+                    </span>
+
+                </div>
+
+
+                <div class="topic-progress">
+
+                    <div
+                        class="topic-progress-bar"
+                        style="width: {{ item.score }}%;"
+                    ></div>
+
+                </div>
+
+
+                <!-- RECOMMENDATION -->
+
+                <div class="recommendation">
+
+                    <div class="recommendation-title">
+
+                        <i class="bi bi-stars text-primary me-1"></i>
+
+                        CognifyAI recommends
+
+                    </div>
+
+
+                    <div class="recommendation-text">
+
+                        {{ item.recommendation }}
+
+                    </div>
+
+                </div>
+
+
+                <!-- CONTENT -->
+
+                <div class="content-title">
+
+                    Choose learning content
+
+                </div>
+
+
+                <div class="content-buttons">
+
+
+                    <a
+                        href="{% url 'adaptive_content' %}?topic={{ item.topic|urlencode }}&type=notes"
+                        class="content-button"
+                    >
+
+                        <i class="bi bi-book"></i>
+
+                        Notes
+
+                    </a>
+
+
+                    <a
+                        href="{% url 'adaptive_content' %}?topic={{ item.topic|urlencode }}&type=videos"
+                        class="content-button"
+                    >
+
+                        <i class="bi bi-play-circle"></i>
+
+                        Videos
+
+                    </a>
+
+
+                    <a
+                        href="{% url 'adaptive_content' %}?topic={{ item.topic|urlencode }}&type=questions"
+                        class="content-button primary"
+                    >
+
+                        <i class="bi bi-pencil-square"></i>
+
+                        Practice
+
+                    </a>
+
+
+                    <a
+                        href="{% url 'adaptive_content' %}?topic={{ item.topic|urlencode }}&type=realworld"
+                        class="content-button"
+                    >
+
+                        <i class="bi bi-code-square"></i>
+
+                        Real World
+
+                    </a>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+        {% endfor %}
+
+
+    </div>
+
+
+    {% else %}
+
+
+    <div class="empty-adaptive">
+
+
+        <div class="empty-adaptive-icon">
+
+            <i class="bi bi-stars"></i>
+
+        </div>
+
+
+        <h5 class="fw-bold">
+
+            Start your adaptive learning journey
+
+        </h5>
+
+
+        <p class="text-muted small">
+
+            Complete an assessment first. CognifyAI will then
+            analyze your performance and recommend the right
+            learning level for each topic.
+
+        </p>
+
+
+        <a
+            href="{% url 'assessment_home' %}"
+            class="btn btn-ai mt-2"
+        >
+
+            <i class="bi bi-clipboard2-check me-2"></i>
+
+            Take Assessment
+
+        </a>
+
+
+    </div>
+
+
+    {% endif %}
+
+
+</div>
+
+
+{% endblock %}

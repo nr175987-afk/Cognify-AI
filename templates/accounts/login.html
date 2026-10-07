@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}
+Login | CognifyAI
+{% endblock %}
+
+
+{% block content %}
+
+<div class="auth-container">
+
+
+    <!-- LEFT -->
+
+    <section class="auth-brand-panel">
+
+
+        <span class="auth-badge">
+
+            <i class="bi bi-stars me-2"></i>
+
+            AI-Powered Learning
+
+        </span>
+
+
+        <h1>
+
+            Learn smarter.<br>
+
+            Grow faster.
+
+        </h1>
+
+
+        <p class="mt-4">
+
+            Welcome back to CognifyAI — your intelligent
+            learning companion that understands your
+            performance and adapts your learning journey.
+
+        </p>
+
+
+        <div class="auth-points">
+
+
+            <div class="auth-point">
+
+                <i class="bi bi-graph-up-arrow"></i>
+
+                Personalized learning paths
+
+            </div>
+
+
+            <div class="auth-point">
+
+                <i class="bi bi-robot"></i>
+
+                AI-powered recommendations
+
+            </div>
+
+
+            <div class="auth-point">
+
+                <i class="bi bi-lightning-charge"></i>
+
+                Adaptive difficulty levels
+
+            </div>
+
+
+            <div class="auth-point">
+
+                <i class="bi bi-bar-chart-line"></i>
+
+                Track your learning progress
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+    <!-- RIGHT -->
+
+    <section class="auth-form-panel">
+
+
+        <div class="auth-form-inner">
+
+
+            <div class="auth-logo-large">
+
+                <i class="bi bi-brain"></i>
+
+            </div>
+
+
+            <h2>
+                Welcome back
+            </h2>
+
+
+            <p class="subtitle">
+
+                Sign in to continue your personalized
+                learning journey.
+
+            </p>
+
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+
+                <div class="mb-4">
+
+                    <label
+                        class="form-label"
+                        for="username"
+                    >
+
+                        Username
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        class="form-control"
+                        placeholder="Enter your username"
+                        value="{{ username_value }}"
+                        autocomplete="username"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="mb-4">
+
+                    <label
+                        class="form-label"
+                        for="loginPassword"
+                    >
+
+                        Password
+
+                    </label>
+
+
+                    <div class="input-group">
+
+                        <input
+                            type="password"
+                            id="loginPassword"
+                            name="password"
+                            class="form-control"
+                            placeholder="Enter your password"
+                            autocomplete="current-password"
+                            required
+                        >
+
+
+                        <button
+                            type="button"
+                            class="btn btn-light border"
+                            data-toggle-password="loginPassword"
+                        >
+
+                            <i class="bi bi-eye"></i>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="btn btn-ai w-100 py-3"
+                >
+
+                    <i class="bi bi-box-arrow-in-right me-2"></i>
+
+                    Sign In
+
+                </button>
+
+
+            </form>
+
+
+            <div class="text-center mt-4">
+
+                <span class="text-muted">
+
+                    Don't have an account?
+
+                </span>
+
+                <a
+                    href="{% url 'register' %}"
+                    class="auth-link ms-1"
+                >
+
+                    Create one
+
+                </a>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+</div>
+
+{% endblock %}

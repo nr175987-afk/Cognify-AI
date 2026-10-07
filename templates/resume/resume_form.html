@@ -1,0 +1,2895 @@
+{% extends "base.html" %}
+
+{% block title %}
+Resume Builder
+{% endblock %}
+
+{% block content %}
+
+<style>
+
+    /* ==================================================
+       GLOBAL
+       ================================================== */
+
+    .resume-builder {
+        max-width: 1100px;
+        margin: 0 auto;
+        color: #000000;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .resume-builder * {
+        color: #000000;
+        font-family: Arial, Helvetica, sans-serif;
+        box-sizing: border-box;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .page-subtitle {
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+
+    .resume-navigation {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 25px;
+    }
+
+    .resume-navigation a {
+        display: inline-block;
+        padding: 9px 15px;
+        border: 1px solid #000000;
+        background: #ffffff;
+        color: #000000 !important;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .resume-navigation a:hover {
+        background: #000000;
+        color: #ffffff !important;
+    }
+
+    /* ==================================================
+       SECTIONS
+       ================================================== */
+
+    .resume-section {
+        background: #ffffff;
+        border: 1px solid #000000;
+        padding: 22px;
+        margin-bottom: 20px;
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 18px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #000000;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .required {
+        font-weight: 700;
+    }
+
+    .help-text {
+        font-size: 12px;
+        margin-top: 5px;
+    }
+
+    .form-control,
+    .form-select {
+        width: 100%;
+        border: 1px solid #555555;
+        border-radius: 3px;
+        font-size: 14px;
+        padding: 9px 10px;
+        color: #000000 !important;
+        background: #ffffff !important;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #000000;
+        box-shadow: 0 0 0 1px #000000;
+        outline: none;
+    }
+
+    textarea.form-control {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    /* ==================================================
+       DYNAMIC ITEMS
+       ================================================== */
+
+    .dynamic-item {
+        border: 1px solid #999999;
+        padding: 18px;
+        margin-bottom: 15px;
+        position: relative;
+        background: #ffffff;
+    }
+
+    .item-number {
+        font-weight: 700;
+        font-size: 14px;
+        margin-bottom: 15px;
+        padding-right: 80px;
+    }
+
+    .remove-item {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        border: 1px solid #000000;
+        background: #ffffff;
+        color: #000000;
+        padding: 5px 10px;
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    .remove-item:hover {
+        background: #000000;
+        color: #ffffff;
+    }
+
+    /* ==================================================
+       SKILLS
+       ================================================== */
+
+    .skill-category {
+        border: 1px solid #999999;
+        padding: 15px;
+        margin-bottom: 12px;
+    }
+
+    .skill-category-title {
+        font-size: 14px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .skill-input-row {
+        display: flex;
+        gap: 8px;
+    }
+
+    .skill-input-row .form-control {
+        flex: 1;
+    }
+
+    .skill-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-top: 10px;
+    }
+
+    .skill-tag {
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid #000000;
+        padding: 5px 9px;
+        font-size: 12px;
+        background: #ffffff;
+    }
+
+    .skill-tag button {
+        border: none;
+        background: transparent;
+        padding: 0 0 0 7px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .skill-hidden-inputs {
+        display: none;
+    }
+
+    /* ==================================================
+       BUTTONS
+       ================================================== */
+
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 30px;
+    }
+
+    .primary-button,
+    .secondary-button,
+    .add-button {
+        padding: 10px 20px;
+        border: 1px solid #000000;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .primary-button {
+        background: #000000;
+        color: #ffffff !important;
+    }
+
+    .primary-button:hover {
+        background: #222222;
+    }
+
+    .secondary-button,
+    .add-button {
+        background: #ffffff;
+        color: #000000 !important;
+    }
+
+    .secondary-button:hover,
+    .add-button:hover {
+        background: #eeeeee;
+    }
+
+    /* ==================================================
+       AUTOCOMPLETE
+       ================================================== */
+
+    .autocomplete-wrapper {
+        position: relative;
+    }
+
+    /* ==================================================
+       RESPONSIVE
+       ================================================== */
+
+    @media (max-width: 768px) {
+
+        .resume-builder {
+            width: 100%;
+        }
+
+        .resume-section {
+            padding: 15px;
+        }
+
+        .skill-input-row {
+            flex-direction: column;
+        }
+
+        .resume-navigation {
+            flex-direction: column;
+        }
+
+    }
+
+</style>
+
+
+<div class="resume-builder">
+
+    <!-- ==================================================
+         HEADER
+         ================================================== -->
+
+    <div class="page-title">
+        Resume Builder
+    </div>
+
+    <div class="page-subtitle">
+        Create and maintain your professional, ATS-friendly resume.
+    </div>
+
+
+    <!-- ==================================================
+         NAVIGATION
+         ================================================== -->
+
+    <div class="resume-navigation">
+
+        <a href="{% url 'resume_versions' %}">
+            Saved Resume Versions
+        </a>
+
+    </div>
+
+
+    <!-- ==================================================
+         MAIN SAVE FORM
+         ================================================== -->
+
+    <form
+        method="POST"
+        action="{% url 'save_resume' %}"
+        id="resumeForm"
+    >
+
+        {% csrf_token %}
+
+
+        <!-- ==================================================
+             PERSONAL INFORMATION
+             ================================================== -->
+
+        <div class="resume-section">
+
+            <div class="section-title">
+                Personal Information
+            </div>
+
+            <div class="row">
+
+
+                <!-- RESUME NAME -->
+
+                <div class="col-md-6 mb-3">
+
+                    <label class="form-label">
+                        Resume Name <span class="required">*</span>
+                    </label>
+
+                    <input
+                        type="text"
+                        name="resume_name"
+                        class="form-control"
+                        value="{{ profile.resume_name }}"
+                        placeholder="Example: NIRMALRAJ K"
+                        required
+                    >
+
+                    <div class="help-text">
+                        This is the name that will appear on your resume.
+                    </div>
+
+                </div>
+
+
+                <!-- EMAIL -->
+
+                <div class="col-md-6 mb-3">
+
+                    <label class="form-label">
+                        Email <span class="required">*</span>
+                    </label>
+
+                    <input
+                        type="email"
+                        class="form-control"
+                        value="{{ request.user.email }}"
+                        readonly
+                        required
+                    >
+
+                    <div class="help-text">
+                        Email is taken from your account.
+                    </div>
+
+                </div>
+
+
+                <!-- PHONE -->
+
+                <div class="col-md-6 mb-3">
+
+                    <label class="form-label">
+                        Phone <span class="required">*</span>
+                    </label>
+
+                    <input
+                        type="text"
+                        name="phone"
+                        class="form-control"
+                        value="{{ profile.phone }}"
+                        placeholder="Enter phone number"
+                        required
+                    >
+
+                </div>
+
+
+                <!-- LOCATION -->
+
+                <div class="col-md-6 mb-3">
+
+                    <label class="form-label">
+                        Location
+                    </label>
+
+                    <input
+                        type="text"
+                        name="location"
+                        class="form-control"
+                        value="{{ profile.location }}"
+                        placeholder="City, State"
+                    >
+
+                </div>
+
+
+                <!-- LINKEDIN -->
+
+                <div class="col-md-6 mb-3">
+
+                    <label class="form-label">
+                        LinkedIn <span class="required">*</span>
+                    </label>
+
+                    <input
+                        type="url"
+                        name="linkedin_url"
+                        class="form-control"
+                        value="{{ profile.linkedin_url }}"
+                        placeholder="https://linkedin.com/in/..."
+                        required
+                    >
+
+                </div>
+
+
+                <!-- GITHUB -->
+
+                <div class="col-md-6 mb-3">
+
+                    <label class="form-label">
+                        GitHub <span class="required">*</span>
+                    </label>
+
+                    <input
+                        type="url"
+                        name="github_url"
+                        class="form-control"
+                        value="{{ profile.github_url }}"
+                        placeholder="https://github.com/..."
+                        required
+                    >
+
+                </div>
+
+
+                <!-- LEETCODE -->
+
+                <div class="col-md-6 mb-3">
+
+                    <label class="form-label">
+                        LeetCode <span class="required">*</span>
+                    </label>
+
+                    <input
+                        type="url"
+                        name="leetcode_url"
+                        class="form-control"
+                        value="{{ profile.leetcode_url }}"
+                        placeholder="https://leetcode.com/..."
+                        required
+                    >
+
+                </div>
+
+
+                <!-- PORTFOLIO -->
+
+                <div class="col-md-6 mb-3">
+
+                    <label class="form-label">
+                        Portfolio
+                    </label>
+
+                    <input
+                        type="url"
+                        name="portfolio_url"
+                        class="form-control"
+                        value="{{ profile.portfolio_url }}"
+                        placeholder="https://..."
+                    >
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             PROFESSIONAL SUMMARY
+             ================================================== -->
+
+        <div class="resume-section">
+
+            <div class="section-title">
+                Professional Summary
+            </div>
+
+            <textarea
+                name="professional_summary"
+                class="form-control"
+                placeholder="Enter a concise professional summary..."
+            >{{ profile.professional_summary }}</textarea>
+
+            <div class="help-text">
+                Keep this concise and focused on your real skills,
+                education, projects and career direction.
+            </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             TECHNICAL SKILLS / TECH STACK
+             ================================================== -->
+
+        <div class="resume-section">
+
+            <div class="section-title">
+                Technical Skills / Tech Stack
+            </div>
+
+            <div class="help-text mb-3">
+                Add only technologies and skills you actually know.
+                These skills will be used by the AI resume generator.
+            </div>
+
+
+            <!-- PROGRAMMING -->
+
+            <div class="skill-category">
+
+                <div class="skill-category-title">
+                    Programming
+                </div>
+
+                <div class="skill-input-row">
+
+                    <input
+                        type="text"
+                        id="skill_input_programming"
+                        class="form-control skill-input"
+                        data-category="Programming"
+                        placeholder="Example: Python"
+                    >
+
+                    <button
+                        type="button"
+                        class="add-button add-skill"
+                        data-category="Programming"
+                    >
+                        Add
+                    </button>
+
+                </div>
+
+                <div
+                    class="skill-list"
+                    id="skill_list_programming"
+                ></div>
+
+                <div
+                    class="skill-hidden-inputs"
+                    id="skill_hidden_programming"
+                ></div>
+
+            </div>
+
+
+            <!-- WEB / BACKEND -->
+
+            <div class="skill-category">
+
+                <div class="skill-category-title">
+                    Web / Backend
+                </div>
+
+                <div class="skill-input-row">
+
+                    <input
+                        type="text"
+                        id="skill_input_web_backend"
+                        class="form-control skill-input"
+                        data-category="Web / Backend"
+                        placeholder="Example: Django"
+                    >
+
+                    <button
+                        type="button"
+                        class="add-button add-skill"
+                        data-category="Web / Backend"
+                    >
+                        Add
+                    </button>
+
+                </div>
+
+                <div
+                    class="skill-list"
+                    id="skill_list_web_backend"
+                ></div>
+
+                <div
+                    class="skill-hidden-inputs"
+                    id="skill_hidden_web_backend"
+                ></div>
+
+            </div>
+
+
+            <!-- DATABASES -->
+
+            <div class="skill-category">
+
+                <div class="skill-category-title">
+                    Databases
+                </div>
+
+                <div class="skill-input-row">
+
+                    <input
+                        type="text"
+                        id="skill_input_databases"
+                        class="form-control skill-input"
+                        data-category="Databases"
+                        placeholder="Example: SQL"
+                    >
+
+                    <button
+                        type="button"
+                        class="add-button add-skill"
+                        data-category="Databases"
+                    >
+                        Add
+                    </button>
+
+                </div>
+
+                <div
+                    class="skill-list"
+                    id="skill_list_databases"
+                ></div>
+
+                <div
+                    class="skill-hidden-inputs"
+                    id="skill_hidden_databases"
+                ></div>
+
+            </div>
+
+
+            <!-- ML / DATA SCIENCE -->
+
+            <div class="skill-category">
+
+                <div class="skill-category-title">
+                    ML / Data Science
+                </div>
+
+                <div class="skill-input-row">
+
+                    <input
+                        type="text"
+                        id="skill_input_ml_data_science"
+                        class="form-control skill-input"
+                        data-category="ML / Data Science"
+                        placeholder="Example: Machine Learning"
+                    >
+
+                    <button
+                        type="button"
+                        class="add-button add-skill"
+                        data-category="ML / Data Science"
+                    >
+                        Add
+                    </button>
+
+                </div>
+
+                <div
+                    class="skill-list"
+                    id="skill_list_ml_data_science"
+                ></div>
+
+                <div
+                    class="skill-hidden-inputs"
+                    id="skill_hidden_ml_data_science"
+                ></div>
+
+            </div>
+
+
+            <!-- COMPUTER VISION -->
+
+            <div class="skill-category">
+
+                <div class="skill-category-title">
+                    Computer Vision
+                </div>
+
+                <div class="skill-input-row">
+
+                    <input
+                        type="text"
+                        id="skill_input_computer_vision"
+                        class="form-control skill-input"
+                        data-category="Computer Vision"
+                        placeholder="Example: OpenCV"
+                    >
+
+                    <button
+                        type="button"
+                        class="add-button add-skill"
+                        data-category="Computer Vision"
+                    >
+                        Add
+                    </button>
+
+                </div>
+
+                <div
+                    class="skill-list"
+                    id="skill_list_computer_vision"
+                ></div>
+
+                <div
+                    class="skill-hidden-inputs"
+                    id="skill_hidden_computer_vision"
+                ></div>
+
+            </div>
+
+
+            <!-- GENAI / LLM -->
+
+            <div class="skill-category">
+
+                <div class="skill-category-title">
+                    GenAI / LLM
+                </div>
+
+                <div class="skill-input-row">
+
+                    <input
+                        type="text"
+                        id="skill_input_genai_llm"
+                        class="form-control skill-input"
+                        data-category="GenAI / LLM"
+                        placeholder="Example: RAG"
+                    >
+
+                    <button
+                        type="button"
+                        class="add-button add-skill"
+                        data-category="GenAI / LLM"
+                    >
+                        Add
+                    </button>
+
+                </div>
+
+                <div
+                    class="skill-list"
+                    id="skill_list_genai_llm"
+                ></div>
+
+                <div
+                    class="skill-hidden-inputs"
+                    id="skill_hidden_genai_llm"
+                ></div>
+
+            </div>
+
+
+            <!-- TOOLS / PLATFORMS -->
+
+            <div class="skill-category">
+
+                <div class="skill-category-title">
+                    Tools / Platforms
+                </div>
+
+                <div class="skill-input-row">
+
+                    <input
+                        type="text"
+                        id="skill_input_tools_platforms"
+                        class="form-control skill-input"
+                        data-category="Tools / Platforms"
+                        placeholder="Example: Git"
+                    >
+
+                    <button
+                        type="button"
+                        class="add-button add-skill"
+                        data-category="Tools / Platforms"
+                    >
+                        Add
+                    </button>
+
+                </div>
+
+                <div
+                    class="skill-list"
+                    id="skill_list_tools_platforms"
+                ></div>
+
+                <div
+                    class="skill-hidden-inputs"
+                    id="skill_hidden_tools_platforms"
+                ></div>
+
+            </div>
+
+
+            <!-- OTHER -->
+
+            <div class="skill-category">
+
+                <div class="skill-category-title">
+                    Other
+                </div>
+
+                <div class="skill-input-row">
+
+                    <input
+                        type="text"
+                        id="skill_input_other"
+                        class="form-control skill-input"
+                        data-category="Other"
+                        placeholder="Add another skill"
+                    >
+
+                    <button
+                        type="button"
+                        class="add-button add-skill"
+                        data-category="Other"
+                    >
+                        Add
+                    </button>
+
+                </div>
+
+                <div
+                    class="skill-list"
+                    id="skill_list_other"
+                ></div>
+
+                <div
+                    class="skill-hidden-inputs"
+                    id="skill_hidden_other"
+                ></div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ==================================================
+             EDUCATION
+             ================================================== -->
+
+        <div class="resume-section">
+
+            <div class="section-title">
+                Education
+            </div>
+
+            <div id="education-container">
+
+                {% for item in education %}
+
+                <div
+                    class="dynamic-item education-item"
+                    data-index="{{ forloop.counter0 }}"
+                >
+
+                    <div class="item-number">
+                        Education {{ forloop.counter }}
+                    </div>
+
+                    <input
+                        type="hidden"
+                        name="education_{{ forloop.counter0 }}_id"
+                        value="{{ item.id }}"
+                    >
+
+                    <button
+                        type="button"
+                        class="remove-item"
+                        onclick="removeItem(this)"
+                    >
+                        Remove
+                    </button>
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Institution / College
+                            </label>
+
+                            <input
+                                type="text"
+                                name="education_{{ forloop.counter0 }}_institution"
+                                class="form-control"
+                                value="{{ item.institution }}"
+                                list="institution-options"
+                                autocomplete="off"
+                            >
+
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Degree
+                            </label>
+
+                            <input
+                                type="text"
+                                name="education_{{ forloop.counter0 }}_degree"
+                                class="form-control"
+                                value="{{ item.degree }}"
+                                placeholder="B.Tech"
+                            >
+
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Field of Study
+                            </label>
+
+                            <input
+                                type="text"
+                                name="education_{{ forloop.counter0 }}_field_of_study"
+                                class="form-control"
+                                value="{{ item.field_of_study }}"
+                                placeholder="Artificial Intelligence and Machine Learning"
+                            >
+
+                        </div>
+
+
+                        <div class="col-md-3 mb-3">
+
+                            <label class="form-label">
+                                Start Year
+                            </label>
+
+                            <input
+                                type="number"
+                                name="education_{{ forloop.counter0 }}_start_year"
+                                class="form-control"
+                                value="{{ item.start_year|default:'' }}"
+                            >
+
+                        </div>
+
+
+                        <div class="col-md-3 mb-3">
+
+                            <label class="form-label">
+                                End Year
+                            </label>
+
+                            <input
+                                type="number"
+                                name="education_{{ forloop.counter0 }}_end_year"
+                                class="form-control"
+                                value="{{ item.end_year|default:'' }}"
+                            >
+
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                CGPA / Percentage
+                            </label>
+
+                            <input
+                                type="text"
+                                name="education_{{ forloop.counter0 }}_percentage_or_cgpa"
+                                class="form-control"
+                                value="{{ item.percentage_or_cgpa }}"
+                                placeholder="8.49 CGPA"
+                            >
+
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Description
+                            </label>
+
+                            <textarea
+                                name="education_{{ forloop.counter0 }}_description"
+                                class="form-control"
+                            >{{ item.description }}</textarea>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% empty %}
+
+                <div
+                    class="dynamic-item education-item"
+                    data-index="0"
+                >
+
+                    <div class="item-number">
+                        Education 1
+                    </div>
+
+                    <button
+                        type="button"
+                        class="remove-item"
+                        onclick="removeItem(this)"
+                    >
+                        Remove
+                    </button>
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Institution / College
+                            </label>
+
+                            <input
+                                type="text"
+                                name="education_0_institution"
+                                class="form-control"
+                                list="institution-options"
+                                autocomplete="off"
+                            >
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Degree
+                            </label>
+
+                            <input
+                                type="text"
+                                name="education_0_degree"
+                                class="form-control"
+                            >
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Field of Study
+                            </label>
+
+                            <input
+                                type="text"
+                                name="education_0_field_of_study"
+                                class="form-control"
+                            >
+
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+
+                            <label class="form-label">
+                                Start Year
+                            </label>
+
+                            <input
+                                type="number"
+                                name="education_0_start_year"
+                                class="form-control"
+                            >
+
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+
+                            <label class="form-label">
+                                End Year
+                            </label>
+
+                            <input
+                                type="number"
+                                name="education_0_end_year"
+                                class="form-control"
+                            >
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                CGPA / Percentage
+                            </label>
+
+                            <input
+                                type="text"
+                                name="education_0_percentage_or_cgpa"
+                                class="form-control"
+                            >
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Description
+                            </label>
+
+                            <textarea
+                                name="education_0_description"
+                                class="form-control"
+                            ></textarea>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            <button
+                type="button"
+                class="add-button"
+                onclick="addEducation()"
+            >
+                + Add Education
+            </button>
+
+        </div>
+
+
+        <!-- ==================================================
+             PROJECTS
+             ================================================== -->
+
+        <div class="resume-section">
+
+            <div class="section-title">
+                Projects
+            </div>
+
+            <div id="project-container">
+
+                {% for item in projects %}
+
+                <div
+                    class="dynamic-item project-item"
+                    data-index="{{ forloop.counter0 }}"
+                >
+
+                    <div class="item-number">
+                        Project {{ forloop.counter }}
+                    </div>
+
+                    <input
+                        type="hidden"
+                        name="project_{{ forloop.counter0 }}_id"
+                        value="{{ item.id }}"
+                    >
+
+                    <button
+                        type="button"
+                        class="remove-item"
+                        onclick="removeItem(this)"
+                    >
+                        Remove
+                    </button>
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Project Title
+                            </label>
+
+                            <input
+                                type="text"
+                                name="project_{{ forloop.counter0 }}_title"
+                                class="form-control"
+                                value="{{ item.title }}"
+                            >
+
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Technologies / Tech Stack
+                            </label>
+
+                            <input
+                                type="text"
+                                name="project_{{ forloop.counter0 }}_technologies"
+                                class="form-control"
+                                value="{{ item.technologies }}"
+                                placeholder="Python, Django, OpenCV"
+                            >
+
+                        </div>
+
+
+                        <div class="col-12 mb-3">
+
+                            <label class="form-label">
+                                Description
+                            </label>
+
+                            <textarea
+                                name="project_{{ forloop.counter0 }}_description"
+                                class="form-control"
+                            >{{ item.description }}</textarea>
+
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                GitHub URL
+                            </label>
+
+                            <input
+                                type="url"
+                                name="project_{{ forloop.counter0 }}_github_url"
+                                class="form-control"
+                                value="{{ item.github_url }}"
+                            >
+
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Live Demo URL
+                            </label>
+
+                            <input
+                                type="url"
+                                name="project_{{ forloop.counter0 }}_live_url"
+                                class="form-control"
+                                value="{{ item.live_url }}"
+                            >
+
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Start Date
+                            </label>
+
+                            <input
+                                type="date"
+                                name="project_{{ forloop.counter0 }}_start_date"
+                                class="form-control"
+                                value="{{ item.start_date|date:'Y-m-d' }}"
+                            >
+
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                End Date
+                            </label>
+
+                            <input
+                                type="date"
+                                name="project_{{ forloop.counter0 }}_end_date"
+                                class="form-control"
+                                value="{{ item.end_date|date:'Y-m-d' }}"
+                            >
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            <button
+                type="button"
+                class="add-button"
+                onclick="addProject()"
+            >
+                + Add Project
+            </button>
+
+        </div>
+
+
+        <!-- ==================================================
+             EXPERIENCE
+             ================================================== -->
+
+        <div class="resume-section">
+
+            <div class="section-title">
+                Experience
+            </div>
+
+            <div id="experience-container">
+
+                {% for item in experience %}
+
+                <div
+                    class="dynamic-item experience-item"
+                    data-index="{{ forloop.counter0 }}"
+                >
+
+                    <div class="item-number">
+                        Experience {{ forloop.counter }}
+                    </div>
+
+                    <input
+                        type="hidden"
+                        name="experience_{{ forloop.counter0 }}_id"
+                        value="{{ item.id }}"
+                    >
+
+                    <button
+                        type="button"
+                        class="remove-item"
+                        onclick="removeItem(this)"
+                    >
+                        Remove
+                    </button>
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Job Title
+                            </label>
+
+                            <input
+                                type="text"
+                                name="experience_{{ forloop.counter0 }}_job_title"
+                                class="form-control"
+                                value="{{ item.job_title }}"
+                            >
+
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Company
+                            </label>
+
+                            <input
+                                type="text"
+                                name="experience_{{ forloop.counter0 }}_company"
+                                class="form-control"
+                                value="{{ item.company }}"
+                                list="company-options"
+                                autocomplete="off"
+                            >
+
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Location
+                            </label>
+
+                            <input
+                                type="text"
+                                name="experience_{{ forloop.counter0 }}_location"
+                                class="form-control"
+                                value="{{ item.location }}"
+                            >
+
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Start Date
+                            </label>
+
+                            <input
+                                type="date"
+                                name="experience_{{ forloop.counter0 }}_start_date"
+                                class="form-control"
+                                value="{{ item.start_date|date:'Y-m-d' }}"
+                            >
+
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                End Date
+                            </label>
+
+                            <input
+                                type="date"
+                                name="experience_{{ forloop.counter0 }}_end_date"
+                                class="form-control"
+                                value="{{ item.end_date|date:'Y-m-d' }}"
+                            >
+
+                        </div>
+
+
+                        <div class="col-12 mb-3">
+
+                            <label class="form-label">
+                                Description
+                            </label>
+
+                            <textarea
+                                name="experience_{{ forloop.counter0 }}_description"
+                                class="form-control"
+                            >{{ item.description }}</textarea>
+
+                        </div>
+
+
+                        <div class="col-12">
+
+                            <label>
+
+                                <input
+                                    type="checkbox"
+                                    name="experience_{{ forloop.counter0 }}_currently_working"
+                                    {% if item.currently_working %}checked{% endif %}
+                                >
+
+                                Currently working here
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            <button
+                type="button"
+                class="add-button"
+                onclick="addExperience()"
+            >
+                + Add Experience
+            </button>
+
+        </div>
+
+
+        <!-- ==================================================
+             CERTIFICATIONS
+             ================================================== -->
+
+        <div class="resume-section">
+
+            <div class="section-title">
+                Certifications
+            </div>
+
+            <div id="certification-container">
+
+                {% for item in certifications %}
+
+                <div
+                    class="dynamic-item certification-item"
+                    data-index="{{ forloop.counter0 }}"
+                >
+
+                    <div class="item-number">
+                        Certification {{ forloop.counter }}
+                    </div>
+
+                    <input
+                        type="hidden"
+                        name="certification_{{ forloop.counter0 }}_id"
+                        value="{{ item.id }}"
+                    >
+
+                    <button
+                        type="button"
+                        class="remove-item"
+                        onclick="removeItem(this)"
+                    >
+                        Remove
+                    </button>
+
+                    <div class="row">
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Certification Name
+                            </label>
+
+                            <input
+                                type="text"
+                                name="certification_{{ forloop.counter0 }}_name"
+                                class="form-control"
+                                value="{{ item.name }}"
+                            >
+
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Issuing Organization
+                            </label>
+
+                            <input
+                                type="text"
+                                name="certification_{{ forloop.counter0 }}_issuing_organization"
+                                class="form-control"
+                                value="{{ item.issuing_organization }}"
+                                list="organization-options"
+                                autocomplete="off"
+                            >
+
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Issue Date
+                            </label>
+
+                            <input
+                                type="date"
+                                name="certification_{{ forloop.counter0 }}_issue_date"
+                                class="form-control"
+                                value="{{ item.issue_date|date:'Y-m-d' }}"
+                            >
+
+                        </div>
+
+
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label">
+                                Credential ID
+                            </label>
+
+                            <input
+                                type="text"
+                                name="certification_{{ forloop.counter0 }}_credential_id"
+                                class="form-control"
+                                value="{{ item.credential_id }}"
+                            >
+
+                        </div>
+
+
+                        <div class="col-12 mb-3">
+
+                            <label class="form-label">
+                                Credential URL
+                            </label>
+
+                            <input
+                                type="url"
+                                name="certification_{{ forloop.counter0 }}_credential_url"
+                                class="form-control"
+                                value="{{ item.credential_url }}"
+                            >
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+            <button
+                type="button"
+                class="add-button"
+                onclick="addCertification()"
+            >
+                + Add Certification
+            </button>
+
+        </div>
+
+
+        <!-- ==================================================
+             SAVE
+             ================================================== -->
+
+        <div class="form-actions">
+
+            <button
+                type="submit"
+                class="primary-button"
+            >
+                Save Resume
+            </button>
+
+        </div>
+
+    </form>
+
+
+    <!-- ==================================================
+         AI GENERATION
+         ================================================== -->
+
+    <form
+        method="POST"
+        action="{% url 'generate_ai_resume' %}"
+    >
+
+        {% csrf_token %}
+
+        <div class="form-actions">
+
+            <button
+                type="submit"
+                class="primary-button"
+            >
+                Generate AI Resume
+            </button>
+
+        </div>
+
+    </form>
+
+
+    <!-- ==================================================
+         AUTOCOMPLETE DATA
+         ================================================== -->
+
+    <datalist id="institution-options">
+
+        <option value="Sri Shakthi Institute of Engineering and Technology">
+        <option value="Sri Krishna College of Technology">
+        <option value="Sri Ramakrishna Engineering College">
+        <option value="Sri Krishna Arts and Science College">
+        <option value="Sri Eshwar College of Engineering">
+        <option value="PSG College of Technology">
+        <option value="Coimbatore Institute of Technology">
+        <option value="Kumaraguru College of Technology">
+        <option value="Government College of Technology">
+
+    </datalist>
+
+
+    <datalist id="company-options">
+
+        <option value="Google">
+        <option value="Microsoft">
+        <option value="Amazon">
+        <option value="Zoho">
+        <option value="TCS">
+        <option value="Infosys">
+        <option value="Wipro">
+        <option value="Accenture">
+
+    </datalist>
+
+
+    <datalist id="organization-options">
+
+        <option value="Google">
+        <option value="Microsoft">
+        <option value="Coursera">
+        <option value="Udemy">
+        <option value="NPTEL">
+        <option value="IBM">
+        <option value="AWS">
+        <option value="Cisco">
+
+    </datalist>
+
+</div>
+
+
+<script>
+
+/* ==================================================
+   SKILL CATEGORIES
+   ================================================== */
+
+const skillCategoryIds = {
+
+    "Programming": "programming",
+
+    "Web / Backend": "web_backend",
+
+    "Databases": "databases",
+
+    "ML / Data Science": "ml_data_science",
+
+    "Computer Vision": "computer_vision",
+
+    "GenAI / LLM": "genai_llm",
+
+    "Tools / Platforms": "tools_platforms",
+
+    "Other": "other"
+
+};
+
+
+/* ==================================================
+   LOAD EXISTING SKILLS
+   ================================================== */
+
+const existingSkills = [
+
+    {% for skill in skills %}
+
+    {
+        category: "{{ skill.category|escapejs }}",
+        skill: "{{ skill.skill|escapejs }}"
+    }
+
+    {% if not forloop.last %},{% endif %}
+
+    {% endfor %}
+
+];
+
+
+document.addEventListener(
+    "DOMContentLoaded",
+    function() {
+
+        existingSkills.forEach(
+            function(item) {
+
+                const categoryId =
+                    skillCategoryIds[item.category];
+
+                if (categoryId) {
+
+                    addSkill(
+                        item.category,
+                        categoryId,
+                        item.skill
+                    );
+
+                }
+
+            }
+        );
+
+    }
+);
+
+
+/* ==================================================
+   ADD SKILL BUTTON
+   ================================================== */
+
+document.querySelectorAll(
+    ".add-skill"
+).forEach(
+    function(button) {
+
+        button.addEventListener(
+            "click",
+            function() {
+
+                const category =
+                    button.dataset.category;
+
+                const categoryId =
+                    skillCategoryIds[category];
+
+                const input =
+                    document.getElementById(
+                        "skill_input_" + categoryId
+                    );
+
+                const skill =
+                    input.value.trim();
+
+                if (skill === "") {
+                    return;
+                }
+
+                addSkill(
+                    category,
+                    categoryId,
+                    skill
+                );
+
+                input.value = "";
+
+                input.focus();
+
+            }
+        );
+
+    }
+);
+
+
+/* ==================================================
+   ENTER KEY FOR SKILLS
+   ================================================== */
+
+document.querySelectorAll(
+    ".skill-input"
+).forEach(
+    function(input) {
+
+        input.addEventListener(
+            "keydown",
+            function(event) {
+
+                if (event.key === "Enter") {
+
+                    event.preventDefault();
+
+                    const category =
+                        input.dataset.category;
+
+                    const categoryId =
+                        skillCategoryIds[category];
+
+                    const skill =
+                        input.value.trim();
+
+                    if (skill === "") {
+                        return;
+                    }
+
+                    addSkill(
+                        category,
+                        categoryId,
+                        skill
+                    );
+
+                    input.value = "";
+
+                }
+
+            }
+        );
+
+    }
+);
+
+
+/* ==================================================
+   ADD SKILL
+   ================================================== */
+
+function addSkill(
+    category,
+    categoryId,
+    skill
+) {
+
+    const list =
+        document.getElementById(
+            "skill_list_" + categoryId
+        );
+
+    const hiddenContainer =
+        document.getElementById(
+            "skill_hidden_" + categoryId
+        );
+
+
+    if (!list || !hiddenContainer) {
+        return;
+    }
+
+
+    /* Prevent duplicate skills */
+
+    const allCategoryInputs =
+        document.querySelectorAll(
+            'input[name="skill_category[]"]'
+        );
+
+
+    for (
+        let i = 0;
+        i < allCategoryInputs.length;
+        i++
+    ) {
+
+        const categoryInput =
+            allCategoryInputs[i];
+
+        const wrapper =
+            categoryInput.parentElement;
+
+        const skillInput =
+            wrapper.querySelector(
+                'input[name="skill[]"]'
+            );
+
+        if (
+            categoryInput.value === category &&
+            skillInput &&
+            skillInput.value.toLowerCase() ===
+            skill.toLowerCase()
+        ) {
+
+            return;
+
+        }
+
+    }
+
+
+    /* Create visible tag */
+
+    const tag =
+        document.createElement("div");
+
+    tag.className =
+        "skill-tag";
+
+
+    const text =
+        document.createElement("span");
+
+    text.textContent =
+        skill;
+
+
+    const removeButton =
+        document.createElement("button");
+
+    removeButton.type =
+        "button";
+
+    removeButton.innerHTML =
+        "&times;";
+
+
+    tag.appendChild(text);
+
+    tag.appendChild(
+        removeButton
+    );
+
+
+    /* Hidden category input */
+
+    const categoryInput =
+        document.createElement("input");
+
+    categoryInput.type =
+        "hidden";
+
+    categoryInput.name =
+        "skill_category[]";
+
+    categoryInput.value =
+        category;
+
+
+    /* Hidden skill input */
+
+    const skillInput =
+        document.createElement("input");
+
+    skillInput.type =
+        "hidden";
+
+    skillInput.name =
+        "skill[]";
+
+    skillInput.value =
+        skill;
+
+
+    const hiddenWrapper =
+        document.createElement("div");
+
+    hiddenWrapper.appendChild(
+        categoryInput
+    );
+
+    hiddenWrapper.appendChild(
+        skillInput
+    );
+
+
+    /* Remove skill */
+
+    removeButton.addEventListener(
+        "click",
+        function() {
+
+            tag.remove();
+
+            hiddenWrapper.remove();
+
+        }
+    );
+
+
+    list.appendChild(tag);
+
+    hiddenContainer.appendChild(
+        hiddenWrapper
+    );
+
+}
+
+
+/* ==================================================
+   GET NEXT SAFE INDEX
+   ================================================== */
+
+function getNextIndex(
+    container,
+    itemClass
+) {
+
+    const items =
+        container.querySelectorAll(
+            "." + itemClass
+        );
+
+    let maxIndex = -1;
+
+
+    items.forEach(
+        function(item) {
+
+            const index =
+                parseInt(
+                    item.dataset.index
+                );
+
+            if (
+                !isNaN(index) &&
+                index > maxIndex
+            ) {
+
+                maxIndex = index;
+
+            }
+
+        }
+    );
+
+
+    return maxIndex + 1;
+
+}
+
+
+/* ==================================================
+   REMOVE DYNAMIC ITEM
+   ================================================== */
+
+function removeItem(button) {
+
+    const item =
+        button.closest(
+            ".dynamic-item"
+        );
+
+    if (!item) {
+        return;
+    }
+
+
+    const idInput =
+        item.querySelector(
+            'input[type="hidden"][name$="_id"]'
+        );
+
+
+    if (
+        idInput &&
+        idInput.value
+    ) {
+
+        const parts =
+            idInput.name.split("_");
+
+        const prefix =
+            parts[0];
+
+
+        const deleteInput =
+            document.createElement("input");
+
+        deleteInput.type =
+            "hidden";
+
+        deleteInput.name =
+            "delete_" + prefix;
+
+        deleteInput.value =
+            idInput.value;
+
+
+        document.getElementById(
+            "resumeForm"
+        ).appendChild(
+            deleteInput
+        );
+
+    }
+
+
+    item.remove();
+
+    updateNumbers();
+
+}
+
+
+/* ==================================================
+   UPDATE DISPLAY NUMBERS
+   ================================================== */
+
+function updateNumbers() {
+
+
+    document.querySelectorAll(
+        ".education-item"
+    ).forEach(
+        function(item, index) {
+
+            const number =
+                item.querySelector(
+                    ".item-number"
+                );
+
+            if (number) {
+
+                number.textContent =
+                    "Education " +
+                    (index + 1);
+
+            }
+
+        }
+    );
+
+
+    document.querySelectorAll(
+        ".project-item"
+    ).forEach(
+        function(item, index) {
+
+            const number =
+                item.querySelector(
+                    ".item-number"
+                );
+
+            if (number) {
+
+                number.textContent =
+                    "Project " +
+                    (index + 1);
+
+            }
+
+        }
+    );
+
+
+    document.querySelectorAll(
+        ".experience-item"
+    ).forEach(
+        function(item, index) {
+
+            const number =
+                item.querySelector(
+                    ".item-number"
+                );
+
+            if (number) {
+
+                number.textContent =
+                    "Experience " +
+                    (index + 1);
+
+            }
+
+        }
+    );
+
+
+    document.querySelectorAll(
+        ".certification-item"
+    ).forEach(
+        function(item, index) {
+
+            const number =
+                item.querySelector(
+                    ".item-number"
+                );
+
+            if (number) {
+
+                number.textContent =
+                    "Certification " +
+                    (index + 1);
+
+            }
+
+        }
+    );
+
+}
+
+
+/* ==================================================
+   ADD EDUCATION
+   ================================================== */
+
+function addEducation() {
+
+    const container =
+        document.getElementById(
+            "education-container"
+        );
+
+
+    const index =
+        getNextIndex(
+            container,
+            "education-item"
+        );
+
+
+    const div =
+        document.createElement("div");
+
+    div.className =
+        "dynamic-item education-item";
+
+    div.dataset.index =
+        index;
+
+
+    div.innerHTML = `
+
+        <div class="item-number">
+            Education ${index + 1}
+        </div>
+
+        <button
+            type="button"
+            class="remove-item"
+            onclick="removeItem(this)"
+        >
+            Remove
+        </button>
+
+        <div class="row">
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    Institution / College
+                </label>
+
+                <input
+                    type="text"
+                    name="education_${index}_institution"
+                    class="form-control"
+                    list="institution-options"
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    Degree
+                </label>
+
+                <input
+                    type="text"
+                    name="education_${index}_degree"
+                    class="form-control"
+                    placeholder="B.Tech"
+                >
+
+            </div>
+
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    Field of Study
+                </label>
+
+                <input
+                    type="text"
+                    name="education_${index}_field_of_study"
+                    class="form-control"
+                >
+
+            </div>
+
+
+            <div class="col-md-3 mb-3">
+
+                <label class="form-label">
+                    Start Year
+                </label>
+
+                <input
+                    type="number"
+                    name="education_${index}_start_year"
+                    class="form-control"
+                >
+
+            </div>
+
+
+            <div class="col-md-3 mb-3">
+
+                <label class="form-label">
+                    End Year
+                </label>
+
+                <input
+                    type="number"
+                    name="education_${index}_end_year"
+                    class="form-control"
+                >
+
+            </div>
+
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    CGPA / Percentage
+                </label>
+
+                <input
+                    type="text"
+                    name="education_${index}_percentage_or_cgpa"
+                    class="form-control"
+                >
+
+            </div>
+
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    Description
+                </label>
+
+                <textarea
+                    name="education_${index}_description"
+                    class="form-control"
+                ></textarea>
+
+            </div>
+
+        </div>
+    `;
+
+
+    container.appendChild(div);
+
+    updateNumbers();
+
+}
+
+
+/* ==================================================
+   ADD PROJECT
+   ================================================== */
+
+function addProject() {
+
+    const container =
+        document.getElementById(
+            "project-container"
+        );
+
+
+    const index =
+        getNextIndex(
+            container,
+            "project-item"
+        );
+
+
+    const div =
+        document.createElement("div");
+
+    div.className =
+        "dynamic-item project-item";
+
+    div.dataset.index =
+        index;
+
+
+    div.innerHTML = `
+
+        <div class="item-number">
+            Project ${index + 1}
+        </div>
+
+        <button
+            type="button"
+            class="remove-item"
+            onclick="removeItem(this)"
+        >
+            Remove
+        </button>
+
+        <div class="row">
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    Project Title
+                </label>
+
+                <input
+                    type="text"
+                    name="project_${index}_title"
+                    class="form-control"
+                >
+
+            </div>
+
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    Technologies / Tech Stack
+                </label>
+
+                <input
+                    type="text"
+                    name="project_${index}_technologies"
+                    class="form-control"
+                    placeholder="Python, Django, OpenCV"
+                >
+
+            </div>
+
+
+            <div class="col-12 mb-3">
+
+                <label class="form-label">
+                    Description
+                </label>
+
+                <textarea
+                    name="project_${index}_description"
+                    class="form-control"
+                ></textarea>
+
+            </div>
+
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    GitHub URL
+                </label>
+
+                <input
+                    type="url"
+                    name="project_${index}_github_url"
+                    class="form-control"
+                >
+
+            </div>
+
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    Live Demo URL
+                </label>
+
+                <input
+                    type="url"
+                    name="project_${index}_live_url"
+                    class="form-control"
+                >
+
+            </div>
+
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    Start Date
+                </label>
+
+                <input
+                    type="date"
+                    name="project_${index}_start_date"
+                    class="form-control"
+                >
+
+            </div>
+
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    End Date
+                </label>
+
+                <input
+                    type="date"
+                    name="project_${index}_end_date"
+                    class="form-control"
+                >
+
+            </div>
+
+        </div>
+    `;
+
+
+    container.appendChild(div);
+
+    updateNumbers();
+
+}
+
+
+/* ==================================================
+   ADD EXPERIENCE
+   ================================================== */
+
+function addExperience() {
+
+    const container =
+        document.getElementById(
+            "experience-container"
+        );
+
+
+    const index =
+        getNextIndex(
+            container,
+            "experience-item"
+        );
+
+
+    const div =
+        document.createElement("div");
+
+    div.className =
+        "dynamic-item experience-item";
+
+    div.dataset.index =
+        index;
+
+
+    div.innerHTML = `
+
+        <div class="item-number">
+            Experience ${index + 1}
+        </div>
+
+        <button
+            type="button"
+            class="remove-item"
+            onclick="removeItem(this)"
+        >
+            Remove
+        </button>
+
+        <div class="row">
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    Job Title
+                </label>
+
+                <input
+                    type="text"
+                    name="experience_${index}_job_title"
+                    class="form-control"
+                >
+
+            </div>
+
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    Company
+                </label>
+
+                <input
+                    type="text"
+                    name="experience_${index}_company"
+                    class="form-control"
+                    list="company-options"
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    Location
+                </label>
+
+                <input
+                    type="text"
+                    name="experience_${index}_location"
+                    class="form-control"
+                >
+
+            </div>
+
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    Start Date
+                </label>
+
+                <input
+                    type="date"
+                    name="experience_${index}_start_date"
+                    class="form-control"
+                >
+
+            </div>
+
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    End Date
+                </label>
+
+                <input
+                    type="date"
+                    name="experience_${index}_end_date"
+                    class="form-control"
+                >
+
+            </div>
+
+
+            <div class="col-12 mb-3">
+
+                <label class="form-label">
+                    Description
+                </label>
+
+                <textarea
+                    name="experience_${index}_description"
+                    class="form-control"
+                ></textarea>
+
+            </div>
+
+
+            <div class="col-12">
+
+                <label>
+
+                    <input
+                        type="checkbox"
+                        name="experience_${index}_currently_working"
+                    >
+
+                    Currently working here
+
+                </label>
+
+            </div>
+
+        </div>
+    `;
+
+
+    container.appendChild(div);
+
+    updateNumbers();
+
+}
+
+
+/* ==================================================
+   ADD CERTIFICATION
+   ================================================== */
+
+function addCertification() {
+
+    const container =
+        document.getElementById(
+            "certification-container"
+        );
+
+
+    const index =
+        getNextIndex(
+            container,
+            "certification-item"
+        );
+
+
+    const div =
+        document.createElement("div");
+
+    div.className =
+        "dynamic-item certification-item";
+
+    div.dataset.index =
+        index;
+
+
+    div.innerHTML = `
+
+        <div class="item-number">
+            Certification ${index + 1}
+        </div>
+
+        <button
+            type="button"
+            class="remove-item"
+            onclick="removeItem(this)"
+        >
+            Remove
+        </button>
+
+        <div class="row">
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    Certification Name
+                </label>
+
+                <input
+                    type="text"
+                    name="certification_${index}_name"
+                    class="form-control"
+                >
+
+            </div>
+
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    Issuing Organization
+                </label>
+
+                <input
+                    type="text"
+                    name="certification_${index}_issuing_organization"
+                    class="form-control"
+                    list="organization-options"
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    Issue Date
+                </label>
+
+                <input
+                    type="date"
+                    name="certification_${index}_issue_date"
+                    class="form-control"
+                >
+
+            </div>
+
+
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label">
+                    Credential ID
+                </label>
+
+                <input
+                    type="text"
+                    name="certification_${index}_credential_id"
+                    class="form-control"
+                >
+
+            </div>
+
+
+            <div class="col-12 mb-3">
+
+                <label class="form-label">
+                    Credential URL
+                </label>
+
+                <input
+                    type="url"
+                    name="certification_${index}_credential_url"
+                    class="form-control"
+                >
+
+            </div>
+
+        </div>
+    `;
+
+
+    container.appendChild(div);
+
+    updateNumbers();
+
+}
+
+</script>
+
+{% endblock %}

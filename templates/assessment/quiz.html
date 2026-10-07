@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}
+AI Assessment | CognifyAI
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="mb-4">
+
+        <h2 class="fw-bold">
+            🧠 AI Generated Assessment
+        </h2>
+
+        <p class="text-muted">
+            Answer the questions generated specifically
+            for your selected topic.
+        </p>
+
+    </div>
+
+
+    <form method="POST">
+
+        {% csrf_token %}
+
+
+        {% for question in questions %}
+
+        <div class="feature-card mb-4">
+
+            <div class="d-flex">
+
+                <div
+                    class="feature-icon me-3"
+                    style="
+                        min-width:45px;
+                        height:45px;
+                    "
+                >
+
+                    {{ forloop.counter }}
+
+                </div>
+
+
+                <div class="w-100">
+
+                    <h5 class="fw-bold">
+
+                        {{ question.question }}
+
+                    </h5>
+
+
+                    <div class="mt-3">
+
+
+                        <div class="form-check mb-2">
+
+                            <input
+                                class="form-check-input"
+                                type="radio"
+                                name="question_{{ forloop.counter0 }}"
+                                value="A"
+                                required
+                            >
+
+                            <label
+                                class="form-check-label"
+                            >
+
+                                A.
+                                {{ question.option_a }}
+
+                            </label>
+
+                        </div>
+
+
+                        <div class="form-check mb-2">
+
+                            <input
+                                class="form-check-input"
+                                type="radio"
+                                name="question_{{ forloop.counter0 }}"
+                                value="B"
+                            >
+
+                            <label
+                                class="form-check-label"
+                            >
+
+                                B.
+                                {{ question.option_b }}
+
+                            </label>
+
+                        </div>
+
+
+                        <div class="form-check mb-2">
+
+                            <input
+                                class="form-check-input"
+                                type="radio"
+                                name="question_{{ forloop.counter0 }}"
+                                value="C"
+                            >
+
+                            <label
+                                class="form-check-label"
+                            >
+
+                                C.
+                                {{ question.option_c }}
+
+                            </label>
+
+                        </div>
+
+
+                        <div class="form-check">
+
+                            <input
+                                class="form-check-input"
+                                type="radio"
+                                name="question_{{ forloop.counter0 }}"
+                                value="D"
+                            >
+
+                            <label
+                                class="form-check-label"
+                            >
+
+                                D.
+                                {{ question.option_d }}
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+
+        {% if questions %}
+
+        <div class="text-center mb-5">
+
+            <button
+                type="submit"
+                class="btn btn-primary btn-lg px-5"
+            >
+
+                <i class="bi bi-check-circle me-2"></i>
+
+                Submit Assessment
+
+            </button>
+
+        </div>
+
+        {% endif %}
+
+
+    </form>
+
+</div>
+
+{% endblock %}

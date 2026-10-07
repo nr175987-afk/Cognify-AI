@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+
+{% block title %}
+Create Account | CognifyAI
+{% endblock %}
+
+
+{% block content %}
+
+<div class="auth-container">
+
+
+    <!-- LEFT -->
+
+    <section class="auth-brand-panel">
+
+
+        <span class="auth-badge">
+
+            <i class="bi bi-stars me-2"></i>
+
+            Start Your Journey
+
+        </span>
+
+
+        <h1>
+
+            Your learning.<br>
+
+            Your intelligence.
+
+        </h1>
+
+
+        <p class="mt-4">
+
+            Create your CognifyAI account and get a
+            personalized learning experience based on
+            your actual performance.
+
+        </p>
+
+
+        <div class="auth-points">
+
+
+            <div class="auth-point">
+
+                <i class="bi bi-person-check"></i>
+
+                Personalized student profile
+
+            </div>
+
+
+            <div class="auth-point">
+
+                <i class="bi bi-clipboard2-check"></i>
+
+                AI-generated assessments
+
+            </div>
+
+
+            <div class="auth-point">
+
+                <i class="bi bi-stars"></i>
+
+                Adaptive learning
+
+            </div>
+
+
+            <div class="auth-point">
+
+                <i class="bi bi-bar-chart"></i>
+
+                Performance analytics
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+    <!-- RIGHT -->
+
+    <section class="auth-form-panel">
+
+
+        <div class="auth-form-inner">
+
+
+            <div class="auth-logo-large">
+
+                <i class="bi bi-person-plus"></i>
+
+            </div>
+
+
+            <h2>
+                Create account
+            </h2>
+
+
+            <p class="subtitle">
+
+                Start building your personalized learning
+                journey with CognifyAI.
+
+            </p>
+
+
+            <form method="POST">
+
+                {% csrf_token %}
+
+
+                <div class="mb-3">
+
+                    <label
+                        class="form-label"
+                        for="registerUsername"
+                    >
+
+                        Username
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="registerUsername"
+                        name="username"
+                        class="form-control"
+                        placeholder="Choose a username"
+                        value="{{ form_data.username|default:'' }}"
+                        autocomplete="username"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    <label
+                        class="form-label"
+                        for="registerEmail"
+                    >
+
+                        Email
+
+                    </label>
+
+
+                    <input
+                        type="email"
+                        id="registerEmail"
+                        name="email"
+                        class="form-control"
+                        placeholder="Enter your email"
+                        value="{{ form_data.email|default:'' }}"
+                        autocomplete="email"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    <label
+                        class="form-label"
+                        for="registerPassword"
+                    >
+
+                        Password
+
+                    </label>
+
+
+                    <div class="input-group">
+
+                        <input
+                            type="password"
+                            id="registerPassword"
+                            name="password"
+                            class="form-control"
+                            placeholder="Create a password"
+                            autocomplete="new-password"
+                            required
+                        >
+
+
+                        <button
+                            type="button"
+                            class="btn btn-light border"
+                            data-toggle-password="registerPassword"
+                        >
+
+                            <i class="bi bi-eye"></i>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="mb-4">
+
+                    <label
+                        class="form-label"
+                        for="registerPassword2"
+                    >
+
+                        Confirm Password
+
+                    </label>
+
+
+                    <input
+                        type="password"
+                        id="registerPassword2"
+                        name="password2"
+                        class="form-control"
+                        placeholder="Confirm your password"
+                        autocomplete="new-password"
+                        required
+                    >
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="btn btn-ai w-100 py-3"
+                >
+
+                    <i class="bi bi-person-plus-fill me-2"></i>
+
+                    Create Account
+
+                </button>
+
+
+            </form>
+
+
+            <div class="text-center mt-4">
+
+                <span class="text-muted">
+
+                    Already have an account?
+
+                </span>
+
+                <a
+                    href="{% url 'login' %}"
+                    class="auth-link ms-1"
+                >
+
+                    Login here
+
+                </a>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+</div>
+
+{% endblock %}

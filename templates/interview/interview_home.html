@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    .interview-page {
+        max-width: 850px;
+        margin: 40px auto;
+        padding: 30px;
+        font-family: Arial, Helvetica, sans-serif;
+        color: #000000;
+    }
+
+    .interview-header {
+        text-align: center;
+        margin-bottom: 35px;
+    }
+
+    .interview-header h1 {
+        font-size: 30px;
+        margin-bottom: 10px;
+    }
+
+    .interview-header p {
+        font-size: 15px;
+        line-height: 1.6;
+    }
+
+    .setup-card {
+        border: 1px solid #000000;
+        padding: 30px;
+        background: #ffffff;
+    }
+
+    .form-group {
+        margin-bottom: 22px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 8px;
+        font-size: 15px;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 11px;
+        border: 1px solid #000000;
+        font-size: 14px;
+        box-sizing: border-box;
+        background: #ffffff;
+        color: #000000;
+    }
+
+    .form-help {
+        margin-top: 5px;
+        font-size: 12px;
+    }
+
+    .start-button {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #000000;
+        background: #000000;
+        color: #ffffff;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .start-button:hover {
+        background: #333333;
+    }
+
+    .interview-info {
+        margin-top: 25px;
+        padding: 18px;
+        border: 1px solid #000000;
+    }
+
+    .interview-info h3 {
+        margin-top: 0;
+        font-size: 17px;
+    }
+
+    .interview-info ul {
+        margin-bottom: 0;
+        padding-left: 20px;
+        line-height: 1.8;
+        font-size: 14px;
+    }
+</style>
+
+
+<div class="interview-page">
+
+    <div class="interview-header">
+
+        <h1>AI Mock Interview</h1>
+
+        <p>
+            Practice technical interviews with an AI-powered interviewer.
+            Select your target role and difficulty level to begin.
+        </p>
+
+    </div>
+
+
+    <div class="setup-card">
+
+        <form
+            method="POST"
+            action="{% url 'start_interview' %}"
+        >
+
+            {% csrf_token %}
+
+
+            <div class="form-group">
+
+                <label for="role">
+                    Job Role
+                </label>
+
+                <input
+                    type="text"
+                    id="role"
+                    name="role"
+                    placeholder="Example: Python Developer"
+                    required
+                >
+
+                <div class="form-help">
+                    Enter the role you want to practice for.
+                </div>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="difficulty">
+                    Difficulty
+                </label>
+
+                <select
+                    id="difficulty"
+                    name="difficulty"
+                    required
+                >
+
+                    <option value="">
+                        Select difficulty
+                    </option>
+
+                    <option value="Easy">
+                        Easy
+                    </option>
+
+                    <option value="Medium">
+                        Medium
+                    </option>
+
+                    <option value="Hard">
+                        Hard
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="total_questions">
+                    Number of Questions
+                </label>
+
+                <select
+                    id="total_questions"
+                    name="total_questions"
+                    required
+                >
+
+                    <option value="5">
+                        5 Questions
+                    </option>
+
+                    <option value="10">
+                        10 Questions
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="start-button"
+            >
+                Start Mock Interview
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <div class="interview-info">
+
+        <h3>
+            How the interview works
+        </h3>
+
+        <ul>
+
+            <li>
+                Select the job role you want to practice.
+            </li>
+
+            <li>
+                Choose your interview difficulty.
+            </li>
+
+            <li>
+                Answer AI-generated interview questions.
+            </li>
+
+            <li>
+                Receive feedback and a score for each answer.
+            </li>
+
+            <li>
+                View your overall interview performance.
+            </li>
+
+        </ul>
+
+    </div>
+
+</div>
+
+{% endblock %}

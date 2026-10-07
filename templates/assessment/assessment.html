@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}
+Learning Assessment | CognifyAI
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container-fluid">
+
+
+    <!-- HEADER -->
+
+    <div class="mb-4">
+
+        <h2 class="fw-bold">
+            🧠 Learning Assessment
+        </h2>
+
+        <p class="text-muted">
+            Test your knowledge and help CognifyAI
+            understand your learning pattern.
+        </p>
+
+    </div>
+
+
+    <!-- ASSESSMENT CARD -->
+
+    <div class="feature-card">
+
+        <div class="d-flex align-items-center mb-4">
+
+            <div class="feature-icon me-3">
+
+                <i class="bi bi-lightbulb-fill"></i>
+
+            </div>
+
+            <div>
+
+                <h4>
+                    Start Assessment
+                </h4>
+
+                <p class="text-muted mb-0">
+
+                    Select a subject and difficulty
+                    level to begin.
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <form method="POST">
+
+            {% csrf_token %}
+
+
+            <!-- SUBJECT -->
+
+            <div class="mb-3">
+
+                <label class="form-label fw-semibold">
+
+                    Subject
+
+                </label>
+
+                <select
+                    name="subject"
+                    class="form-select"
+                    required
+                >
+
+                    <option value="">
+                        Select Subject
+                    </option>
+
+                    <option>
+                        Python
+                    </option>
+
+                    <option>
+                        Machine Learning
+                    </option>
+
+                    <option>
+                        Data Structures
+                    </option>
+
+                    <option>
+                        DBMS
+                    </option>
+
+                    <option>
+                        Computer Networks
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- TOPIC -->
+
+            <div class="mb-3">
+
+                <label class="form-label fw-semibold">
+
+                    Topic
+
+                </label>
+
+                <input
+                    type="text"
+                    name="topic"
+                    class="form-control"
+                    placeholder="e.g. Python Functions"
+                    required
+                >
+
+            </div>
+
+
+            <!-- DIFFICULTY -->
+
+            <div class="mb-4">
+
+                <label class="form-label fw-semibold">
+
+                    Difficulty
+
+                </label>
+
+                <select
+                    name="difficulty"
+                    class="form-select"
+                    required
+                >
+
+                    <option value="">
+                        Select Difficulty
+                    </option>
+
+                    <option value="Easy">
+                        🟢 Easy
+                    </option>
+
+                    <option value="Medium">
+                        🟡 Medium
+                    </option>
+
+                    <option value="Hard">
+                        🔴 Hard
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div class="mb-4">
+
+    <label class="form-label fw-semibold">
+        Number of Questions
+    </label>
+
+    <select
+        name="number_of_questions"
+        class="form-select"
+        required
+    >
+
+        <option value="5">
+            5 Questions
+        </option>
+
+        <option value="10">
+            10 Questions
+        </option>
+
+        <option value="15">
+            15 Questions
+        </option>
+
+    </select>
+
+</div>
+
+
+            <button
+    type="submit"
+    class="btn btn-primary btn-lg px-5"
+    id="generateBtn"
+>
+
+    <i class="bi bi-stars me-2"></i>
+
+    Generate AI Assessment
+
+</button>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+<script>
+
+const form = document.querySelector("form");
+
+const button = document.getElementById(
+    "generateBtn"
+);
+
+if (form && button) {
+
+    form.addEventListener(
+        "submit",
+        function() {
+
+            button.disabled = true;
+
+            button.innerHTML =
+                '<span class="spinner-border spinner-border-sm me-2"></span>' +
+                'Generating AI Questions...';
+
+        }
+    );
+
+}
+
+</script>
