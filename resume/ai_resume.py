@@ -9,9 +9,8 @@ load_dotenv()
 
 MODEL_NAME = "gemini-3.5-flash-lite"
 
-client = genai.Client(
-    api_key=os.getenv("GEMINI_API_KEY")
-)
+api_key = os.getenv("GEMINI_API_KEY")
+client = genai.Client(api_key=api_key) if api_key else None
 
 
 # ============================================================
@@ -20,21 +19,21 @@ client = genai.Client(
 
 class AIProject(BaseModel):
     title: str
-    description: str
+    description: str = ""
     technologies: list[str] = Field(default_factory=list)
 
 
 class AIExperience(BaseModel):
     job_title: str
     company: str
-    location: str
-    description: str
+    location: str = ""
+    description: str = ""
 
 
 class AICertification(BaseModel):
     name: str
-    issuing_organization: str
-    credential_id: str
+    issuing_organization: str = ""
+    credential_id: str = ""
 
 
 class AISkillCategory(BaseModel):
@@ -43,7 +42,7 @@ class AISkillCategory(BaseModel):
 
 
 class AIResumeOutput(BaseModel):
-    professional_summary: str
+    professional_summary: str = ""
 
     technical_skills: list[AISkillCategory] = Field(
         default_factory=list
@@ -67,6 +66,38 @@ class AIResumeOutput(BaseModel):
 
 
 # ============================================================
+# HELPER: GROUP ORIGINAL SKILLS
+# ============================================================
+
+def build_skill_categories(skills):
+    grouped = {}
+
+    for item in skills:
+        category = (item.category or "Other").strip()
+        skill = (item.skill or "").strip()
+
+        if not skill:
+            continue
+
+        if category not in grouped:
+            grouped[category] = []
+
+        if skill.lower() not in [
+            existing.lower() for existing in grouped[category]
+        ]:
+            grouped[category].append(skill)
+
+    return [
+        AISkillCategory(
+            category=category,
+            skills=skill_list,
+        )
+        for category, skill_list in grouped.items()
+        if skill_list
+    ]
+
+
+# ============================================================
 # GENERATE AI RESUME
 # ============================================================
 
@@ -79,308 +110,140 @@ def generate_resume(
     achievements,
     skills,
 ):
-
     # --------------------------------------------------------
-    # PROFILE
-    # --------------------------------------------------------
-
-    profile_data = {
-        "resume_name": profile.resume_name,
-        "professional_summary": profile.professional_summary,
-    }
-
-
-    # --------------------------------------------------------
-    # TECHNICAL SKILLS
+    # ORIGINAL DATA: THIS IS THE SOURCE OF TRUTH
     # --------------------------------------------------------
 
-    skill_data = []
+    original_summary = (
+        getattr(profile, "professional_summary", "") or ""
+    ).strip()
 
-    for skill in skills:
-        skill_data.append({
-            "category": skill.category,
-            "skill": skill.skill,
-        })
+    original_skill_categories = build_skill_categories(skills)
 
+    original_projects = [
+        AIProject(
+            title=item.title or "",
+            description=item.description or "",
+            technologies=[
+                technology.strip()
+                for technology in (item.technologies or "").split(",")
+                if technology.strip()
+            ],
+        )
+        for item in projects
+        if (item.title or "").strip()
+    ]
 
-    # --------------------------------------------------------
-    # EDUCATION
-    # --------------------------------------------------------
+    original_experience = [
+        AIExperience(
+            job_title=item.job_title or "",
+            company=item.company or "",
+            location=item.location or "",
+            description=item.description or "",
+        )
+        for item in experience
+        if (item.job_title or item.company)
+    ]
 
-    education_data = []
+    original_certifications = [
+        AICertification(
+            name=item.name or "",
+            issuing_organization=item.issuing_organization or "",
+            credential_id=item.credential_id or "",
+        )
+        for item in certifications
+        if (item.name or "").strip()
+    ]
 
-    for item in education:
-        education_data.append({
-            "institution": item.institution,
-            "degree": item.degree,
-            "field_of_study": item.field_of_study,
-            "start_year": item.start_year,
-            "end_year": item.end_year,
-            "percentage_or_cgpa": item.percentage_or_cgpa,
-            "description": item.description,
-        })
-
-
-    # --------------------------------------------------------
-    # PROJECTS
-    # --------------------------------------------------------
-
-    project_data = []
-
-    for item in projects:
-        project_data.append({
-            "title": item.title,
-            "description": item.description,
-            "technologies": item.technologies,
-        })
-
-
-    # --------------------------------------------------------
-    # EXPERIENCE
-    # --------------------------------------------------------
-
-    experience_data = []
-
-    for item in experience:
-        experience_data.append({
-            "job_title": item.job_title,
-            "company": item.company,
-            "location": item.location,
-            "description": item.description,
-        })
-
+    original_achievements = [
+        f"{item.title}: {item.description}".strip(": ")
+        if item.description
+        else item.title
+        for item in achievements
+        if getattr(item, "verified", False)
+        and getattr(item, "title", "")
+    ]
 
     # --------------------------------------------------------
-    # CERTIFICATIONS
+    # BUILD INPUT DATA FOR GEMINI
     # --------------------------------------------------------
 
-    certification_data = []
+    input_data = {
+        "resume_name": getattr(profile, "resume_name", ""),
+        "professional_summary": original_summary,
 
-    for item in certifications:
-        certification_data.append({
-            "name": item.name,
-            "issuing_organization": item.issuing_organization,
-            "credential_id": item.credential_id,
-        })
+        "education": [
+            {
+                "institution": item.institution,
+                "degree": item.degree,
+                "field_of_study": item.field_of_study,
+                "start_year": item.start_year,
+                "end_year": item.end_year,
+                "percentage_or_cgpa": item.percentage_or_cgpa,
+                "description": item.description,
+            }
+            for item in education
+        ],
 
+        "skills": [
+            {
+                "category": item.category,
+                "skill": item.skill,
+            }
+            for item in skills
+        ],
 
-    # --------------------------------------------------------
-    # VERIFIED ACHIEVEMENTS
-    # --------------------------------------------------------
-
-    achievement_data = []
-
-    for item in achievements:
-
-        # Only verified achievements are sent to AI
-        if item.verified:
-            achievement_data.append({
+        "projects": [
+            {
                 "title": item.title,
                 "description": item.description,
-                "verified": True,
-            })
-
-
-    # ========================================================
-    # PROMPT
-    # ========================================================
-
-    prompt = f"""
-You are a professional technical resume writer.
-
-Create concise, professional and ATS-friendly resume
-content for a technical student.
-
-The resume must be suitable for recruiters and placement
-applications.
-
-IMPORTANT RULES:
-
-1. Use ONLY the information provided below.
-
-2. NEVER invent skills.
-
-3. NEVER invent projects.
-
-4. NEVER invent work experience.
-
-5. NEVER invent certifications.
-
-6. NEVER invent achievements.
-
-7. NEVER add technologies that were not provided.
-
-8. NEVER create fake numbers, percentages, companies,
-   organizations or achievements.
-
-9. Do not exaggerate experience.
-
-10. Projects are NOT work experience.
-
-11. Keep the professional summary concise and realistic.
-
-12. Do not include contact information in the AI output.
-
-13. Do not create sections called:
-    - AI Generated Resume
-    - Additional Information
-    - New Achievement
-    - CognifyAI Generated Content
-
-14. Only include achievements marked as verified.
-
-15. Organize technical skills into meaningful categories.
-
-16. Preserve the user's actual project titles.
-
-17. Improve wording of project descriptions without
-    changing their meaning.
-
-18. Do not change facts provided by the user.
-
-19. If a section has no information, return an empty list.
-
-20. Do not add unnecessary filler.
-
-21. Use standard professional English.
-
-22. Do not convert projects into job experience.
-
-23. Do not create a skill merely because a technology
-    appears related to another skill.
-
-24. Only use the exact technical skills supplied by the user.
-
-25. Resume name must not be changed.
-
-26. Achievements must contain ONLY verified achievements.
-
-27. Do not create achievement titles such as:
-    - New CognifyAI Achievement
-    - 100% Mastery
-    - Achievement
-    - Verified Achievement
-
-28. Preserve the actual achievement topic/title supplied
-    by the user.
-
-29. Technical skills should be grouped into categories
-    such as:
-    - Programming
-    - Web / Backend
-    - Databases
-    - ML / Data Science
-    - Computer Vision
-    - GenAI / LLM
-    - Tools / Platforms
-    - Other
-
-    Only create a category if the supplied skills support it.
-
-30. Do not add empty categories.
-
-31. Do not include education in the generated technical
-    skills, projects, experience or achievements.
-
-32. Do not invent work experience when the user has none.
-
-33. Do not invent certifications when the user has none.
-
-
-============================================================
-RESUME PROFILE
-============================================================
-
-{profile_data}
-
-
-============================================================
-TECHNICAL SKILLS
-============================================================
-
-{skill_data}
-
-
-============================================================
-EDUCATION
-============================================================
-
-{education_data}
-
-
-============================================================
-PROJECTS
-============================================================
-
-{project_data}
-
-
-============================================================
-EXPERIENCE
-============================================================
-
-{experience_data}
-
-
-============================================================
-CERTIFICATIONS
-============================================================
-
-{certification_data}
-
-
-============================================================
-VERIFIED ACHIEVEMENTS
-============================================================
-
-{achievement_data}
-
-
-============================================================
-GENERATE
-============================================================
-
-Generate:
-
-1. Professional Summary
-
-2. Technical Skills grouped by category
-
-3. Projects
-
-4. Experience
-
-5. Certifications
-
-6. Verified Achievements
-
-
-Return ONLY the requested structured JSON.
-
-Do not return Markdown.
-
-Do not return explanations outside the JSON.
-"""
-
-
-    # ========================================================
-    # GEMINI REQUEST
-    # ========================================================
-
-    response = client.models.generate_content(
-        model=MODEL_NAME,
-        contents=prompt,
-        config={
-            "response_mime_type": "application/json",
-            "response_schema": AIResumeOutput,
-        },
+                "technologies": item.technologies,
+            }
+            for item in projects
+        ],
+
+        "experience": [
+            {
+                "job_title": item.job_title,
+                "company": item.company,
+                "location": item.location,
+                "description": item.description,
+            }
+            for item in experience
+        ],
+
+        "certifications": [
+            {
+                "name": item.name,
+                "issuing_organization": item.issuing_organization,
+                "credential_id": item.credential_id,
+            }
+            for item in certifications
+        ],
+
+        "verified_achievements": [
+            {
+                "title": item.title,
+                "description": item.description,
+            }
+            for item in achievements
+            if getattr(item, "verified", False)
+        ],
+    }
+
+    # --------------------------------------------------------
+    # DEFAULT OUTPUT: PRESERVE ALL ORIGINAL SECTIONS
+    # --------------------------------------------------------
+
+    result = AIResumeOutput(
+        professional_summary=original_summary,
+        technical_skills=original_skill_categories,
+        projects=original_projects,
+        experience=original_experience,
+        certifications=original_certifications,
+        achievements=original_achievements,
     )
 
-
-    # ========================================================
-    # VALIDATE AI RESPONSE
-    # ========================================================
-
-    return AIResumeOutput.model_validate_json(
-        response.text
-    )
+    # Preserve the user's exact factual details. AI rewriting is intentionally
+    # disabled here so names, project descriptions and experience are not changed.
+    return result

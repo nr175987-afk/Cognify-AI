@@ -1858,6 +1858,78 @@
 
 {% block extra_js %}{% endblock %}
 
+<!-- MathJax configuration for LaTeX equations -->
+<script>
+    window.MathJax = {
+        tex: {
+            inlineMath: [
+                ['$', '$'],
+                ['\\(', '\\)']
+            ],
+            displayMath: [
+                ['$$', '$$'],
+                ['\\[', '\\]']
+            ],
+            processEscapes: true
+        },
+        options: {
+            skipHtmlTags: [
+                'script',
+                'noscript',
+                'style',
+                'textarea',
+                'pre',
+                'code'
+            ]
+        }
+    };
+</script>
+
+<!-- MathJax equation renderer -->
+<script
+    defer
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+
+<!-- MathJax configuration for CognifyAI -->
+<script>
+    window.MathJax = {
+        tex: {
+            inlineMath: [
+                ['$', '$'],
+                ['\\(', '\\)']
+            ],
+            displayMath: [
+                ['$$', '$$'],
+                ['\\[', '\\]']
+            ],
+            processEscapes: true
+        },
+
+        options: {
+            skipHtmlTags: [
+                'script',
+                'noscript',
+                'style',
+                'textarea',
+                'pre',
+                'code'
+            ]
+        },
+
+        startup: {
+            typeset: true
+        }
+    };
+</script>
+
+<!-- Render LaTeX as formatted mathematical equations -->
+<script
+    id="MathJax-script"
+    defer
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+
 </body>
 
 </html>

@@ -1,35 +1,51 @@
 {% extends "base.html" %}
 
+{% block title %}AI Mock Interview | CognifyAI{% endblock %}
+
 {% block content %}
 
 <style>
-    .interview-page {
-        max-width: 850px;
-        margin: 40px auto;
-        padding: 30px;
-        font-family: Arial, Helvetica, sans-serif;
-        color: #000000;
+    .interview-home {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 40px 20px;
     }
 
     .interview-header {
-        text-align: center;
         margin-bottom: 35px;
     }
 
     .interview-header h1 {
-        font-size: 30px;
+        font-size: 32px;
+        font-weight: 700;
+        color: #111827;
         margin-bottom: 10px;
     }
 
     .interview-header p {
-        font-size: 15px;
+        color: #6b7280;
+        font-size: 16px;
         line-height: 1.6;
     }
 
-    .setup-card {
-        border: 1px solid #000000;
-        padding: 30px;
+    .interview-card {
         background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        padding: 30px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .interview-card h2 {
+        font-size: 22px;
+        margin-bottom: 8px;
+        color: #111827;
+    }
+
+    .interview-card .description {
+        color: #6b7280;
+        margin-bottom: 28px;
+        line-height: 1.5;
     }
 
     .form-group {
@@ -38,81 +54,125 @@
 
     .form-group label {
         display: block;
-        font-weight: bold;
+        font-weight: 600;
         margin-bottom: 8px;
-        font-size: 15px;
+        color: #111827;
     }
 
     .form-group input,
     .form-group select {
         width: 100%;
-        padding: 11px;
-        border: 1px solid #000000;
-        font-size: 14px;
-        box-sizing: border-box;
+        padding: 12px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 15px;
+        outline: none;
         background: #ffffff;
-        color: #000000;
     }
 
-    .form-help {
-        margin-top: 5px;
-        font-size: 12px;
+    .form-group input:focus,
+    .form-group select:focus {
+        border-color: #111827;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
     }
 
     .start-button {
         width: 100%;
-        padding: 12px;
-        border: 1px solid #000000;
-        background: #000000;
-        color: #ffffff;
-        font-size: 15px;
+        padding: 13px 20px;
+        border: none;
+        border-radius: 8px;
+        background: #111827;
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
         cursor: pointer;
+        margin-top: 5px;
     }
 
     .start-button:hover {
-        background: #333333;
+        background: #000000;
     }
 
-    .interview-info {
-        margin-top: 25px;
-        padding: 18px;
-        border: 1px solid #000000;
+    .info-section {
+        margin-top: 30px;
+        padding: 22px;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
     }
 
-    .interview-info h3 {
-        margin-top: 0;
-        font-size: 17px;
+    .info-section h3 {
+        font-size: 18px;
+        margin-bottom: 15px;
+        color: #111827;
     }
 
-    .interview-info ul {
-        margin-bottom: 0;
+    .info-section ul {
+        margin: 0;
         padding-left: 20px;
-        line-height: 1.8;
-        font-size: 14px;
+    }
+
+    .info-section li {
+        margin-bottom: 9px;
+        color: #4b5563;
+        line-height: 1.5;
+    }
+
+    .history-link {
+        display: inline-block;
+        margin-top: 20px;
+        color: #111827;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .history-link:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 700px) {
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+
+        .interview-card {
+            padding: 22px;
+        }
     }
 </style>
 
 
-<div class="interview-page">
+<div class="interview-home">
 
     <div class="interview-header">
-
         <h1>AI Mock Interview</h1>
 
         <p>
-            Practice technical interviews with an AI-powered interviewer.
-            Select your target role and difficulty level to begin.
+            Practice technical interviews with an AI interviewer.
+            Select your target role, difficulty level, and number of questions
+            to begin your personalized interview session.
         </p>
-
     </div>
 
 
-    <div class="setup-card">
+    <div class="interview-card">
 
-        <form
-            method="POST"
-            action="{% url 'start_interview' %}"
-        >
+        <h2>Start a New Interview</h2>
+
+        <p class="description">
+            The AI will generate role-specific interview questions and evaluate
+            your answers based on technical correctness, understanding,
+            relevance, completeness, and clarity.
+        </p>
+
+
+        <form method="POST" action="{% url 'start_interview' %}">
 
             {% csrf_token %}
 
@@ -120,7 +180,7 @@
             <div class="form-group">
 
                 <label for="role">
-                    Job Role
+                    Target Job Role
                 </label>
 
                 <input
@@ -131,67 +191,46 @@
                     required
                 >
 
-                <div class="form-help">
-                    Enter the role you want to practice for.
+            </div>
+
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label for="difficulty">
+                        Difficulty
+                    </label>
+
+                    <select
+                        id="difficulty"
+                        name="difficulty"
+                        required
+                    >
+                        <option value="Easy">Easy</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="Hard">Hard</option>
+                    </select>
+
                 </div>
 
-            </div>
 
+                <div class="form-group">
 
-            <div class="form-group">
+                    <label for="total_questions">
+                        Number of Questions
+                    </label>
 
-                <label for="difficulty">
-                    Difficulty
-                </label>
+                    <select
+                        id="total_questions"
+                        name="total_questions"
+                        required
+                    >
+                        <option value="5" selected>5 Questions</option>
+                        <option value="10">10 Questions</option>
+                    </select>
 
-                <select
-                    id="difficulty"
-                    name="difficulty"
-                    required
-                >
-
-                    <option value="">
-                        Select difficulty
-                    </option>
-
-                    <option value="Easy">
-                        Easy
-                    </option>
-
-                    <option value="Medium">
-                        Medium
-                    </option>
-
-                    <option value="Hard">
-                        Hard
-                    </option>
-
-                </select>
-
-            </div>
-
-
-            <div class="form-group">
-
-                <label for="total_questions">
-                    Number of Questions
-                </label>
-
-                <select
-                    id="total_questions"
-                    name="total_questions"
-                    required
-                >
-
-                    <option value="5">
-                        5 Questions
-                    </option>
-
-                    <option value="10">
-                        10 Questions
-                    </option>
-
-                </select>
+                </div>
 
             </div>
 
@@ -200,42 +239,51 @@
                 type="submit"
                 class="start-button"
             >
-                Start Mock Interview
+                Start AI Mock Interview
             </button>
 
         </form>
 
+
+        <a
+            href="{% url 'interview_history' %}"
+            class="history-link"
+        >
+            View Interview History →
+        </a>
+
     </div>
 
 
-    <div class="interview-info">
+    <div class="info-section">
 
-        <h3>
-            How the interview works
-        </h3>
+        <h3>How the Mock Interview Works</h3>
 
         <ul>
-
             <li>
-                Select the job role you want to practice.
+                Choose the job role you want to practice for.
             </li>
 
             <li>
-                Choose your interview difficulty.
+                Select your preferred interview difficulty.
             </li>
 
             <li>
-                Answer AI-generated interview questions.
+                The AI generates questions relevant to your selected role.
             </li>
 
             <li>
-                Receive feedback and a score for each answer.
+                Answer each question in your own words.
             </li>
 
             <li>
-                View your overall interview performance.
+                The AI evaluates each answer and provides feedback.
             </li>
 
+            <li>
+                After completing the interview, you receive an overall score
+                and detailed feedback.
+            </li>
         </ul>
 
     </div>

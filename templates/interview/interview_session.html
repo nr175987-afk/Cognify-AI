@@ -1,252 +1,393 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock Interview | CognifyAI</title>
 
-{% block content %}
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-<style>
-    .interview-page {
-        max-width: 850px;
-        margin: 40px auto;
-        padding: 30px;
-        font-family: Arial, Helvetica, sans-serif;
-        color: #000000;
-    }
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+            min-height: 100vh;
+        }
 
-    .interview-header {
-        border-bottom: 2px solid #000000;
-        padding-bottom: 15px;
-        margin-bottom: 25px;
-    }
+        .navbar {
+            background: #ffffff;
+            padding: 18px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e5e7eb;
+        }
 
-    .interview-header h1 {
-        margin: 0 0 8px 0;
-        font-size: 28px;
-    }
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #4f46e5;
+            text-decoration: none;
+        }
 
-    .interview-details {
-        font-size: 14px;
-        line-height: 1.6;
-    }
+        .nav-link {
+            color: #4b5563;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
 
-    .progress-box {
-        border: 1px solid #000000;
-        padding: 15px;
-        margin-bottom: 25px;
-        font-size: 14px;
-    }
+        .nav-link:hover {
+            color: #4f46e5;
+        }
 
-    .question-card {
-        border: 1px solid #000000;
-        padding: 25px;
-        margin-bottom: 20px;
-    }
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: 45px auto;
+        }
 
-    .question-number {
-        font-size: 13px;
-        font-weight: bold;
-        margin-bottom: 12px;
-    }
+        .page-heading {
+            margin-bottom: 28px;
+        }
 
-    .question-text {
-        font-size: 18px;
-        line-height: 1.6;
-        font-weight: bold;
-        margin-bottom: 25px;
-    }
+        .page-heading h1 {
+            font-size: 30px;
+            margin-bottom: 8px;
+            color: #111827;
+        }
 
-    .answer-label {
-        display: block;
-        font-size: 14px;
-        font-weight: bold;
-        margin-bottom: 8px;
-    }
+        .page-heading p {
+            color: #6b7280;
+            line-height: 1.6;
+        }
 
-    .answer-box {
-        width: 100%;
-        min-height: 180px;
-        padding: 12px;
-        border: 1px solid #000000;
-        box-sizing: border-box;
-        resize: vertical;
-        font-family: Arial, Helvetica, sans-serif;
-        font-size: 14px;
-        color: #000000;
-        background: #ffffff;
-    }
+        .session-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
 
-    .answer-box:focus {
-        outline: none;
-        border: 2px solid #000000;
-    }
+        .info-item {
+            background: #ffffff;
+            padding: 10px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 13px;
+            color: #4b5563;
+        }
 
-    .submit-button {
-        margin-top: 15px;
-        width: 100%;
-        padding: 12px;
-        border: 1px solid #000000;
-        background: #000000;
-        color: #ffffff;
-        font-size: 15px;
-        cursor: pointer;
-    }
+        .info-item strong {
+            color: #111827;
+        }
 
-    .submit-button:hover {
-        background: #333333;
-    }
+        .progress-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 22px;
+            margin-bottom: 24px;
+        }
 
-    .notice {
-        border: 1px solid #000000;
-        padding: 15px;
-        margin-top: 20px;
-        font-size: 13px;
-        line-height: 1.6;
-    }
-</style>
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+            font-size: 14px;
+            font-weight: 600;
+        }
 
+        .progress-info span:first-child {
+            color: #111827;
+        }
 
-<div class="interview-page">
+        .progress-info span:last-child {
+            color: #6b7280;
+        }
 
+        .progress-bar {
+            width: 100%;
+            height: 9px;
+            background: #e5e7eb;
+            border-radius: 20px;
+            overflow: hidden;
+        }
 
-    <!-- =========================================
-         INTERVIEW HEADER
-    ========================================== -->
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            border-radius: 20px;
+            transition: width 0.3s ease;
+        }
 
-    <div class="interview-header">
+        .question-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+        }
 
-        <h1>
-            AI Mock Interview
-        </h1>
+        .question-number {
+            display: inline-block;
+            background: #eef2ff;
+            color: #4f46e5;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 8px 12px;
+            border-radius: 7px;
+            margin-bottom: 20px;
+        }
 
-        <div class="interview-details">
+        .question-text {
+            font-size: 21px;
+            font-weight: 600;
+            line-height: 1.7;
+            color: #111827;
+            margin-bottom: 30px;
+            overflow-wrap: anywhere;
+        }
 
-            <strong>Role:</strong>
-            {{ session.role }}
+        .answer-label {
+            display: block;
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #374151;
+        }
 
-            &nbsp; | &nbsp;
+        .answer-box {
+            display: block;
+            width: 100%;
+            min-height: 190px;
+            padding: 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            background: #ffffff;
+            color: #111827;
+            font-family: inherit;
+            font-size: 15px;
+            line-height: 1.7;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
 
-            <strong>Difficulty:</strong>
-            {{ session.difficulty }}
+        .answer-box:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+        }
 
-        </div>
+        .answer-box::placeholder {
+            color: #9ca3af;
+        }
 
-    </div>
+        .submit-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 22px;
+        }
 
+        .submit-button {
+            border: none;
+            border-radius: 9px;
+            padding: 13px 25px;
+            background: #4f46e5;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
 
-    <!-- =========================================
-         INTERVIEW PROGRESS
-    ========================================== -->
+        .submit-button:hover {
+            background: #4338ca;
+            transform: translateY(-1px);
+        }
 
-    <div class="progress-box">
+        .submit-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
 
-        <strong>Interview Progress:</strong>
+        .footer {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 13px;
+            padding: 25px 15px;
+        }
 
-        {{ session.completed_questions }}
-        /
-        {{ session.total_questions }}
+        @media (max-width: 600px) {
+            .navbar {
+                padding: 16px 5%;
+            }
 
-        questions completed
+            .container {
+                width: 92%;
+                margin: 28px auto;
+            }
 
-    </div>
+            .page-heading h1 {
+                font-size: 25px;
+            }
 
+            .question-card {
+                padding: 22px;
+            }
 
-    <!-- =========================================
-         QUESTION CARD
-    ========================================== -->
+            .question-text {
+                font-size: 18px;
+            }
 
-    <div class="question-card">
+            .answer-box {
+                min-height: 160px;
+            }
 
+            .submit-section {
+                justify-content: stretch;
+            }
 
-        <!-- Question Number -->
+            .submit-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
 
-        <div class="question-number">
+<body>
 
-            QUESTION
-            {{ current_question.question_number }}
+    <nav class="navbar">
+        <a href="{% url 'dashboard' %}" class="logo">CognifyAI</a>
 
-            OF
-            {{ session.total_questions }}
+        <a href="{% url 'interview_home' %}" class="nav-link">
+            Exit Interview
+        </a>
+    </nav>
 
-        </div>
+    <main class="container">
 
+        <section class="page-heading">
+            <h1>Mock Interview</h1>
+            <p>
+                Answer each question carefully. Your answers will be evaluated
+                by AI, and you will receive feedback on your performance.
+            </p>
+        </section>
 
-        <!-- Question -->
+        <section class="session-info">
+            <div class="info-item">
+                Role: <strong>{{ session.role }}</strong>
+            </div>
 
-        <div class="question-text">
+            <div class="info-item">
+                Difficulty: <strong>{{ session.difficulty }}</strong>
+            </div>
 
-            {{ current_question.question }}
+            <div class="info-item">
+                Total Questions: <strong>{{ session.total_questions }}</strong>
+            </div>
+        </section>
 
-        </div>
+        <section class="progress-card">
 
+            <div class="progress-info">
+                <span>
+                    Question {{ current_question.question_number }}
+                    of {{ session.total_questions }}
+                </span>
 
-        <!-- =====================================
-             ANSWER FORM
-        ====================================== -->
+                <span>
+                    {{ session.completed_questions }} completed
+                </span>
+            </div>
 
-        <form
-            method="POST"
-            action="{% url 'submit_answer' session.id %}"
-        >
+            <div class="progress-bar">
+                {% widthratio current_question.question_number session.total_questions 100 as progress %}
 
-            {% csrf_token %}
+                <div
+                    class="progress-fill"
+                    style="width: {{ progress }}%;"
+                ></div>
+            </div>
 
+        </section>
 
-            <!-- Hidden Question ID -->
+        <section class="question-card">
 
-            <input
-                type="hidden"
-                name="question_id"
-                value="{{ current_question.id }}"
+            <div class="question-number">
+                QUESTION {{ current_question.question_number }}
+            </div>
+
+            <div class="question-text">
+                {{ current_question.question }}
+            </div>
+
+            <form
+                method="POST"
+                action="{% url 'submit_answer' session.id %}"
+                id="answerForm"
             >
+                {% csrf_token %}
 
+                <input
+                    type="hidden"
+                    name="question_id"
+                    value="{{ current_question.id }}"
+                >
 
-            <!-- Answer Label -->
+                <label for="user_answer" class="answer-label">
+                    Your Answer
+                </label>
 
-            <label
-                for="answer"
-                class="answer-label"
-            >
-                Your Answer
-            </label>
+                <textarea
+                    id="user_answer"
+                    name="user_answer"
+                    class="answer-box"
+                    placeholder="Type your answer here. Explain your approach clearly and include examples where appropriate."
+                    required
+                ></textarea>
 
+                <div class="submit-section">
+                    <button
+                        type="submit"
+                        class="submit-button"
+                        id="submitButton"
+                    >
+                        Submit Answer
+                    </button>
+                </div>
+            </form>
 
-            <!-- Answer Box -->
+        </section>
 
-            <textarea
-                id="answer"
-                name="user_answer"
-                class="answer-box"
-                placeholder="Type your answer here..."
-                required
-            ></textarea>
+    </main>
 
+    <footer class="footer">
+        CognifyAI &copy; 2026. Learn, Practice, and Grow.
+    </footer>
 
-            <!-- Submit Button -->
+    <script>
+        const answerForm = document.getElementById("answerForm");
+        const submitButton = document.getElementById("submitButton");
 
-            <button
-                type="submit"
-                class="submit-button"
-            >
-                Submit Answer
-            </button>
+        answerForm.addEventListener("submit", function () {
+            if (answerForm.checkValidity()) {
+                submitButton.disabled = true;
+                submitButton.textContent = "Evaluating Answer...";
+            }
+        });
+    </script>
 
-        </form>
-
-    </div>
-
-
-    <!-- =========================================
-         INTERVIEW TIP
-    ========================================== -->
-
-    <div class="notice">
-
-        <strong>Interview Tip:</strong>
-
-        Explain your answer clearly and include examples
-        or reasoning whenever appropriate.
-
-    </div>
-
-
-</div>
-
-{% endblock %}
+</body>
+</html>

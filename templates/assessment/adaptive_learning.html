@@ -15,7 +15,6 @@ Adaptive Learning
 <style>
 
     .adaptive-hero {
-
         background:
             linear-gradient(
                 135deg,
@@ -24,31 +23,23 @@ Adaptive Learning
             );
 
         border: 1px solid #dfddff;
-
         border-radius: 22px;
-
         padding: 30px;
 
         box-shadow:
             0 10px 30px rgba(32,36,58,0.05);
 
         margin-bottom: 25px;
-
     }
 
 
     .adaptive-hero-icon {
-
         width: 58px;
-
         height: 58px;
-
         border-radius: 17px;
 
         display: flex;
-
         align-items: center;
-
         justify-content: center;
 
         background:
@@ -59,409 +50,277 @@ Adaptive Learning
             );
 
         color: white;
-
         font-size: 26px;
 
         box-shadow:
             0 10px 22px rgba(99,91,255,0.22);
-
     }
 
 
     .adaptive-title {
-
         font-size: 30px;
-
         font-weight: 800;
-
         margin: 0;
-
         color: #20243a;
-
     }
 
 
     .adaptive-subtitle {
-
         color: #747993;
-
         font-size: 13px;
-
         line-height: 1.7;
-
         margin-top: 6px;
-
     }
 
 
     .info-banner {
-
         background: white;
-
         border: 1px solid #e8eaf2;
-
         border-radius: 18px;
-
         padding: 22px 25px;
 
         box-shadow:
             0 8px 25px rgba(32,36,58,0.05);
 
         margin-bottom: 25px;
-
     }
 
 
     .info-banner h5 {
-
         color: #20243a;
-
         font-weight: 800;
-
         margin-bottom: 7px;
-
     }
 
 
     .info-banner p {
-
         color: #747993;
-
         font-size: 13px;
-
         margin: 0;
-
         line-height: 1.7;
-
     }
 
 
     .level-section {
-
         background: white;
-
         border: 1px solid #e8eaf2;
-
         border-radius: 20px;
-
         padding: 23px;
 
         box-shadow:
             0 8px 25px rgba(32,36,58,0.05);
 
         margin-bottom: 30px;
-
     }
 
 
     .section-heading-adaptive {
-
         display: flex;
-
         align-items: center;
-
         gap: 10px;
 
         color: #20243a;
-
         font-size: 17px;
-
         font-weight: 800;
 
         margin-bottom: 18px;
-
     }
 
 
     .level-grid {
-
         display: grid;
-
-        grid-template-columns:
-            repeat(5, 1fr);
-
+        grid-template-columns: repeat(5, 1fr);
         gap: 12px;
-
     }
 
 
     .level-box {
-
         text-align: center;
-
         border-radius: 15px;
-
         padding: 18px 10px;
 
         border: 1px solid #e7e8ef;
-
         background: #fafaff;
 
         transition: 0.2s ease;
-
     }
 
 
     .level-box:hover {
-
         transform: translateY(-3px);
 
         box-shadow:
             0 10px 25px rgba(32,36,58,0.08);
-
     }
 
 
     .level-icon {
-
         font-size: 25px;
-
         margin-bottom: 8px;
-
     }
 
 
     .level-name {
-
         font-size: 13px;
-
         font-weight: 800;
-
         color: #20243a;
-
     }
 
 
     .level-range {
-
         color: #747993;
-
         font-size: 11px;
-
         margin-top: 4px;
-
     }
 
 
     .beginner {
-
         background: #f0fdf4;
-
         border-color: #bbf7d0;
-
     }
 
 
     .easy {
-
         background: #eff6ff;
-
         border-color: #bfdbfe;
-
     }
 
 
     .medium {
-
         background: #fffbeb;
-
         border-color: #fde68a;
-
     }
 
 
     .advanced {
-
         background: #fff7ed;
-
         border-color: #fed7aa;
-
     }
 
 
     .mastery {
-
         background: #f5f3ff;
-
         border-color: #ddd6fe;
-
     }
 
 
     .topic-section {
-
         margin-top: 25px;
-
     }
 
 
     .topic-heading {
-
         margin-bottom: 18px;
-
     }
 
 
     .topic-heading h4 {
-
         color: #20243a;
-
         font-weight: 800;
-
         margin-bottom: 5px;
-
     }
 
 
     .topic-heading p {
-
         color: #747993;
-
         font-size: 13px;
-
     }
 
 
     .topic-card {
-
         background: white;
-
         border: 1px solid #e5e7ef;
-
         border-radius: 20px;
-
         padding: 24px;
-
         height: 100%;
 
         box-shadow:
             0 8px 25px rgba(32,36,58,0.05);
 
         transition: 0.25s ease;
-
     }
 
 
     .topic-card:hover {
-
         transform: translateY(-4px);
 
         box-shadow:
             0 17px 35px rgba(32,36,58,0.09);
 
         border-color: #d7d4ff;
-
     }
 
 
     .topic-top {
-
         display: flex;
-
         justify-content: space-between;
-
         align-items: flex-start;
-
         gap: 12px;
-
     }
 
 
     .subject-name {
-
         color: #8a8da0;
-
         font-size: 11px;
-
         font-weight: 600;
-
         margin-bottom: 5px;
-
     }
 
 
     .topic-name {
-
         color: #20243a;
-
         font-size: 19px;
-
         font-weight: 800;
-
     }
 
 
     .level-badge {
-
         padding: 6px 11px;
-
         border-radius: 20px;
 
         background: #eeedff;
-
         color: #5147d9;
 
         font-size: 11px;
-
         font-weight: 800;
 
         white-space: nowrap;
-
     }
 
 
     .accuracy-row {
-
         display: flex;
-
         align-items: center;
-
         justify-content: space-between;
 
         margin-top: 22px;
-
         margin-bottom: 8px;
-
     }
 
 
     .accuracy-label {
-
         color: #8a8da0;
-
         font-size: 11px;
-
     }
 
 
     .accuracy-value {
-
         color: #20243a;
-
         font-size: 14px;
-
         font-weight: 800;
-
     }
 
 
     .topic-progress {
-
         height: 8px;
-
         border-radius: 20px;
-
         background: #ececf3;
-
         overflow: hidden;
-
     }
 
 
     .topic-progress-bar {
-
         height: 100%;
-
         border-radius: 20px;
 
         background:
@@ -470,120 +329,103 @@ Adaptive Learning
                 #635bff,
                 #a855f7
             );
-
     }
 
 
     .recommendation {
-
         background: #f8f8fc;
-
         border: 1px solid #ececf2;
-
         border-radius: 13px;
 
         padding: 13px;
-
         margin-top: 18px;
-
     }
 
 
     .recommendation-title {
-
         color: #20243a;
-
         font-size: 11px;
-
         font-weight: 800;
-
         margin-bottom: 5px;
-
     }
 
 
     .recommendation-text {
-
         color: #747993;
-
         font-size: 12px;
-
         line-height: 1.6;
-
     }
 
 
     .content-title {
-
         color: #20243a;
-
         font-size: 12px;
-
         font-weight: 800;
 
         margin-top: 20px;
-
         margin-bottom: 10px;
-
     }
 
 
     .content-buttons {
-
         display: grid;
-
-        grid-template-columns:
-            repeat(2, 1fr);
-
+        grid-template-columns: repeat(2, 1fr);
         gap: 8px;
-
     }
 
 
     .content-button {
-
         display: flex;
-
         align-items: center;
-
         justify-content: center;
-
         gap: 7px;
 
         padding: 10px;
 
         border-radius: 10px;
-
         border: 1px solid #e2e3eb;
 
         color: #45485c;
-
         background: white;
 
         font-size: 11px;
-
         font-weight: 700;
 
         transition: 0.2s ease;
 
+        text-decoration: none;
+
+        cursor: pointer;
     }
 
 
     .content-button:hover {
-
         color: #635bff;
-
         border-color: #cfcaff;
-
         background: #f8f7ff;
 
+        transform: translateY(-1px);
     }
 
 
-    .content-button.primary {
+    /* NOTES */
 
+    .content-button.notes {
+        background: #ffffff;
+    }
+
+
+    /* VIDEOS */
+
+    .content-button.videos {
+        background: #ffffff;
+    }
+
+
+    /* PRACTICE */
+
+    .content-button.practice {
         color: white;
-
         border-color: transparent;
 
         background:
@@ -592,12 +434,31 @@ Adaptive Learning
                 #635bff,
                 #7c3aed
             );
+    }
 
+
+    .content-button.practice:hover {
+        color: white;
+
+        background:
+            linear-gradient(
+                135deg,
+                #574ff0,
+                #6d28d9
+            );
+
+        border-color: transparent;
+    }
+
+
+    /* REAL WORLD */
+
+    .content-button.realworld {
+        background: #ffffff;
     }
 
 
     .empty-adaptive {
-
         text-align: center;
 
         padding: 60px 20px;
@@ -607,14 +468,11 @@ Adaptive Learning
         border: 1px solid #e8eaf2;
 
         border-radius: 20px;
-
     }
 
 
     .empty-adaptive-icon {
-
         width: 70px;
-
         height: 70px;
 
         margin: auto;
@@ -622,29 +480,22 @@ Adaptive Learning
         border-radius: 20px;
 
         display: flex;
-
         align-items: center;
-
         justify-content: center;
 
         background: #eeedff;
-
         color: #635bff;
 
         font-size: 28px;
 
         margin-bottom: 17px;
-
     }
 
 
     @media (max-width: 1000px) {
 
         .level-grid {
-
-            grid-template-columns:
-                repeat(3, 1fr);
-
+            grid-template-columns: repeat(3, 1fr);
         }
 
     }
@@ -653,24 +504,17 @@ Adaptive Learning
     @media (max-width: 600px) {
 
         .level-grid {
-
-            grid-template-columns:
-                repeat(2, 1fr);
-
+            grid-template-columns: repeat(2, 1fr);
         }
 
 
         .adaptive-title {
-
             font-size: 24px;
-
         }
 
 
         .content-buttons {
-
             grid-template-columns: 1fr;
-
         }
 
     }
@@ -683,7 +527,9 @@ Adaptive Learning
 {% block content %}
 
 
-<!-- PAGE HEADER -->
+<!-- =========================
+     PAGE HEADER
+========================= -->
 
 <div class="adaptive-hero">
 
@@ -704,6 +550,7 @@ Adaptive Learning
 
             </h1>
 
+
             <div class="adaptive-subtitle">
 
                 CognifyAI automatically adjusts your learning
@@ -718,7 +565,9 @@ Adaptive Learning
 </div>
 
 
-<!-- INFORMATION -->
+<!-- =========================
+     INFORMATION
+========================= -->
 
 <div class="info-banner">
 
@@ -761,10 +610,11 @@ Adaptive Learning
 </div>
 
 
-<!-- LEVEL SYSTEM -->
+<!-- =========================
+     LEVEL SYSTEM
+========================= -->
 
 <div class="level-section">
-
 
     <div class="section-heading-adaptive">
 
@@ -862,13 +712,14 @@ Adaptive Learning
 
         </div>
 
-
     </div>
 
 </div>
 
 
-<!-- TOPICS -->
+<!-- =========================
+     TOPICS
+========================= -->
 
 <div class="topic-section">
 
@@ -907,6 +758,8 @@ Adaptive Learning
             <div class="topic-card">
 
 
+                <!-- TOPIC HEADER -->
+
                 <div class="topic-top">
 
 
@@ -933,7 +786,6 @@ Adaptive Learning
                         {{ item.level }}
 
                     </span>
-
 
                 </div>
 
@@ -990,7 +842,7 @@ Adaptive Learning
                 </div>
 
 
-                <!-- CONTENT -->
+                <!-- LEARNING CONTENT -->
 
                 <div class="content-title">
 
@@ -1002,9 +854,11 @@ Adaptive Learning
                 <div class="content-buttons">
 
 
+                    <!-- NOTES -->
+
                     <a
                         href="{% url 'adaptive_content' %}?topic={{ item.topic|urlencode }}&type=notes"
-                        class="content-button"
+                        class="content-button notes"
                     >
 
                         <i class="bi bi-book"></i>
@@ -1014,9 +868,11 @@ Adaptive Learning
                     </a>
 
 
+                    <!-- VIDEOS -->
+
                     <a
                         href="{% url 'adaptive_content' %}?topic={{ item.topic|urlencode }}&type=videos"
-                        class="content-button"
+                        class="content-button videos"
                     >
 
                         <i class="bi bi-play-circle"></i>
@@ -1026,26 +882,30 @@ Adaptive Learning
                     </a>
 
 
+                    <!-- PRACTICE QUESTIONS -->
+
                     <a
                         href="{% url 'adaptive_content' %}?topic={{ item.topic|urlencode }}&type=questions"
-                        class="content-button primary"
+                        class="content-button practice"
                     >
 
                         <i class="bi bi-pencil-square"></i>
 
-                        Practice
+                        Practice Questions
 
                     </a>
 
 
+                    <!-- REAL WORLD PROBLEMS -->
+
                     <a
                         href="{% url 'adaptive_content' %}?topic={{ item.topic|urlencode }}&type=realworld"
-                        class="content-button"
+                        class="content-button realworld"
                     >
 
                         <i class="bi bi-code-square"></i>
 
-                        Real World
+                        Real World Problems
 
                     </a>
 
@@ -1054,7 +914,6 @@ Adaptive Learning
 
 
             </div>
-
 
         </div>
 
@@ -1067,6 +926,8 @@ Adaptive Learning
 
     {% else %}
 
+
+    <!-- EMPTY STATE -->
 
     <div class="empty-adaptive">
 

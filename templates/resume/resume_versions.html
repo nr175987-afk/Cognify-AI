@@ -1,151 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
+{% extends "base.html" %}
 
-    <title>Saved Resume Versions</title>
+{% block title %}Saved Resume Versions{% endblock %}
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            background: #ffffff;
-            color: #000000;
-            font-family: Arial, Helvetica, sans-serif;
-        }
-
-        .container {
-            width: 90%;
-            max-width: 1000px;
-            margin: 40px auto;
-        }
-
-        h1 {
-            margin-bottom: 8px;
-            font-size: 28px;
-        }
-
-        .subtitle {
-            margin-bottom: 30px;
-            color: #000000;
-        }
-
-        .top-links {
-            margin-bottom: 25px;
-        }
-
-        .top-links a {
-            color: #000000;
-            text-decoration: underline;
-            margin-right: 20px;
-        }
-
-        .version-card {
-            border: 1px solid #000000;
-            padding: 20px;
-            margin-bottom: 18px;
-            background: #ffffff;
-        }
-
-        .version-title {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .version-info {
-            margin-bottom: 15px;
-            line-height: 1.6;
-        }
-
-        .view-button {
-            display: inline-block;
-            padding: 9px 18px;
-            border: 1px solid #000000;
-            background: #000000;
-            color: #ffffff;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .empty {
-            border: 1px solid #000000;
-            padding: 25px;
-        }
-    </style>
-</head>
-
-<body>
-
-<div class="container">
-
-    <h1>Saved Resume Versions</h1>
-
-    <div class="subtitle">
-        View your previously generated resume versions.
-    </div>
-
-    <div class="top-links">
-        <a href="{% url 'resume_home' %}">
-            Back to Resume Builder
-        </a>
-    </div>
-
-
-    {% if versions %}
-
-        {% for version in versions %}
-
-            <div class="version-card">
-
-                <div class="version-title">
-                    Resume Version {{ version.version_number }}
-                </div>
-
-                <div class="version-info">
-
-                    <strong>Created:</strong>
-                    {{ version.created_at|date:"d M Y, h:i A" }}
-
-                    {% if version.change_summary %}
-                        <br>
-
-                        <strong>Changes:</strong>
-                        {{ version.change_summary }}
-                    {% endif %}
-
-                </div>
-
-                <a
-                    href="{% url 'view_resume_version' version.id %}"
-                    class="button"
-                >
-                    View Resume
-                </a>
-
-                <a
-                    href="{% url 'download_resume_version_pdf' version.id %}"
-                    class="button"
-                >
-                    Download PDF
-                </a>
-
-            </div>
-
-        {% endfor %}
-
-    {% else %}
-
-        <div class="empty">
-            No saved resume versions yet.
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div><h2>Saved Resume Versions</h2><p class="text-muted mb-0">Each saved resume is stored separately.</p></div>
+    <a class="btn btn-primary" href="{% url 'resume_home' %}">Back to Resume Builder</a>
+  </div>
+  {% if versions %}
+    <div class="list-group">
+      {% for version in versions %}
+      <div class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+          <h5 class="mb-1">Version {{ version.version_number }}</h5>
+          <div class="text-muted small">{{ version.created_at|date:"d M Y, h:i A" }}</div>
+          {% if version.change_summary %}<div>{{ version.change_summary }}</div>{% endif %}
         </div>
-
-    {% endif %}
-
+        <div class="d-flex flex-wrap gap-2">
+          <a class="btn btn-outline-primary btn-sm" href="{% url 'view_resume_version' version.id %}">View</a>
+          <a class="btn btn-outline-secondary btn-sm" href="{% url 'download_resume_version_pdf' version.id %}">Download PDF</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info">No saved resume versions yet. Open Resume Builder and click <strong>Save Resume</strong> to create your first version.</div>
+  {% endif %}
 </div>
-
-</body>
-</html>
+{% endblock %}

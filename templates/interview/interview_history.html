@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+
+{% block title %}
+Interview History | CognifyAI
+{% endblock %}
+
+{% block content %}
+
+<style>
+
+    .history-page {
+        max-width: 1100px;
+        margin: 40px auto;
+        padding: 30px;
+        font-family: Arial, Helvetica, sans-serif;
+        color: #000000;
+    }
+
+    .history-header {
+        border-bottom: 2px solid #000000;
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+    }
+
+    .history-header h1 {
+        margin: 0 0 8px 0;
+        font-size: 30px;
+        font-weight: bold;
+    }
+
+    .history-header p {
+        margin: 0;
+        font-size: 14px;
+        color: #555555;
+    }
+
+    .history-table-container {
+        border: 1px solid #000000;
+        overflow-x: auto;
+    }
+
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 750px;
+    }
+
+    .history-table th {
+        background: #000000;
+        color: #ffffff;
+        padding: 14px;
+        text-align: left;
+        font-size: 13px;
+    }
+
+    .history-table td {
+        padding: 14px;
+        border-bottom: 1px solid #dddddd;
+        font-size: 14px;
+        vertical-align: middle;
+    }
+
+    .history-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .history-table tr:hover {
+        background: #f7f7f7;
+    }
+
+    .score {
+        font-weight: bold;
+    }
+
+    .status {
+        font-weight: bold;
+    }
+
+    .view-button {
+        display: inline-block;
+        padding: 7px 12px;
+        border: 1px solid #000000;
+        background: #000000;
+        color: #ffffff;
+        text-decoration: none;
+        font-size: 13px;
+    }
+
+    .view-button:hover {
+        background: #333333;
+        color: #ffffff;
+    }
+
+    .empty-history {
+        border: 1px solid #000000;
+        padding: 50px 30px;
+        text-align: center;
+    }
+
+    .empty-history h3 {
+        margin-bottom: 10px;
+    }
+
+    .empty-history p {
+        color: #555555;
+        margin-bottom: 20px;
+    }
+
+    .start-button {
+        display: inline-block;
+        padding: 12px 20px;
+        background: #000000;
+        color: #ffffff;
+        text-decoration: none;
+        border: 1px solid #000000;
+    }
+
+    .start-button:hover {
+        background: #333333;
+        color: #ffffff;
+    }
+
+</style>
+
+
+<div class="history-page">
+
+
+    <!-- =========================================
+         HEADER
+    ========================================== -->
+
+    <div class="history-header">
+
+        <h1>
+            Interview History
+        </h1>
+
+        <p>
+            Review your previous AI mock interview sessions
+            and track your interview performance.
+        </p>
+
+    </div>
+
+
+    <!-- =========================================
+         INTERVIEW HISTORY
+    ========================================== -->
+
+    {% if sessions %}
+
+        <div class="history-table-container">
+
+            <table class="history-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Role
+                        </th>
+
+                        <th>
+                            Difficulty
+                        </th>
+
+                        <th>
+                            Questions
+                        </th>
+
+                        <th>
+                            Completed
+                        </th>
+
+                        <th>
+                            Score
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                        <th>
+                            Date
+                        </th>
+
+                        <th>
+                            Action
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for session in sessions %}
+
+                        <tr>
+
+                            <td>
+                                <strong>
+                                    {{ session.role }}
+                                </strong>
+                            </td>
+
+
+                            <td>
+                                {{ session.difficulty }}
+                            </td>
+
+
+                            <td>
+                                {{ session.total_questions }}
+                            </td>
+
+
+                            <td>
+                                {{ session.completed_questions }}
+                            </td>
+
+
+                            <td class="score">
+
+                                {% if session.status == "Completed" %}
+
+                                    {{ session.overall_score|floatformat:1 }}%
+
+                                {% else %}
+
+                                    —
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td class="status">
+
+                                {{ session.status }}
+
+                            </td>
+
+
+                            <td>
+
+                                {{ session.created_at|date:"d M Y" }}
+
+                            </td>
+
+
+                            <td>
+
+                                {% if session.status == "Completed" %}
+
+                                    <a
+                                        href="{% url 'interview_result' session.id %}"
+                                        class="view-button"
+                                    >
+                                        View Result
+                                    </a>
+
+                                {% else %}
+
+                                    <a
+                                        href="{% url 'interview_session' session.id %}"
+                                        class="view-button"
+                                    >
+                                        Continue
+                                    </a>
+
+                                {% endif %}
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    {% else %}
+
+
+        <!-- =====================================
+             NO INTERVIEWS
+        ====================================== -->
+
+        <div class="empty-history">
+
+            <h3>
+                No Interview History
+            </h3>
+
+            <p>
+                You haven't completed any AI mock interviews yet.
+                Start your first interview to begin tracking
+                your performance.
+            </p>
+
+            <a
+                href="{% url 'interview_home' %}"
+                class="start-button"
+            >
+                Start Mock Interview
+            </a>
+
+        </div>
+
+    {% endif %}
+
+
+</div>
+
+{% endblock %}

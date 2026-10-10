@@ -595,14 +595,21 @@ def generate_resume_pdf(
                     )
                 )
 
-            if description:
+            start_date = safe_text(getattr(project, "start_date", ""))
+            end_date = safe_text(getattr(project, "end_date", ""))
+            github_url = safe_text(getattr(project, "github_url", ""))
+            live_url = safe_text(getattr(project, "live_url", ""))
 
-                project_block.append(
-                    Paragraph(
-                        description,
-                        body_style,
-                    )
-                )
+            duration = " - ".join(value for value in (start_date, end_date) if value)
+            if duration:
+                project_block.append(Paragraph(f"<b>Duration:</b> {duration}", small_style))
+            if github_url:
+                project_block.append(Paragraph(f"<b>GitHub:</b> {github_url}", small_style))
+            if live_url:
+                project_block.append(Paragraph(f"<b>Live Demo:</b> {live_url}", small_style))
+
+            if description:
+                project_block.append(Paragraph(description, body_style))
 
             story.append(
                 KeepTogether(
@@ -688,18 +695,18 @@ def generate_resume_pdf(
                 )
             )
 
+            start_date = safe_text(getattr(item, "start_date", ""))
+            end_date = safe_text(getattr(item, "end_date", ""))
+            currently_working = bool(getattr(item, "currently_working", False))
+            duration_values = [value for value in (start_date, "Present" if currently_working else end_date) if value]
+            duration = " - ".join(duration_values)
+            if duration:
+                story.append(Paragraph(f"<b>Duration:</b> {duration}", small_style))
+
             if description:
+                story.append(Paragraph(description, body_style))
 
-                story.append(
-                    Paragraph(
-                        description,
-                        body_style,
-                    )
-                )
-
-            story.append(
-                Spacer(1, 2)
-            )
+            story.append(Spacer(1, 2))
 
     # --------------------------------------------------
     # CERTIFICATIONS
@@ -761,12 +768,14 @@ def generate_resume_pdf(
                     f"{credential_id}"
                 )
 
-            story.append(
-                Paragraph(
-                    certification_text,
-                    body_style,
-                )
-            )
+            issue_date = safe_text(getattr(item, "issue_date", ""))
+            credential_url = safe_text(getattr(item, "credential_url", ""))
+            if issue_date:
+                certification_text += f" | Issued: {issue_date}"
+            if credential_url:
+                certification_text += f" | Credential URL: {credential_url}"
+
+            story.append(Paragraph(certification_text, body_style))
 
     # --------------------------------------------------
     # VERIFIED ACHIEVEMENTS
@@ -810,6 +819,16 @@ def generate_resume_pdf(
                     body_style,
                 )
             )
+
+    # Older/newer versions may store achievements as strings in AI output.
+    # If no achievement objects were supplied, render those saved strings.
+    if not achievements:
+        saved_achievements = getattr(ai_resume, "achievements", []) or []
+        if saved_achievements:
+            story.append(Paragraph("ACHIEVEMENTS", section_style))
+            for achievement_text in saved_achievements:
+                if str(achievement_text).strip():
+                    story.append(Paragraph(safe_text(achievement_text), body_style))
 
     # --------------------------------------------------
     # BUILD PDF

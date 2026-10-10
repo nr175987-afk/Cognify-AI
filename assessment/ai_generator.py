@@ -17,21 +17,41 @@ load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY")
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 
-if not API_KEY:
-    raise ValueError(
-        "GEMINI_API_KEY is not configured in .env"
+# Allow Django to start even if the Gemini key is missing.
+client = genai.Client(api_key=API_KEY) if API_KEY else None
+
+MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+
+
+def _generate_text(prompt, response_schema=None):
+    """Generate text with Gemini and return the response text."""
+
+    if client is None:
+        raise RuntimeError(
+            "GEMINI_API_KEY is missing from your .env file. "
+            "Configure Gemini or use the Ollama fallback in ai_service.py."
+        )
+
+    config = None
+
+    if response_schema is not None:
+        config = {
+            "response_mime_type": "application/json",
+            "response_schema": response_schema,
+        }
+
+    response = client.models.generate_content(
+        model=MODEL_NAME,
+        contents=prompt,
+        config=config,
     )
 
+    result = (getattr(response, "text", None) or "").strip()
 
-# ============================================================
-# GEMINI CLIENT
-# ============================================================
+    if not result:
+        raise RuntimeError("Gemini returned an empty response.")
 
-client = genai.Client(
-    api_key=API_KEY
-)
-
-MODEL_NAME = "gemini-2.5-flash"
+    return result
 
 
 # ============================================================
@@ -56,57 +76,48 @@ class QuestionSet(BaseModel):
 # GENERATE ASSESSMENT QUESTIONS
 # ============================================================
 
-def generate_questions(
-    subject,
-    topic,
-    difficulty,
-    number_of_questions
-):
+def generate_questions(subject, topic, difficulty, number_of_questions):
 
     prompt = f"""
 You are CognifyAI, an expert educational assessment generator.
 
 Generate exactly {number_of_questions} multiple-choice questions.
 
-Subject:
-{subject}
+Subject: {subject}
+Topic: {topic}
+Difficulty: {difficulty}
 
-Topic:
-{topic}
-
-Difficulty:
-{difficulty}
-
-IMPORTANT REQUIREMENTS:
-
-1. Questions must be directly related to the given topic.
-2. Questions must match the requested difficulty.
+Requirements:
+1. Every question must directly test the requested topic.
+2. Match the requested difficulty.
 3. Each question must have exactly four options.
-4. Only one option must be correct.
-5. The correct answer must be represented by A, B, C, or D.
-6. Do not create duplicate questions.
-7. Avoid ambiguous questions.
-8. Questions should test understanding, not only memorization.
-9. Provide a short educational explanation for every answer.
-10. Do not include information outside the requested topic.
-11. Use clear language suitable for a college student.
-12. Make the questions meaningful and educational.
-
-Return only structured data.
+4. There must be exactly one correct option.
+5. correct_answer must be one uppercase letter: A, B, C, or D.
+6. Do not repeat questions or use ambiguous wording.
+7. Test understanding and application, not only memorization.
+8. Give a short, accurate educational explanation for every answer.
+9. Keep all questions appropriate for a college student.
+10. Return only data matching the requested JSON schema.
 """
 
-    response = client.models.generate_content(
-        model=MODEL_NAME,
-        contents=prompt,
-        config={
-            "response_mime_type": "application/json",
-            "response_schema": QuestionSet,
-        },
+    result = QuestionSet.model_validate_json(
+        _generate_text(prompt, response_schema=QuestionSet)
     )
 
-    result = QuestionSet.model_validate_json(
-        response.text
-    )
+    if len(result.questions) != number_of_questions:
+        raise RuntimeError(
+            f"Gemini returned {len(result.questions)} questions; "
+            f"{number_of_questions} were requested."
+        )
+
+    for question in result.questions:
+        question.correct_answer = question.correct_answer.strip().upper()
+
+        if question.correct_answer not in {"A", "B", "C", "D"}:
+            raise RuntimeError(
+                "Gemini returned an invalid correct_answer. "
+                "Expected A, B, C, or D."
+            )
 
     return result.questions
 
@@ -153,484 +164,461 @@ def generate_learning_plan(student_data):
         student_information = json.dumps(
             student_data,
             indent=2,
-            default=str
+            default=str,
         )
 
     prompt = f"""
 You are CognifyAI, an adaptive AI learning assistant.
 
-Your job is to analyze a student's learning performance and
-decide what the student should learn next.
+Analyze the student's performance and recommend what they should learn next.
 
 STUDENT PERFORMANCE DATA:
-
 {student_information}
 
-============================================================
-ADAPTIVE LEARNING RULES
-============================================================
+ADAPTIVE RULES:
 
-1. If the student's score is below 60%:
-   - Current level = Beginner
-   - Recommend easy/basic learning content.
-   - Focus strongly on fundamentals.
-
-2. If the student's score is between 60% and 79%:
-   - Current level = Intermediate
-   - Recommend medium-level content.
-   - Strengthen concepts.
-   - Introduce application-based problems.
-
-3. If the student's score is between 80% and 99%:
-   - Current level = Advanced
-   - Recommend advanced concepts.
-   - Include difficult questions.
-   - Include real-world applications.
-
-4. If the student's score is exactly 100%:
-   - NEVER say learning is complete.
-   - Current level = Mastery.
-   - Recommend expert-level concepts.
-   - Recommend advanced real-world problems.
-   - Recommend interview-level challenges.
-
-5. If a student successfully completes Easy content:
-   Recommend Medium content.
-
-6. If a student successfully completes Medium content:
-   Recommend Advanced content.
-
-7. If a student successfully completes Advanced content:
-   Recommend Expert/Mastery content.
-
-8. Never repeatedly recommend concepts that the student has
-   already mastered.
-
-9. Recommendations must be specific to the student's topics.
-
-10. Provide multiple learning choices:
-   - Notes
-   - Videos
-   - Practice questions
-   - Real-world problems
-
-11. Video recommendations must match the student's level.
-
-12. Practice questions must match the student's level.
-
-13. Real-world problems should resemble situations that
-    developers or professionals actually encounter.
-
-14. If the student performs very well, increase the difficulty
-    instead of stopping their learning.
-
-15. The goal is continuous improvement and mastery.
-
-============================================================
-OUTPUT REQUIREMENTS
-============================================================
+- Score below 60%: Beginner; focus on fundamentals and easy content.
+- Score from 60% to below 80%: Intermediate; strengthen concepts and apply them.
+- Score from 80% to below 100%: Advanced; recommend challenging concepts and real applications.
+- Score exactly 100%: Mastery; do not stop learning. Recommend expert-level and interview-level challenges.
+- Easy completed successfully: recommend Medium.
+- Medium completed successfully: recommend Advanced.
+- Advanced completed successfully: recommend Expert/Mastery.
+- Avoid repeatedly recommending concepts the student has already mastered.
+- Recommendations must be specific to the student's actual topics and performance.
+- Include notes, videos, practice questions, and real-world problems.
+- Increase difficulty when performance is strong.
+- Never say learning is complete.
 
 Return structured data only.
-Do not return Markdown.
-Do not return explanations outside the requested structure.
+Do not include Markdown outside the required structure.
 """
 
-    response = client.models.generate_content(
-        model=MODEL_NAME,
-        contents=prompt,
-        config={
-            "response_mime_type": "application/json",
-            "response_schema": AdaptiveLearningPlan,
-        },
+    return AdaptiveLearningPlan.model_validate_json(
+        _generate_text(prompt, response_schema=AdaptiveLearningPlan)
     )
-
-    result = AdaptiveLearningPlan.model_validate_json(
-        response.text
-    )
-
-    return result
 
 
 # ============================================================
 # GENERATE ADAPTIVE NOTES
 # ============================================================
 
-def generate_adaptive_notes(
-    topic,
-    level,
-    score
-):
+def generate_adaptive_notes(topic, level, score):
+    """
+    Generate detailed study notes personalized to the learner's level.
+    Uses the existing _generate_text() helper.
+    """
 
     prompt = f"""
-You are CognifyAI, an adaptive learning assistant.
+You are CognifyAI, an expert university lecturer and technical author.
 
-Create personalized learning notes for a college student.
+Create comprehensive, accurate, textbook-quality study notes.
 
-Topic:
-{topic}
+TOPIC: {topic}
+STUDENT ACCURACY: {score}%
+RECOMMENDED LEVEL: {level}
 
-Student accuracy:
-{score}%
+IMPORTANT:
+The title, explanations, examples, and difficulty must match
+the requested level. Never call Expert notes beginner-friendly.
 
-Recommended learning level:
-{level}
+DIFFICULTY GUIDELINES
 
-============================================================
-LEVEL RULES
-============================================================
+Beginner:
+- Assume no prior knowledge.
+- Explain terminology from scratch.
+- Use simple analogies and fully worked examples.
 
-BEGINNER:
-- Assume the student has very little knowledge.
-- Start from fundamentals.
-- Explain terminology simply.
-- Use very simple examples.
-- Avoid unnecessary advanced concepts.
+Easy:
+- Strengthen the fundamentals.
+- Explain formulas and demonstrate their use.
+- Include straightforward practice examples.
 
-EASY:
-- Explain fundamentals clearly.
-- Include simple examples.
-- Add small practice examples.
-- Focus on building confidence.
+Medium:
+- Explain intermediate theory and applications.
+- Include multi-step examples, assumptions, and common mistakes.
 
-MEDIUM:
-- Assume the student understands the basics.
-- Explain intermediate concepts.
-- Include practical examples.
-- Include common mistakes.
+Hard:
+- Cover advanced theory, derivations, edge cases, and diagnostics.
+- Include challenging numerical or analytical examples where relevant.
 
-HARD:
-- Focus on advanced concepts.
-- Include challenging examples.
-- Explain edge cases.
-- Include interview-style concepts.
+Advanced or Expert:
+- Focus on rigorous theory, deeper mathematical reasoning,
+  derivations, parameter interpretation, assumptions, and limitations.
+- Explain when methods work, why they work, and when they fail.
+- Discuss diagnostics, optimization, edge cases, trade-offs,
+  computational considerations, and real-world implications.
+- Include advanced worked examples and interview-level insights.
+- Avoid unnecessary repetition of elementary definitions.
 
-ADVANCED:
-- Do NOT repeat basic explanations unnecessarily.
-- Teach advanced concepts.
-- Include complex examples.
-- Include optimization and edge cases.
-- Include real-world applications.
-- Include interview-level insights.
+DEPTH REQUIREMENTS
 
-============================================================
-IMPORTANT
-============================================================
+Aim for 1,800–2,500 words for a substantial topic.
+For a narrower topic, use the length needed to explain it properly.
 
-The student should feel that the content was specifically
-created for their current ability.
+Do not pad the response with repetitive filler.
 
-Do not give exactly the same explanation to every level.
-
-Structure the response as:
+Use these sections where relevant:
 
 # {topic}
 
-## What You Should Learn
+## Learning Objectives
+List measurable things the learner should understand or be able to do.
+
+## Prerequisites
+Explain the knowledge required to understand this topic.
+
+## Introduction and Motivation
+Explain the purpose of the topic, the problem it solves,
+and why it matters.
 
 ## Core Concepts
+Explain each major concept in detail, including terminology
+and the relationship between the concepts.
 
-## Example
+## Mathematical Formulation
+Present relevant equations, define every symbol, and explain
+what each term means.
+
+## Step-by-Step Working
+Explain how the method or concept works in a logical sequence.
+Include derivations where appropriate.
+
+## Detailed Worked Examples
+Provide at least two meaningful examples when the topic supports them.
+Show the data, formula, substitutions, intermediate calculations,
+final result, and interpretation.
+
+## Advanced Concepts
+Cover additional theory, edge cases, diagnostics, optimization,
+or alternative approaches appropriate to the requested level.
+
+## Assumptions and Limitations
+Explain the relevant assumptions and what can happen when
+they are violated.
+
+## Advantages and Disadvantages
+Explain meaningful strengths and weaknesses.
 
 ## Common Mistakes
+Identify likely misunderstandings and explain how to avoid them.
 
-## Practice Yourself
+## Real-World Applications
+Give concrete applications and explain how the topic is used.
 
-## Real-World Application
+## Quick Revision
+Summarize the key concepts and formulas.
 
-## What To Learn Next
+## Practice Questions
+Provide five questions appropriate to the requested difficulty.
 
-Keep the explanation practical, clear and engaging.
+## Answers and Explanations
+Give correct answers and clear explanations for those questions.
 
-Return only Markdown content.
+## What to Learn Next
+Recommend relevant follow-on concepts in a logical learning sequence.
+
+Adapt the structure to the subject. Do not include irrelevant
+sections simply to satisfy a template.
+
+MATHEMATICAL FORMATTING
+
+Use valid LaTeX delimiters.
+
+Inline:
+The estimated response is $\\hat{{y}} = \\beta_0 + \\beta_1 x$.
+
+Display:
+$$
+\\hat{{y}} = \\beta_0 + \\beta_1 x
+$$
+
+- Put display delimiters on separate lines.
+- Use correct subscripts, superscripts, Greek letters, fractions,
+  summations, matrices, and mathematical operators where relevant.
+- Explain every important symbol immediately after introducing
+  the equation.
+- Never use square brackets as equation delimiters.
+- Never leave a formula blank or omit its mathematical symbols.
+- Do not place mathematical equations inside code fences.
+- Use literal Markdown table pipes, without preceding backslashes.
+- Use normal Markdown headings, numbered lists, and bullet lists.
+
+NUMERICAL ACCURACY
+
+- Independently verify each calculation before writing the result.
+- Show intermediate steps for important calculations.
+- Check signs, substitutions, units, rounding, and final answers.
+- Do not invent regression coefficients, R-squared values, RMSE,
+  p-values, or experimental findings.
+- Clearly identify hypothetical data as illustrative.
+- Do not claim that a result was calculated from data unless
+  the calculation actually supports it.
+- If a problem has insufficient data, explain what is missing.
+- If a model's parameters cannot be uniquely determined,
+  explain the identifiability problem.
+- Do not claim that assumptions are satisfied without evidence.
+
+QUALITY CHECK
+
+Before returning the notes, verify:
+1. The title matches the requested difficulty.
+2. The notes provide sufficient depth for a college student.
+3. Important concepts are explained, not merely listed.
+4. Equations and symbol definitions are complete.
+5. Numerical examples are internally consistent.
+6. Markdown tables and mathematical delimiters are valid.
+7. Practice questions have answers that match the questions.
+8. The conclusion and revision section reflect the material taught.
+
+Return only the finished Markdown notes.
 """
 
-    response = client.models.generate_content(
-        model=MODEL_NAME,
-        contents=prompt
-    )
+    generated_text = _generate_text(prompt)
 
-    return response.text
+    if not generated_text or not generated_text.strip():
+        raise ValueError("The AI provider returned empty study notes.")
+
+    return generated_text.strip()
 
 
 # ============================================================
 # GENERATE ADAPTIVE CONTENT
 # ============================================================
 
-def generate_adaptive_content(
-    topic,
-    content_type,
-    difficulty
-):
+def generate_adaptive_content(topic, content_type, difficulty):
+    """
+    Generate adaptive learning content using Gemini.
 
-    # ========================================================
-    # PRACTICE QUESTIONS
-    # ========================================================
+    Requires existing module-level variables:
+        client
+        MODEL_NAME
 
-    if content_type == "questions":
+    Returns raw Markdown. HTML conversion is handled by views.py.
+    """
 
-        prompt = f"""
-You are CognifyAI, an adaptive learning assistant.
+    topic = str(topic).strip()
+    content_type = str(content_type).strip().lower()
+    difficulty = str(difficulty).strip().title()
 
-Create a practice test for a college student.
+    if not topic:
+        raise ValueError("A topic is required.")
 
-Topic:
-{topic}
+    allowed_types = {"notes", "questions", "realworld"}
 
-Student Level:
-{difficulty}
+    if content_type not in allowed_types:
+        raise ValueError(f"Unsupported content type: {content_type}")
 
-IMPORTANT:
+    allowed_difficulties = {
+        "Beginner",
+        "Easy",
+        "Medium",
+        "Hard",
+        "Advanced",
+        "Expert",
+    }
 
-Generate EXACTLY 12 multiple-choice questions.
+    if difficulty not in allowed_difficulties:
+        difficulty = "Medium"
 
-Requirements:
+    difficulty_instructions = {
+        "Beginner": """
+Assume no prior knowledge. Define every important term.
+Explain concepts step by step using simple examples and
+fully worked calculations. Avoid unexplained jargon.
+""",
+        "Easy": """
+Focus on fundamentals, straightforward applications,
+clear formula explanations, and simple worked examples.
+""",
+        "Medium": """
+Provide intermediate theory, multi-step examples,
+formula applications, common mistakes, and interpretation.
+""",
+        "Hard": """
+Include advanced theory, derivations, challenging examples,
+assumptions, limitations, diagnostics, and edge cases.
+""",
+        "Advanced": """
+Emphasize deeper theory, mathematical reasoning, derivations,
+evaluation methods, limitations, optimization, and applications.
+""",
+        "Expert": """
+Produce genuinely expert-level material for a college student
+who already understands the fundamentals.
 
-1. Create exactly 12 questions.
-2. Each question must have exactly 4 options.
-3. Options must be A, B, C and D.
-4. Only one option must be correct.
-5. Questions must test understanding.
-6. Avoid duplicate questions.
-7. Cover different concepts from the topic.
-8. Include application-based questions where appropriate.
-9. Do not reveal the answer immediately after a question.
-10. Do not place the answer beside the question.
-11. Put ALL answers and explanations ONLY at the very end.
-12. Keep the questions directly related to {topic}.
-13. Do not include questions from unrelated topics.
+Focus on rigorous reasoning, mathematical derivations,
+assumptions and their implications, parameter interpretation,
+diagnostics, edge cases, limitations, trade-offs, optimization,
+computational considerations, and advanced applications.
 
-FORMAT:
+Explain why methods work, when they work, and when they fail.
+Include technically meaningful worked examples and practical
+implications. Avoid generic introductory material and repetition.
 
-# Practice Test
-
-## Question 1
-
-Question text
-
-A. option
-B. option
-C. option
-D. option
-
-Continue until Question 12.
-
-Then create:
-
-# Answer Key & Explanations
-
-1. **Answer: X**
-
-Explanation...
-
-Continue until Question 12.
-
-IMPORTANT:
-The Answer Key must appear ONLY after all 12 questions.
-
-Return only Markdown.
-"""
-
-        response = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=prompt
-        )
-
-        return response.text
-
-    # ========================================================
-    # REAL WORLD PROBLEMS
-    # ========================================================
-
-    if content_type == "realworld":
-
-        prompt = f"""
-You are CognifyAI, an adaptive learning assistant.
-
-Create practical programming/data-science real-world
-challenges for a college student.
-
-Topic:
-{topic}
-
-Student Level:
-{difficulty}
-
-Generate EXACTLY 3 different real-world problems.
-
-Each problem must be practical and related directly to
-{topic}.
-
-Do NOT provide the complete solution.
-
-For each problem use this structure:
-
-# Real-World Challenges
-
-## Challenge 1 — [Title]
-
-### Problem
-
-Clearly explain what needs to be solved.
-
-### Real-World Scenario
-
-Describe a realistic situation where this problem is useful.
-
-### Requirements
-
-Give a numbered list of what the student must implement.
-
-### Input
-
-Explain what input/data the student should use.
-
-### Expected Output
-
-Explain what the student should produce.
-
-### Skills Tested
-
-List the concepts being tested.
-
-### Difficulty
-
-Explain why this matches the student's level.
-
-### 🧑‍💻 Workspace
-
-Tell the student what they should implement in the workspace.
-
----
-
-Repeat the same structure for Challenge 2 and Challenge 3.
-
-IMPORTANT:
-
-1. Generate exactly 3 challenges.
-2. Each challenge must be different.
-3. Do not give complete solutions.
-4. Do not give code solutions.
-5. Make them realistic.
-6. Make them suitable for the student's level.
-7. Problems should encourage implementation.
-8. Keep them directly related to {topic}.
-
-Return only Markdown.
-"""
-
-        response = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=prompt
-        )
-
-        return response.text
-
-    # ========================================================
-    # NOTES
-    # ========================================================
+Never title the content beginner-friendly.
+""",
+    }
 
     if content_type == "notes":
+        content_instructions = f"""
+Create comprehensive, textbook-quality study notes on {topic}.
 
-        prompt = f"""
-You are CognifyAI, an adaptive learning assistant.
+TARGET LENGTH:
+Aim for approximately 1,800–2,500 words when the topic supports
+that depth. Do not add repetitive filler merely to reach the target.
 
-Create book-style study notes for a college student.
+REQUIRED CONTENT:
+1. A descriptive title matching the requested difficulty.
+2. Learning objectives.
+3. Prerequisites and terminology.
+4. Introduction and motivation.
+5. Detailed explanations of the core concepts.
+6. Mathematical formulation and symbol definitions, if relevant.
+7. Step-by-step working and derivations, if relevant.
+8. At least two substantial worked examples when appropriate.
+9. Intermediate calculations and interpretation of results.
+10. Assumptions and conditions of validity.
+11. Evaluation metrics and diagnostics, where applicable.
+12. Advantages, limitations, and common mistakes.
+13. Practical applications and a realistic illustrative case study.
+14. Advanced concepts appropriate to the requested level.
+15. A quick-revision section containing important concepts and formulas.
+16. Five revision questions with answers and explanations.
+17. A logical list of concepts to learn next.
 
-Topic:
-{topic}
+Use headings and subheadings to organize the notes.
+Explain each major concept in paragraphs; do not merely list keywords.
+Include tables when they make comparisons easier to understand.
+Include code only when useful, and explain its important steps.
 
-Student Level:
-{difficulty}
+MATHEMATICAL NOTATION:
+- Inline mathematics: $y = mx + c$
+- Display mathematics on separate lines:
+  $$
+  y = \\beta_0 + \\beta_1 x + \\epsilon
+  $$
 
-The content should feel like a small textbook chapter.
+Use valid LaTeX for the actual subject.
+Never wrap equations in square brackets.
+Never leave symbols or variable definitions blank.
+Define variables, subscripts, and parameters explicitly.
+Use literal Markdown table pipes, not escaped pipes.
 
-Structure:
+NUMERICAL VALIDATION:
+Verify every worked calculation and final result.
+Do not invent coefficients, evaluation scores, or measurements.
+Distinguish hypothetical examples from actual observations.
+When data is insufficient or parameters are not identifiable,
+explain the limitation instead of fabricating a result.
 
-# {topic}
+DIFFICULTY:
+{difficulty_instructions[difficulty]}
 
-## 1. Learning Objective
-
-Explain what the student will learn.
-
-## 2. Introduction
-
-Give a clear introduction.
-
-## 3. Core Concepts
-
-Explain the important concepts step by step.
-
-## 4. Important Terminology
-
-Explain important terms.
-
-## 5. Mathematical / Technical Explanation
-
-Explain formulas, algorithms or technical details
-where relevant.
-
-## 6. Worked Example
-
-Give a complete example and explain it step by step.
-
-## 7. Common Mistakes
-
-List common mistakes.
-
-## 8. Real-World Applications
-
-Explain practical applications.
-
-## 9. Quick Revision
-
-Give important points for revision.
-
-## 10. Practice Yourself
-
-Give a few questions without answers.
-
-## 11. What To Learn Next
-
-Recommend the next concepts according to the student's level.
-
-Make it easy to read like study material.
-
-Do not unnecessarily repeat basic concepts for advanced students.
-
-Return only Markdown.
+Return only the completed Markdown notes.
 """
 
-        response = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=prompt
-        )
+    elif content_type == "questions":
+        content_instructions = f"""
+Create exactly 12 well-designed practice questions about {topic}.
 
-        return response.text
+Match all questions to the requested difficulty:
+{difficulty_instructions[difficulty]}
 
-    # ========================================================
-    # DEFAULT
-    # ========================================================
+Use a suitable mixture of conceptual, analytical, application-based,
+and numerical questions where relevant.
+
+Structure:
+# Practice Questions: {topic}
+
+## Questions
+
+Number the questions from 1 to 12.
+
+Include all necessary data, assumptions, units, and precision
+requirements for every numerical problem.
+
+Do not put answers immediately after the individual questions.
+
+## Answer Key and Explanations
+
+Provide all 12 answers after the questions.
+Explain the reasoning and show verified calculations when relevant.
+Ensure that each question and answer agree and are unambiguous.
+
+Use valid LaTeX and ordinary Markdown.
+Return only the completed Markdown.
+"""
+
+    else:
+        content_instructions = f"""
+Create exactly three substantial real-world challenges about {topic}.
+
+Match the complexity to the requested difficulty:
+{difficulty_instructions[difficulty]}
+
+For each challenge, include:
+1. A descriptive title.
+2. A realistic scenario and the problem to solve.
+3. All required illustrative data, constraints, and assumptions.
+4. The concepts and skills required.
+5. Clearly numbered tasks.
+6. Expected deliverables and evaluation criteria.
+7. Hints that guide the learner without giving away the full solution.
+8. Relevant mathematical formulations, where applicable.
+9. Potential edge cases or limitations to consider.
+
+Label hypothetical data as illustrative. Do not invent research
+results or claim illustrative outcomes are real.
+
+Use valid LaTeX and ordinary Markdown.
+Return only the completed Markdown.
+"""
 
     prompt = f"""
-Create personalized learning content.
+You are CognifyAI, an experienced university lecturer,
+technical author, and subject-matter expert.
 
-Topic: {topic}
-Difficulty: {difficulty}
-Content Type: {content_type}
+TOPIC:
+{topic}
 
-Keep it educational, practical and directly related
-to the topic.
+REQUESTED DIFFICULTY:
+{difficulty}
 
-Return only Markdown.
+CONTENT TYPE:
+{content_type}
+
+DIFFICULTY REQUIREMENTS:
+{difficulty_instructions[difficulty]}
+
+CONTENT REQUIREMENTS:
+{content_instructions}
+
+FINAL VALIDATION:
+- Match the requested topic and difficulty.
+- Explain concepts in sufficient depth.
+- Check every formula and numerical calculation.
+- Ensure every variable definition is complete.
+- Use valid Markdown and LaTeX delimiters.
+- Never use square brackets as equation delimiters.
+- Never escape Markdown table pipes.
+- Do not fabricate results or claim unperformed calculations.
+- Return only the requested content.
 """
 
     response = client.models.generate_content(
         model=MODEL_NAME,
-        contents=prompt
+        contents=prompt,
     )
 
-    return response.text
+    generated_text = getattr(response, "text", None)
 
+    if not generated_text or not generated_text.strip():
+        raise ValueError(
+            "The AI provider returned empty learning content."
+        )
+
+    return generated_text.strip()
 
 # ============================================================
 # SEARCH RELEVANT ADAPTIVE VIDEOS
@@ -640,7 +628,7 @@ def search_adaptive_videos(
     topic,
     difficulty,
     max_results=5,
-    subject=None
+    subject=None,
 ):
 
     if not YOUTUBE_API_KEY:
@@ -648,198 +636,133 @@ def search_adaptive_videos(
             "YOUTUBE_API_KEY is not configured in .env"
         )
 
-    topic = topic.strip()
-    subject = subject.strip() if subject else ""
+    topic = (topic or "").strip()
+    subject = (subject or "").strip()
 
-    topic_lower = topic.lower()
-    subject_lower = subject.lower()
+    if not topic:
+        return []
 
     # --------------------------------------------------------
-    # Difficulty search terms
+    # DIFFICULTY SEARCH TERMS
     # --------------------------------------------------------
 
     level_words = {
-
-        "Beginner":
-            "basics tutorial beginners",
-
-        "Easy":
-            "simple explanation tutorial",
-
-        "Medium":
-            "intermediate tutorial examples",
-
-        "Advanced":
-            "advanced tutorial examples",
-
-        "Expert":
-            "advanced deep dive tutorial"
+        "Beginner": "basics tutorial for beginners",
+        "Easy": "simple explanation tutorial",
+        "Medium": "intermediate tutorial examples",
+        "Hard": "challenging advanced tutorial",
+        "Advanced": "advanced tutorial deep dive",
+        "Expert": "expert deep dive advanced concepts",
     }
 
     level_text = level_words.get(
         difficulty,
-        "tutorial explanation"
+        "tutorial explanation",
     )
 
     # --------------------------------------------------------
-    # Search query
+    # SEARCH QUERY
     # --------------------------------------------------------
 
     if subject:
-        query = (
-            f'"{subject}" "{topic}" '
-            f'{level_text}'
-        )
+        query = f'"{subject}" "{topic}" {level_text}'
     else:
-        query = (
-            f'"{topic}" '
-            f'{level_text}'
-        )
+        query = f'"{topic}" {level_text}'
 
     print("YouTube Search Query:", query)
 
     # --------------------------------------------------------
-    # YouTube API
+    # YOUTUBE API
     # --------------------------------------------------------
 
     youtube = build(
         "youtube",
         "v3",
-        developerKey=YOUTUBE_API_KEY
+        developerKey=YOUTUBE_API_KEY,
     )
 
     response = youtube.search().list(
         part="snippet",
         q=query,
         type="video",
-        maxResults=25,
+        maxResults=min(max(int(max_results) * 5, 10), 50),
         order="relevance",
         relevanceLanguage="en",
-        safeSearch="strict"
+        safeSearch="strict",
     ).execute()
 
     # --------------------------------------------------------
-    # Topic words
+    # TOPIC WORDS
     # --------------------------------------------------------
 
     topic_words = set(
-        re.findall(
-            r"[a-zA-Z0-9]+",
-            topic_lower
-        )
+        re.findall(r"[a-zA-Z0-9]+", topic.lower())
     )
 
     stop_words = {
-        "the",
-        "a",
-        "an",
-        "and",
-        "or",
-        "of",
-        "to",
-        "for",
-        "in",
-        "on",
-        "with",
-        "using",
-        "tutorial",
-        "basics",
-        "basic"
+        "the", "a", "an", "and", "or", "of", "to", "for",
+        "in", "on", "with", "using", "tutorial", "basics",
+        "basic", "introduction",
     }
 
     topic_words = {
-        word
-        for word in topic_words
+        word for word in topic_words
         if word not in stop_words
+    }
+
+    subject_words = set(
+        re.findall(r"[a-zA-Z0-9]+", subject.lower())
+    )
+
+    subject_words = {
+        word for word in subject_words
+        if word not in stop_words and len(word) > 1
     }
 
     videos = []
     seen_ids = set()
 
     # --------------------------------------------------------
-    # Process results
+    # PROCESS RESULTS
     # --------------------------------------------------------
 
     for item in response.get("items", []):
 
-        video_id = item["id"].get("videoId")
+        video_id = (item.get("id") or {}).get("videoId")
 
-        if not video_id:
+        if not video_id or video_id in seen_ids:
             continue
 
-        if video_id in seen_ids:
-            continue
+        snippet = item.get("snippet", {})
 
-        snippet = item["snippet"]
-
-        title = snippet.get(
-            "title",
-            ""
-        )
-
-        description = snippet.get(
-            "description",
-            ""
-        )
+        title = snippet.get("title", "")
+        description = snippet.get("description", "")
 
         title_lower = title.lower()
         description_lower = description.lower()
 
-        # ----------------------------------------------------
-        # Topic relevance
-        # ----------------------------------------------------
-
-        if len(topic_words) == 1:
-
-            topic_word = next(
-                iter(topic_words)
-            )
-
-            if not re.search(
-                r"\b" + re.escape(topic_word) + r"\b",
-                title_lower
-            ):
-                continue
-
-        else:
+        # Topic relevance check
+        if topic_words:
 
             matching_words = 0
 
             for word in topic_words:
-
                 if re.search(
                     r"\b" + re.escape(word) + r"\b",
-                    title_lower
+                    title_lower,
                 ):
                     matching_words += 1
 
             required_words = max(
                 1,
-                int(len(topic_words) * 0.6)
+                int(len(topic_words) * 0.6),
             )
 
             if matching_words < required_words:
                 continue
 
-        # ----------------------------------------------------
-        # Subject relevance
-        # ----------------------------------------------------
-
-        if subject:
-
-            subject_words = set(
-                re.findall(
-                    r"[a-zA-Z0-9]+",
-                    subject_lower
-                )
-            )
-
-            subject_words = {
-                word
-                for word in subject_words
-                if word not in stop_words
-                and len(word) > 1
-            }
+        # Subject relevance check
+        if subject_words:
 
             subject_match = False
 
@@ -848,12 +771,11 @@ def search_adaptive_videos(
                 if (
                     re.search(
                         r"\b" + re.escape(word) + r"\b",
-                        title_lower
+                        title_lower,
                     )
-                    or
-                    re.search(
+                    or re.search(
                         r"\b" + re.escape(word) + r"\b",
-                        description_lower
+                        description_lower,
                     )
                 ):
                     subject_match = True
@@ -862,49 +784,26 @@ def search_adaptive_videos(
             if not subject_match:
                 continue
 
-        # ----------------------------------------------------
-        # Add video
-        # ----------------------------------------------------
-
-        seen_ids.add(video_id)
-
-        thumbnails = snippet.get(
-            "thumbnails",
-            {}
-        )
+        # Thumbnail selection
+        thumbnails = snippet.get("thumbnails", {})
 
         thumbnail = (
             thumbnails.get("high")
             or thumbnails.get("medium")
             or thumbnails.get("default")
+            or {}
         )
 
-        if thumbnail:
-            thumbnail_url = thumbnail.get("url", "")
-        else:
-            thumbnail_url = ""
-
         videos.append({
-
             "title": title,
-
             "description": description,
-
-            "channel":
-                snippet.get(
-                    "channelTitle",
-                    ""
-                ),
-
-            "thumbnail":
-                thumbnail_url,
-
-            "video_id":
-                video_id,
-
-            "url":
-                f"https://www.youtube.com/watch?v={video_id}"
+            "channel": snippet.get("channelTitle", ""),
+            "thumbnail": thumbnail.get("url", ""),
+            "video_id": video_id,
+            "url": f"https://www.youtube.com/watch?v={video_id}",
         })
+
+        seen_ids.add(video_id)
 
         if len(videos) >= max_results:
             break

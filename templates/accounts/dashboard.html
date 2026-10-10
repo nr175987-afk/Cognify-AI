@@ -4,48 +4,522 @@
 
 {% block content %}
 
-<!-- =========================
-     DASHBOARD HERO
-========================= -->
+<style>
+
+/* =========================================================
+   DASHBOARD ONLY
+   Sidebar and base layout are NOT changed
+========================================================= */
+
+.dashboard-page {
+    max-width: 1450px;
+    margin: 0 auto;
+    padding: 10px 8px 40px;
+}
+
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.dashboard-hero {
+    background: linear-gradient(135deg, #ffffff 0%, #f7f5ff 100%);
+    border: 1px solid #e8e4f8;
+    border-radius: 18px;
+    padding: 26px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 25px;
+    box-shadow: 0 5px 18px rgba(65, 45, 130, 0.06);
+}
+
+.dashboard-hero h1 {
+    font-size: 29px;
+    color: #171329;
+    letter-spacing: -0.5px;
+}
+
+.dashboard-hero p {
+    font-size: 14px;
+    max-width: 650px;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+
+/* =========================================================
+   BUTTONS
+========================================================= */
+
+.dashboard-page .btn-ai {
+    background: linear-gradient(135deg, #6d3df5, #5830d8);
+    border: none;
+    color: #ffffff;
+    font-weight: 600;
+    border-radius: 9px;
+    padding: 9px 16px;
+    box-shadow: 0 4px 10px rgba(92, 48, 216, 0.18);
+    transition: 0.2s ease;
+}
+
+.dashboard-page .btn-ai:hover {
+    background: linear-gradient(135deg, #5d30df, #4925bd);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.dashboard-page .btn-soft {
+    background: #ffffff;
+    border: 1px solid #ddd8ef;
+    color: #4f35a5;
+    font-weight: 600;
+    border-radius: 9px;
+    padding: 9px 16px;
+    transition: 0.2s ease;
+}
+
+.dashboard-page .btn-soft:hover {
+    background: #f5f2ff;
+    border-color: #cfc5ef;
+    color: #452b9d;
+}
+
+
+/* =========================================================
+   STATISTICS
+========================================================= */
+
+.dashboard-page .stats-row {
+    margin-top: 22px;
+    margin-bottom: 34px;
+}
+
+.dashboard-page .stat-card {
+    height: 100%;
+    min-height: 105px;
+    background: #ffffff;
+    border: 1px solid #e9e7ef;
+    border-radius: 14px;
+    padding: 18px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 4px 14px rgba(20, 15, 45, 0.045);
+    transition: 0.2s ease;
+}
+
+.dashboard-page .stat-card:hover {
+    transform: translateY(-3px);
+    border-color: #d8d0f2;
+    box-shadow: 0 8px 22px rgba(71, 48, 135, 0.09);
+}
+
+.dashboard-page .stat-icon {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    border-radius: 12px;
+    background: #f0ebff;
+    color: #6336df;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.dashboard-page .stat-card h3 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #171329;
+}
+
+
+/* =========================================================
+   SECTION HEADERS
+========================================================= */
+
+.dashboard-page .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px !important;
+}
+
+.dashboard-page .section-header h2 {
+    font-size: 23px;
+    color: #171329;
+}
+
+.dashboard-page .section-header p {
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   LEARNING JOURNEY
+========================================================= */
+
+.dashboard-page .journey-grid {
+    margin-bottom: 34px;
+}
+
+.dashboard-page .journey-card {
+    height: 100%;
+    min-height: 205px;
+    background: #ffffff;
+    border: 1px solid #e8e5ef;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 14px rgba(20, 15, 45, 0.04);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.22s ease;
+}
+
+.dashboard-page .journey-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #7042ef, #9a7af5);
+    opacity: 0;
+    transition: 0.2s ease;
+}
+
+.dashboard-page .journey-card:hover {
+    transform: translateY(-4px);
+    border-color: #d9d1f0;
+    box-shadow: 0 10px 25px rgba(70, 48, 130, 0.09);
+}
+
+.dashboard-page .journey-card:hover::before {
+    opacity: 1;
+}
+
+.dashboard-page .journey-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    background: #f0ebff;
+    color: #6336df;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin-bottom: 14px;
+    flex-shrink: 0;
+}
+
+.dashboard-page .journey-card h5 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #19152b;
+    margin-bottom: 7px;
+}
+
+.dashboard-page .journey-card p {
+    font-size: 13px;
+    color: #707080;
+    line-height: 1.55;
+    min-height: 61px;
+    margin-bottom: 15px;
+}
+
+
+/* =========================================================
+   GENERAL DASHBOARD CARDS
+========================================================= */
+
+.dashboard-page .dashboard-card {
+    background: #ffffff;
+    border: 1px solid #e8e5ef;
+    border-radius: 15px;
+    padding: 21px;
+    box-shadow: 0 4px 14px rgba(20, 15, 45, 0.04);
+}
+
+.dashboard-page .dashboard-card h5 {
+    color: #19152b;
+}
+
+
+/* =========================================================
+   PROFILE COMPLETION
+========================================================= */
+
+.dashboard-page .profile-card {
+    min-height: 170px;
+}
+
+.dashboard-page .profile-percent {
+    color: #5c32d1;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.dashboard-page .custom-progress {
+    height: 9px;
+    background: #eeeaf7;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.dashboard-page .custom-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #7042ef, #8d68ee);
+    border-radius: 20px;
+}
+
+
+/* =========================================================
+   QUICK ACTIONS
+========================================================= */
+
+.dashboard-page .quick-action {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: #faf9fd;
+    border: 1px solid #ebe8f2;
+    color: #383044;
+    border-radius: 9px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.2s ease;
+}
+
+.dashboard-page .quick-action i {
+    color: #6336df;
+    font-size: 16px;
+}
+
+.dashboard-page .quick-action:hover {
+    background: #f3efff;
+    border-color: #d9d0f0;
+    color: #4d2caf;
+    transform: translateX(2px);
+}
+
+
+/* =========================================================
+   RECENT ASSESSMENTS
+========================================================= */
+
+.dashboard-page .assessment-card {
+    margin-bottom: 34px;
+}
+
+.dashboard-page .assessment-table {
+    margin-bottom: 0;
+}
+
+.dashboard-page .assessment-table thead th {
+    background: #faf9fd;
+    color: #686274;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    border-bottom: 1px solid #e8e5ef;
+    padding: 12px 14px;
+}
+
+.dashboard-page .assessment-table tbody td {
+    padding: 13px 14px;
+    font-size: 13px;
+    border-bottom: 1px solid #f0eef4;
+    color: #46414f;
+}
+
+.dashboard-page .assessment-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.dashboard-page .assessment-table tbody tr:hover {
+    background: #faf9ff;
+}
+
+.dashboard-page .score-value {
+    color: #5730c5;
+    font-weight: 700;
+}
+
+.dashboard-page .difficulty-badge {
+    display: inline-block;
+    padding: 4px 9px;
+    border-radius: 20px;
+    background: #f0ebff;
+    color: #5b32c5;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   EMPTY ASSESSMENT STATE
+========================================================= */
+
+.dashboard-page .empty-state {
+    padding: 35px 20px;
+    text-align: center;
+}
+
+.dashboard-page .empty-state-icon {
+    width: 54px;
+    height: 54px;
+    margin: 0 auto 12px;
+    border-radius: 50%;
+    background: #f2effa;
+    color: #7659c9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+}
+
+
+/* =========================================================
+   BOTTOM CAREER / LEARNING CARDS
+========================================================= */
+
+.dashboard-page .summary-card {
+    min-height: 155px;
+}
+
+.dashboard-page .summary-icon {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 11px;
+    background: #f0ebff;
+    color: #6336df;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 900px) {
+
+    .dashboard-hero {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .hero-actions {
+        width: 100%;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .dashboard-page {
+        padding: 5px 5px 30px;
+    }
+
+    .dashboard-hero {
+        padding: 20px;
+    }
+
+    .dashboard-hero h1 {
+        font-size: 24px;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+    }
+
+    .hero-actions .btn {
+        width: 100%;
+    }
+
+    .dashboard-page .journey-card {
+        min-height: auto;
+    }
+
+}
+
+</style>
+
+
+<div class="dashboard-page">
+
+
+<!-- =====================================================
+     HERO
+===================================================== -->
+
 <div class="dashboard-hero mb-4">
+
     <div>
+
         <h1 class="fw-bold mb-2">
             Welcome back, {{ request.user.first_name|default:request.user.username }}!
         </h1>
 
         <p class="text-muted mb-0">
-            Continue your learning journey and improve your skills with
-            AI-powered personalized learning.
+            Continue your learning journey and improve your skills
+            with AI-powered personalized learning.
         </p>
+
     </div>
 
+
     <div class="hero-actions">
-        <a href="{% url 'assessment_home' %}" class="btn btn-ai">
+
+        <a
+            href="{% url 'assessment_home' %}"
+            class="btn btn-ai"
+        >
             <i class="bi bi-play-circle me-2"></i>
             Start Assessment
         </a>
 
-        <a href="{% url 'adaptive_learning' %}" class="btn btn-soft">
+        <a
+            href="{% url 'adaptive_learning' %}"
+            class="btn btn-soft"
+        >
             <i class="bi bi-lightbulb me-2"></i>
             Adaptive Learning
         </a>
+
     </div>
+
 </div>
 
 
-<!-- =========================
+<!-- =====================================================
      STATISTICS
-========================= -->
-<div class="row g-4 mb-5">
+===================================================== -->
 
-    <!-- Total Assessments -->
+<div class="row g-3 stats-row">
+
     <div class="col-xl-3 col-md-6">
+
         <div class="stat-card">
+
             <div class="stat-icon">
                 <i class="bi bi-journal-check"></i>
             </div>
 
             <div>
+
                 <h3 class="mb-1">
                     {{ total_assessments|default:"0" }}
                 </h3>
@@ -53,19 +527,24 @@
                 <p class="text-muted mb-0">
                     Total Assessments
                 </p>
+
             </div>
+
         </div>
+
     </div>
 
 
-    <!-- Average Score -->
     <div class="col-xl-3 col-md-6">
+
         <div class="stat-card">
+
             <div class="stat-icon">
                 <i class="bi bi-bar-chart-line"></i>
             </div>
 
             <div>
+
                 <h3 class="mb-1">
                     {{ average_score|default:"0" }}%
                 </h3>
@@ -73,19 +552,24 @@
                 <p class="text-muted mb-0">
                     Average Score
                 </p>
+
             </div>
+
         </div>
+
     </div>
 
 
-    <!-- Learning Streak -->
     <div class="col-xl-3 col-md-6">
+
         <div class="stat-card">
+
             <div class="stat-icon">
                 <i class="bi bi-fire"></i>
             </div>
 
             <div>
+
                 <h3 class="mb-1">
                     {{ learning_streak|default:"0" }}
                 </h3>
@@ -93,19 +577,24 @@
                 <p class="text-muted mb-0">
                     Day Learning Streak
                 </p>
+
             </div>
+
         </div>
+
     </div>
 
 
-    <!-- Completed Topics -->
     <div class="col-xl-3 col-md-6">
+
         <div class="stat-card">
+
             <div class="stat-icon">
                 <i class="bi bi-check2-circle"></i>
             </div>
 
             <div>
+
                 <h3 class="mb-1">
                     {{ completed_topics|default:"0" }}
                 </h3>
@@ -113,19 +602,24 @@
                 <p class="text-muted mb-0">
                     Topics Completed
                 </p>
+
             </div>
+
         </div>
+
     </div>
 
 </div>
 
 
-<!-- =========================
+<!-- =====================================================
      LEARNING JOURNEY
-========================= -->
-<div class="section-header mb-4">
+===================================================== -->
+
+<div class="section-header">
 
     <div>
+
         <h2 class="fw-bold mb-1">
             Learning Journey
         </h2>
@@ -133,17 +627,18 @@
         <p class="text-muted mb-0">
             Explore your AI-powered learning tools.
         </p>
+
     </div>
 
 </div>
 
 
-<div class="row g-4 mb-5">
+<div class="row g-3 journey-grid">
 
-    <!-- =========================
-         AI ASSESSMENT
-    ========================= -->
-    <div class="col-lg-4 col-md-6">
+
+    <!-- AI ASSESSMENT -->
+
+    <div class="col-xl-3 col-lg-4 col-md-6">
 
         <div class="journey-card">
 
@@ -172,10 +667,9 @@
     </div>
 
 
-    <!-- =========================
-         ADAPTIVE LEARNING
-    ========================= -->
-    <div class="col-lg-4 col-md-6">
+    <!-- ADAPTIVE LEARNING -->
+
+    <div class="col-xl-3 col-lg-4 col-md-6">
 
         <div class="journey-card">
 
@@ -204,10 +698,9 @@
     </div>
 
 
-    <!-- =========================
-         LEARNING ANALYSIS
-    ========================= -->
-    <div class="col-lg-4 col-md-6">
+    <!-- LEARNING ANALYSIS -->
+
+    <div class="col-xl-3 col-lg-4 col-md-6">
 
         <div class="journey-card">
 
@@ -236,10 +729,9 @@
     </div>
 
 
-    <!-- =========================
-         PERSONALIZED PLAN
-    ========================= -->
-    <div class="col-lg-4 col-md-6">
+    <!-- PERSONALIZED PLAN -->
+
+    <div class="col-xl-3 col-lg-4 col-md-6">
 
         <div class="journey-card">
 
@@ -268,10 +760,9 @@
     </div>
 
 
-    <!-- =========================
-         PERFORMANCE HISTORY
-    ========================= -->
-    <div class="col-lg-4 col-md-6">
+    <!-- PERFORMANCE HISTORY -->
+
+    <div class="col-xl-3 col-lg-4 col-md-6">
 
         <div class="journey-card">
 
@@ -300,10 +791,9 @@
     </div>
 
 
-    <!-- =========================
-         STUDENT PROFILE
-    ========================= -->
-    <div class="col-lg-4 col-md-6">
+    <!-- STUDENT PROFILE -->
+
+    <div class="col-xl-3 col-lg-4 col-md-6">
 
         <div class="journey-card">
 
@@ -332,10 +822,9 @@
     </div>
 
 
-    <!-- =========================
-         AI MOCK INTERVIEW
-    ========================= -->
-    <div class="col-lg-4 col-md-6">
+    <!-- AI MOCK INTERVIEW -->
+
+    <div class="col-xl-3 col-lg-4 col-md-6">
 
         <div class="journey-card">
 
@@ -364,10 +853,9 @@
     </div>
 
 
-    <!-- =========================
-         RESUME BUILDER
-    ========================= -->
-    <div class="col-lg-4 col-md-6">
+    <!-- RESUME BUILDER -->
+
+    <div class="col-xl-3 col-lg-4 col-md-6">
 
         <div class="journey-card">
 
@@ -398,18 +886,23 @@
 </div>
 
 
-<!-- =========================
-     PROFILE COMPLETION
-========================= -->
-<div class="row g-4 mb-5">
+<!-- =====================================================
+     PROFILE + QUICK ACTIONS
+===================================================== -->
+
+<div class="row g-3 mb-4">
+
+
+    <!-- PROFILE COMPLETION -->
 
     <div class="col-lg-8">
 
-        <div class="dashboard-card">
+        <div class="dashboard-card profile-card">
 
             <div class="d-flex justify-content-between align-items-center mb-3">
 
                 <div>
+
                     <h5 class="fw-bold mb-1">
                         Profile Completion
                     </h5>
@@ -418,30 +911,25 @@
                         Complete your profile to get better
                         personalized recommendations.
                     </p>
+
                 </div>
 
-                <strong>
+                <span class="profile-percent">
                     {{ profile_completion|default:"0" }}%
-                </strong>
+                </span>
 
             </div>
 
-            <div
-                class="progress"
-                style="height: 10px;"
-            >
+
+            <div class="custom-progress">
 
                 <div
-                    class="progress-bar"
-                    role="progressbar"
+                    class="custom-progress-bar"
                     style="width: {{ profile_completion|default:'0' }}%;"
-                    aria-valuenow="{{ profile_completion|default:'0' }}"
-                    aria-valuemin="0"
-                    aria-valuemax="100"
-                >
-                </div>
+                ></div>
 
             </div>
+
 
             <div class="mt-3">
 
@@ -460,7 +948,8 @@
     </div>
 
 
-    <!-- Quick Actions -->
+    <!-- QUICK ACTIONS -->
+
     <div class="col-lg-4">
 
         <div class="dashboard-card">
@@ -469,29 +958,32 @@
                 Quick Actions
             </h5>
 
+
             <div class="d-grid gap-2">
 
                 <a
                     href="{% url 'assessment_home' %}"
-                    class="btn btn-soft text-start"
+                    class="quick-action"
                 >
-                    <i class="bi bi-clipboard-check me-2"></i>
+                    <i class="bi bi-clipboard-check"></i>
                     Take Assessment
                 </a>
 
+
                 <a
                     href="{% url 'interview_home' %}"
-                    class="btn btn-soft text-start"
+                    class="quick-action"
                 >
-                    <i class="bi bi-person-video3 me-2"></i>
+                    <i class="bi bi-person-video3"></i>
                     Practice Interview
                 </a>
 
+
                 <a
                     href="{% url 'resume_home' %}"
-                    class="btn btn-soft text-start"
+                    class="quick-action"
                 >
-                    <i class="bi bi-file-earmark-person me-2"></i>
+                    <i class="bi bi-file-earmark-person"></i>
                     Build Resume
                 </a>
 
@@ -504,14 +996,16 @@
 </div>
 
 
-<!-- =========================
+<!-- =====================================================
      RECENT ASSESSMENTS
-========================= -->
-<div class="dashboard-card mb-5">
+===================================================== -->
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="dashboard-card assessment-card">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
 
         <div>
+
             <h5 class="fw-bold mb-1">
                 Recent Assessments
             </h5>
@@ -519,7 +1013,9 @@
             <p class="text-muted mb-0">
                 Your latest assessment performance.
             </p>
+
         </div>
+
 
         <a
             href="{% url 'assessment_history' %}"
@@ -535,7 +1031,7 @@
 
         <div class="table-responsive">
 
-            <table class="table align-middle mb-0">
+            <table class="table assessment-table align-middle">
 
                 <thead>
 
@@ -548,6 +1044,7 @@
                     </tr>
 
                 </thead>
+
 
                 <tbody>
 
@@ -566,23 +1063,23 @@
                             </td>
 
                             <td>
-                                <span class="badge bg-light text-dark">
+
+                                <span class="difficulty-badge">
                                     {{ assessment.difficulty }}
                                 </span>
+
                             </td>
 
                             <td>
 
-                                <strong>
+                                <span class="score-value">
                                     {{ assessment.score }}%
-                                </strong>
+                                </span>
 
                             </td>
 
                             <td class="text-muted">
-
                                 {{ assessment.created_at|date:"d M Y" }}
-
                             </td>
 
                         </tr>
@@ -595,20 +1092,22 @@
 
         </div>
 
+
     {% else %}
 
-        <div class="text-center py-5">
+        <div class="empty-state">
 
-            <i
-                class="bi bi-journal-x"
-                style="font-size: 42px;"
-            ></i>
+            <div class="empty-state-icon">
 
-            <h6 class="mt-3">
+                <i class="bi bi-journal-x"></i>
+
+            </div>
+
+            <h6 class="fw-bold">
                 No assessments yet
             </h6>
 
-            <p class="text-muted">
+            <p class="text-muted small">
                 Start your first assessment to begin
                 tracking your learning progress.
             </p>
@@ -627,22 +1126,27 @@
 </div>
 
 
-<!-- =========================
-     LEARNING SUMMARY
-========================= -->
-<div class="row g-4">
+<!-- =====================================================
+     LEARNING + CAREER
+===================================================== -->
+
+<div class="row g-3">
+
+
+    <!-- KEEP LEARNING -->
 
     <div class="col-lg-6">
 
-        <div class="dashboard-card h-100">
+        <div class="dashboard-card summary-card h-100">
 
             <div class="d-flex align-items-center mb-3">
 
-                <div class="journey-icon me-3">
+                <div class="summary-icon me-3">
                     <i class="bi bi-stars"></i>
                 </div>
 
                 <div>
+
                     <h5 class="fw-bold mb-1">
                         Keep Learning
                     </h5>
@@ -651,9 +1155,11 @@
                         Small consistent progress leads to
                         stronger technical skills.
                     </p>
+
                 </div>
 
             </div>
+
 
             <a
                 href="{% url 'adaptive_learning' %}"
@@ -667,17 +1173,20 @@
     </div>
 
 
+    <!-- CAREER PREPARATION -->
+
     <div class="col-lg-6">
 
-        <div class="dashboard-card h-100">
+        <div class="dashboard-card summary-card h-100">
 
             <div class="d-flex align-items-center mb-3">
 
-                <div class="journey-icon me-3">
+                <div class="summary-icon me-3">
                     <i class="bi bi-briefcase"></i>
                 </div>
 
                 <div>
+
                     <h5 class="fw-bold mb-1">
                         Prepare for Your Career
                     </h5>
@@ -686,9 +1195,11 @@
                         Practice interviews and build a strong,
                         verified resume for placements.
                     </p>
+
                 </div>
 
             </div>
+
 
             <div class="d-flex gap-2 flex-wrap">
 
@@ -711,6 +1222,9 @@
         </div>
 
     </div>
+
+</div>
+
 
 </div>
 

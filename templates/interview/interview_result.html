@@ -1,3 +1,4 @@
+
 {% extends "base.html" %}
 
 {% block title %}
@@ -7,34 +8,33 @@ AI Mock Interview Result | CognifyAI
 {% block content %}
 
 <style>
-
     .result-page {
         max-width: 950px;
         margin: 40px auto;
         padding: 30px;
         font-family: Arial, Helvetica, sans-serif;
-        color: #000000;
+        color: #000;
     }
 
     .result-header {
-        border-bottom: 2px solid #000000;
+        border-bottom: 2px solid #000;
         padding-bottom: 20px;
         margin-bottom: 30px;
     }
 
     .result-header h1 {
-        margin: 0 0 8px 0;
+        margin: 0 0 8px;
         font-size: 30px;
-        font-weight: bold;
     }
 
     .result-header p {
         margin: 0;
         font-size: 14px;
+        line-height: 1.6;
     }
 
     .score-card {
-        border: 2px solid #000000;
+        border: 2px solid #000;
         padding: 30px;
         text-align: center;
         margin-bottom: 30px;
@@ -58,7 +58,7 @@ AI Mock Interview Result | CognifyAI
     }
 
     .interview-info {
-        border: 1px solid #000000;
+        border: 1px solid #000;
         padding: 20px;
         margin-bottom: 30px;
     }
@@ -66,8 +66,9 @@ AI Mock Interview Result | CognifyAI
     .info-row {
         display: flex;
         justify-content: space-between;
-        padding: 8px 0;
-        border-bottom: 1px solid #dddddd;
+        gap: 20px;
+        padding: 10px 0;
+        border-bottom: 1px solid #ddd;
         font-size: 14px;
     }
 
@@ -75,10 +76,15 @@ AI Mock Interview Result | CognifyAI
         border-bottom: none;
     }
 
+    .info-row span {
+        text-align: right;
+        overflow-wrap: anywhere;
+    }
+
     .question-card {
-        border: 1px solid #000000;
+        border: 1px solid #000;
         padding: 25px;
-        margin-bottom: 20px;
+        margin-bottom: 25px;
     }
 
     .question-number {
@@ -92,6 +98,7 @@ AI Mock Interview Result | CognifyAI
         font-weight: bold;
         line-height: 1.6;
         margin-bottom: 20px;
+        overflow-wrap: anywhere;
     }
 
     .section-title {
@@ -100,29 +107,79 @@ AI Mock Interview Result | CognifyAI
         margin-bottom: 8px;
     }
 
+    .answer-box,
+    .feedback-box {
+        padding: 15px;
+        font-size: 14px;
+        line-height: 1.8;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        margin-bottom: 20px;
+    }
+
     .answer-box {
         background: #f8f8f8;
-        border: 1px solid #dddddd;
-        padding: 15px;
-        margin-bottom: 20px;
-        font-size: 14px;
-        line-height: 1.6;
-        white-space: pre-wrap;
+        border: 1px solid #ddd;
     }
 
     .feedback-box {
-        border: 1px solid #000000;
-        padding: 15px;
+        border: 1px solid #000;
+    }
+
+    .lesson-box {
+        background: #f7f8ff;
+        border: 1px solid #c7d2fe;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 25px 0;
+    }
+
+    .lesson-heading {
+        font-size: 21px;
+        line-height: 1.4;
+        margin: 0 0 8px;
+    }
+
+    .lesson-intro {
         font-size: 14px;
-        line-height: 1.6;
+        color: #444;
+        line-height: 1.7;
         margin-bottom: 20px;
+    }
+
+    .lesson-section {
+        background: #fff;
+        border: 1px solid #e0e4f5;
+        border-radius: 8px;
+        padding: 17px;
+        margin-top: 14px;
+    }
+
+    .lesson-section h4 {
+        font-size: 15px;
+        margin: 0 0 10px;
+    }
+
+    .lesson-content {
+        font-size: 14px;
+        line-height: 1.8;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+
+    .practice-box {
+        border-left: 4px solid #4f46e5;
+        background: #fff;
+        padding: 16px;
+        margin-top: 15px;
+        line-height: 1.7;
     }
 
     .question-score {
         font-size: 15px;
         font-weight: bold;
-        padding-top: 10px;
-        border-top: 1px solid #dddddd;
+        padding-top: 15px;
+        border-top: 1px solid #ddd;
     }
 
     .action-buttons {
@@ -135,69 +192,78 @@ AI Mock Interview Result | CognifyAI
     .action-button {
         display: inline-block;
         padding: 12px 20px;
-        border: 1px solid #000000;
+        border: 1px solid #000;
         text-decoration: none;
         font-size: 14px;
         cursor: pointer;
     }
 
     .primary-button {
-        background: #000000;
-        color: #ffffff;
+        background: #000;
+        color: #fff;
     }
 
     .primary-button:hover {
-        background: #333333;
-        color: #ffffff;
+        background: #333;
+        color: #fff;
     }
 
     .secondary-button {
-        background: #ffffff;
-        color: #000000;
+        background: #fff;
+        color: #000;
     }
 
     .secondary-button:hover {
         background: #f0f0f0;
-        color: #000000;
+        color: #000;
     }
 
     .empty-answer {
-        color: #666666;
+        color: #666;
         font-style: italic;
     }
 
-</style>
+    @media (max-width: 600px) {
+        .result-page {
+            width: 100%;
+            margin: 20px auto;
+            padding: 16px;
+        }
 
+        .result-header h1 {
+            font-size: 25px;
+        }
+
+        .overall-score {
+            font-size: 40px;
+        }
+
+        .question-card {
+            padding: 17px;
+        }
+
+        .lesson-box {
+            padding: 12px;
+        }
+
+        .lesson-section {
+            padding: 13px;
+        }
+    }
+</style>
 
 <div class="result-page">
 
-
-    <!-- =========================================
-         RESULT HEADER
-    ========================================== -->
-
     <div class="result-header">
-
-        <h1>
-            AI Mock Interview Result
-        </h1>
-
+        <h1>AI Mock Interview Result</h1>
         <p>
-            Your interview has been completed.
+            Your interview is complete. Review your performance
+            and learn the concepts directly below each question.
         </p>
-
     </div>
 
-
-    <!-- =========================================
-         OVERALL SCORE
-    ========================================== -->
-
     <div class="score-card">
-
-        <div class="score-title">
-            OVERALL SCORE
-        </div>
+        <div class="score-title">OVERALL SCORE</div>
 
         <div class="overall-score">
             {{ session.overall_score|floatformat:1 }}%
@@ -207,227 +273,148 @@ AI Mock Interview Result | CognifyAI
             Your overall performance across
             {{ session.total_questions }} interview questions.
         </p>
-
     </div>
-
-
-    <!-- =========================================
-         INTERVIEW INFORMATION
-    ========================================== -->
 
     <div class="interview-info">
-
         <div class="info-row">
-
-            <strong>
-                Role
-            </strong>
-
-            <span>
-                {{ session.role }}
-            </span>
-
+            <strong>Role</strong>
+            <span>{{ session.role }}</span>
         </div>
 
-
         <div class="info-row">
-
-            <strong>
-                Difficulty
-            </strong>
-
-            <span>
-                {{ session.difficulty }}
-            </span>
-
+            <strong>Difficulty</strong>
+            <span>{{ session.difficulty }}</span>
         </div>
 
-
         <div class="info-row">
-
-            <strong>
-                Questions
-            </strong>
-
-            <span>
-                {{ session.total_questions }}
-            </span>
-
+            <strong>Questions</strong>
+            <span>{{ session.total_questions }}</span>
         </div>
 
-
         <div class="info-row">
-
-            <strong>
-                Completed
-            </strong>
-
-            <span>
-                {{ session.completed_questions }}
-            </span>
-
+            <strong>Completed</strong>
+            <span>{{ session.completed_questions }}</span>
         </div>
 
-
         <div class="info-row">
-
-            <strong>
-                Status
-            </strong>
-
-            <span>
-                {{ session.status }}
-            </span>
-
+            <strong>Status</strong>
+            <span>{{ session.status }}</span>
         </div>
-
     </div>
 
-
-    <!-- =========================================
-         QUESTION-BY-QUESTION REVIEW
-    ========================================== -->
-
-    <h2
-        style="
-            font-size: 22px;
-            margin-bottom: 20px;
-        "
-    >
-        Interview Review
+    <h2 style="font-size: 22px; margin-bottom: 20px;">
+        Interview Review &amp; Learning Center
     </h2>
 
-
     {% for question in questions %}
-
         <div class="question-card">
 
-
-            <!-- Question Number -->
-
             <div class="question-number">
-
                 QUESTION {{ question.question_number }}
-
             </div>
-
-
-            <!-- Question -->
 
             <div class="question-text">
-
                 {{ question.question }}
-
             </div>
 
+            <div class="section-title">YOUR ANSWER</div>
 
-            <!-- Candidate Answer -->
+            <div class="answer-box">{% if question.user_answer %}{{ question.user_answer }}{% else %}<span class="empty-answer">No answer submitted.</span>{% endif %}</div>
 
-            <div class="section-title">
-
-                YOUR ANSWER
-
-            </div>
-
-            <div class="answer-box">
-
-                {% if question.user_answer %}
-
-                    {{ question.user_answer }}
-
-                {% else %}
-
-                    <span class="empty-answer">
-                        No answer submitted.
-                    </span>
-
-                {% endif %}
-
-            </div>
-
-
-            <!-- AI Feedback -->
-
-            <div class="section-title">
-
-                AI FEEDBACK
-
-            </div>
+            <div class="section-title">AI EVALUATION</div>
 
             <div class="feedback-box">
-
                 {% if question.feedback %}
-
                     {{ question.feedback }}
-
                 {% else %}
-
                     No feedback available.
-
                 {% endif %}
-
             </div>
-
-
-            <!-- Question Score -->
 
             <div class="question-score">
-
-                Score:
-
-                {{ question.score|floatformat:1 }}
-
-                / 10
-
+                Score: {{ question.score|floatformat:1 }} / 10
             </div>
 
+            <div class="lesson-box">
 
+                <h3 class="lesson-heading">
+                    Learn This Concept
+                </h3>
+
+                <p class="lesson-intro">
+                    Use this lesson to understand the topic,
+                    see an example, and prepare a stronger interview answer.
+                </p>
+
+                <div class="lesson-section">
+                    <h4>1. What does it mean?</h4>
+                    <div class="lesson-content">
+                        {% if question.concept_explanation %}
+                            {{ question.concept_explanation }}
+                        {% else %}
+                            A lesson has not been generated for this question yet.
+                            Complete a new interview to generate the lesson.
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="lesson-section">
+                    <h4>2. How does it work?</h4>
+                    <div class="lesson-content">
+                        {% if question.how_it_works %}
+                            {{ question.how_it_works }}
+                        {% else %}
+                            This explanation is not available for this attempt.
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="lesson-section">
+                    <h4>3. Learn with an example</h4>
+                    <div class="lesson-content">{% if question.example %}{{ question.example }}{% else %}No example is available for this attempt.{% endif %}</div>
+                </div>
+
+                <div class="lesson-section">
+                    <h4>4. Interview-ready answer</h4>
+                    <div class="lesson-content">{% if question.interview_ready_answer %}{{ question.interview_ready_answer }}{% else %}No interview-ready answer is available for this attempt.{% endif %}</div>
+                </div>
+
+                <div class="practice-box">
+                    <strong>5. Test your understanding</strong>
+                    <div class="lesson-content">
+                        {% if question.practice_question %}
+                            {{ question.practice_question }}
+                        {% else %}
+                            No practice question is available for this attempt.
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
         </div>
 
     {% empty %}
-
         <div class="question-card">
-
-            <p>
-                No interview questions were found.
-            </p>
-
+            <p>No interview questions were found.</p>
         </div>
-
     {% endfor %}
 
-
-    <!-- =========================================
-         ACTION BUTTONS
-    ========================================== -->
-
     <div class="action-buttons">
-
-        <a
-            href="{% url 'interview_home' %}"
-            class="action-button primary-button"
-        >
+        <a href="{% url 'interview_home' %}"
+           class="action-button primary-button">
             Start Another Interview
         </a>
 
-
-        <a
-            href="{% url 'interview_history' %}"
-            class="action-button secondary-button"
-        >
+        <a href="{% url 'interview_history' %}"
+           class="action-button secondary-button">
             View Interview History
         </a>
 
-
-        <a
-            href="{% url 'dashboard' %}"
-            class="action-button secondary-button"
-        >
+        <a href="{% url 'dashboard' %}"
+           class="action-button secondary-button">
             Back to Dashboard
         </a>
-
     </div>
-
 
 </div>
 

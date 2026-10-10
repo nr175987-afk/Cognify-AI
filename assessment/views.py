@@ -1,13 +1,36 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 from .models import AssessmentAttempt, LearningContent
 
-from .ai_generator import generate_questions
-from .ai_generator import generate_learning_plan
-from .ai_generator import generate_adaptive_notes
-from .ai_generator import generate_adaptive_content
-from .ai_generator import search_adaptive_videos
+import markdown
+import traceback
+
+from .ai_generator import (
+    generate_questions,
+    generate_learning_plan,
+    search_adaptive_videos,
+)
+
+from .ai_service import generate_learning_content
+
+
+# ============================================================
+# HELPER: ADAPTIVE DIFFICULTY
+# ============================================================
+
+def get_adaptive_difficulty(score):
+    if score < 40:
+        return "Beginner"
+    elif score < 60:
+        return "Easy"
+    elif score < 80:
+        return "Medium"
+    elif score < 100:
+        return "Advanced"
+    return "Expert"
+
 
 # ============================================================
 # ASSESSMENT HOME
@@ -18,85 +41,117 @@ def assessment_home(request):
 
     if request.method == "POST":
 
-        subject = request.POST.get("subject")
-        topic = request.POST.get("topic")
-        difficulty = request.POST.get("difficulty")
+        subject = request.POST.get("subject", "").strip()
+        topic = request.POST.get("topic", "").strip()
+        difficulty = request.POST.get("difficulty", "Medium").strip()
+        selected_count = request.POST.get("number_of_questions", "5")
 
-        number_of_questions = int(
-            request.POST.get(
-                "number_of_questions",
-                5
-            )
-        )
+        context = {
+            "selected_subject": subject,
+            "selected_topic": topic,
+            "selected_difficulty": difficulty,
+            "selected_number_of_questions": selected_count,
+        }
 
         try:
+            number_of_questions = int(selected_count)
+
+            if not subject or not topic:
+                raise ValueError("Please select a subject and enter a topic.")
+
+            if difficulty not in ["Easy", "Medium", "Hard"]:
+                raise ValueError("Please select a valid difficulty.")
+
+            if not 1 <= number_of_questions <= 20:
+                raise ValueError("Choose between 1 and 20 questions.")
+
+        except (TypeError, ValueError) as error:
+            context["error"] = str(error)
+
+            return render(
+                request,
+                "assessment/assessment.html",
+                context,
+            )
+
+        try:
+            print("\n========== ASSESSMENT GENERATION ==========")
+            print("Subject:", subject)
+            print("Topic:", topic)
+            print("Difficulty:", difficulty)
+            print("Number of questions:", number_of_questions)
+            print("Calling generate_questions()...")
 
             questions = generate_questions(
                 subject=subject,
                 topic=topic,
                 difficulty=difficulty,
-                number_of_questions=number_of_questions
+                number_of_questions=number_of_questions,
             )
+
+            # Support generators that return a QuestionSet object.
+            if hasattr(questions, "questions"):
+                questions = questions.questions
+
+            if not questions:
+                raise ValueError(
+                    "The question generator returned no questions."
+                )
 
             question_data = []
 
             for question in questions:
 
+                if isinstance(question, dict):
+                    get_value = question.get
+                else:
+                    get_value = lambda key, default="": getattr(
+                        question, key, default
+                    )
+
                 question_data.append({
-
-                    "question": question.question,
-
-                    "option_a": question.option_a,
-
-                    "option_b": question.option_b,
-
-                    "option_c": question.option_c,
-
-                    "option_d": question.option_d,
-
-                    "correct_answer":
-                        question.correct_answer,
-
-                    "explanation":
-                        question.explanation,
-
+                    "question": get_value("question", ""),
+                    "option_a": get_value("option_a", ""),
+                    "option_b": get_value("option_b", ""),
+                    "option_c": get_value("option_c", ""),
+                    "option_d": get_value("option_d", ""),
+                    "correct_answer": get_value("correct_answer", ""),
+                    "explanation": get_value("explanation", ""),
                 })
 
-            # Store questions in session
+            if not question_data:
+                raise ValueError("No usable questions were generated.")
 
-            request.session[
-                "generated_questions"
-            ] = question_data
+            # Store questions in the session for the quiz page.
+            request.session["generated_questions"] = question_data
+            request.session["assessment_subject"] = subject
+            request.session["assessment_topic"] = topic
+            request.session["assessment_difficulty"] = difficulty
 
-            request.session[
-                "assessment_subject"
-            ] = subject
-
-            request.session[
-                "assessment_topic"
-            ] = topic
-
-            request.session[
-                "assessment_difficulty"
-            ] = difficulty
+            print("Successfully generated", len(question_data), "questions.")
+            print("Redirecting to quiz page.")
+            print("===========================================\n")
 
             return redirect("quiz")
 
-        except Exception as e:
+        except Exception as error:
+            print("\n========== ASSESSMENT GENERATION FAILED ==========")
+            print("Error:", repr(error))
+            traceback.print_exc()
+            print("==================================================\n")
+
+            context["error"] = (
+                "Question generation failed. Your selections have been "
+                "preserved. Check the VS Code terminal for the exact error."
+            )
 
             return render(
                 request,
                 "assessment/assessment.html",
-                {
-                    "error": str(e)
-                }
+                context,
             )
 
-    return render(
-        request,
-        "assessment/assessment.html"
-    )
-
+    return render(request, "assessment/assessment.html")
 
 # ============================================================
 # QUIZ
@@ -105,131 +160,56 @@ def assessment_home(request):
 @login_required
 def quiz(request):
 
-    questions = request.session.get(
-        "generated_questions",
-        []
-    )
-
-    # No questions available
+    questions = request.session.get("generated_questions", [])
 
     if not questions:
-
-        return redirect(
-            "assessment_home"
-        )
-
-    # --------------------------------------------------------
-    # SUBMIT QUIZ
-    # --------------------------------------------------------
+        return redirect("assessment_home")
 
     if request.method == "POST":
 
         correct = 0
 
-        for index, question in enumerate(
-            questions
-        ):
+        for index, question in enumerate(questions):
+            answer = request.POST.get(f"question_{index}")
 
-            answer = request.POST.get(
-                f"question_{index}"
-            )
-
-            if answer == question[
-                "correct_answer"
-            ]:
-
+            if answer == question["correct_answer"]:
                 correct += 1
 
         total = len(questions)
-
-        if total > 0:
-
-            score = (
-                correct / total
-            ) * 100
-
-        else:
-
-            score = 0
-
-        # ----------------------------------------------------
-        # GET ASSESSMENT INFORMATION
-        # ----------------------------------------------------
+        score = (correct / total) * 100 if total else 0
 
         subject = request.session.get(
-            "assessment_subject",
-            "Unknown"
+            "assessment_subject", "Unknown"
         )
-
         topic = request.session.get(
-            "assessment_topic",
-            "Unknown"
+            "assessment_topic", "Unknown"
         )
-
         difficulty = request.session.get(
-            "assessment_difficulty",
-            "Medium"
+            "assessment_difficulty", "Medium"
         )
-
-        # ----------------------------------------------------
-        # SAVE RESULT
-        # ----------------------------------------------------
 
         AssessmentAttempt.objects.create(
-
             user=request.user,
-
             subject=subject,
-
             topic=topic,
-
             difficulty=difficulty,
-
             total_questions=total,
-
             correct_answers=correct,
-
-            score=score
-
+            score=score,
         )
 
-        # ----------------------------------------------------
-        # SAVE RESULT IN SESSION
-        # ----------------------------------------------------
+        request.session["last_score"] = score
+        request.session["last_correct"] = correct
+        request.session["last_total"] = total
 
-        request.session[
-            "last_score"
-        ] = score
+        request.session.pop("generated_questions", None)
 
-        request.session[
-            "last_correct"
-        ] = correct
-
-        request.session[
-            "last_total"
-        ] = total
-
-        # Remove old generated questions
-
-        request.session.pop(
-            "generated_questions",
-            None
-        )
-
-        return redirect(
-            "assessment_result"
-        )
-
-    # --------------------------------------------------------
-    # SHOW QUIZ
-    # --------------------------------------------------------
+        return redirect("assessment_result")
 
     return render(
         request,
         "assessment/quiz.html",
-        {
-            "questions": questions
-        }
+        {"questions": questions},
     )
 
 
@@ -240,29 +220,14 @@ def quiz(request):
 @login_required
 def assessment_result(request):
 
-    score = request.session.get(
-        "last_score",
-        0
-    )
-
-    correct = request.session.get(
-        "last_correct",
-        0
-    )
-
-    total = request.session.get(
-        "last_total",
-        0
-    )
-
     return render(
         request,
         "assessment/result.html",
         {
-            "score": score,
-            "correct": correct,
-            "total": total,
-        }
+            "score": request.session.get("last_score", 0),
+            "correct": request.session.get("last_correct", 0),
+            "total": request.session.get("last_total", 0),
+        },
     )
 
 
@@ -279,103 +244,142 @@ def assessment_history(request):
 
     total_assessments = attempts.count()
 
-    if total_assessments > 0:
-
-        average_score = (
-            sum(
-                attempt.score
-                for attempt in attempts
-            )
-            / total_assessments
-        )
+    if total_assessments:
+        average_score = sum(
+            attempt.score for attempt in attempts
+        ) / total_assessments
 
         best_score = max(
-            attempt.score
-            for attempt in attempts
+            attempt.score for attempt in attempts
         )
-
     else:
-
         average_score = 0
         best_score = 0
-
-    # --------------------------------------------------------
-    # TOPIC PERFORMANCE
-    # --------------------------------------------------------
 
     topic_data = {}
 
     for attempt in attempts:
-
-        topic = attempt.topic
-
-        if topic not in topic_data:
-
-            topic_data[topic] = []
-
-        topic_data[topic].append(
+        topic_data.setdefault(attempt.topic, []).append(
             attempt.score
         )
 
     topic_performance = []
 
     for topic, scores in topic_data.items():
-
-        average = (
-            sum(scores)
-            / len(scores)
-        )
-
         topic_performance.append({
-
             "topic": topic,
-
-            "average": round(
-                average,
-                1
-            ),
-
-            "attempts": len(scores)
-
+            "average": round(sum(scores) / len(scores), 1),
+            "attempts": len(scores),
         })
 
     topic_performance.sort(
-        key=lambda x: x["average"],
-        reverse=True
+        key=lambda item: item["average"],
+        reverse=True,
     )
 
-    recent_attempts = list(
-        attempts[:10]
-    )
-
+    recent_attempts = list(attempts[:10])
     recent_attempts.reverse()
 
     context = {
-
         "attempts": attempts,
-
-        "total_assessments":
-            total_assessments,
-
-        "average_score":
-            average_score,
-
-        "best_score":
-            best_score,
-
-        "topic_performance":
-            topic_performance,
-
-        "recent_attempts":
-            recent_attempts,
-
+        "total_assessments": total_assessments,
+        "average_score": round(average_score, 1),
+        "best_score": best_score,
+        "topic_performance": topic_performance,
+        "recent_attempts": recent_attempts,
     }
 
-    return render(
-        request,
-        "assessment/history.html",
-        context
+    return render(request, "assessment/history.html", context)
+
+
+# ============================================================
+# HELPER: STUDENT PERFORMANCE
+# ============================================================
+
+def get_student_performance(attempts):
+
+    total_attempts = attempts.count()
+
+    average_score = (
+        sum(attempt.score for attempt in attempts) / total_attempts
+        if total_attempts else 0
     )
+
+    topic_data = {}
+    difficulty_data = {}
+
+    for attempt in attempts:
+
+        topic_data.setdefault(
+            attempt.topic, []
+        ).append(attempt.score)
+
+        difficulty_data.setdefault(
+            attempt.difficulty, []
+        ).append(attempt.score)
+
+    topic_analysis = []
+
+    for topic, scores in topic_data.items():
+        topic_analysis.append({
+            "topic": topic,
+            "average": round(sum(scores) / len(scores), 1),
+            "attempts": len(scores),
+        })
+
+    topic_analysis.sort(
+        key=lambda item: item["average"],
+        reverse=True,
+    )
+
+    difficulty_analysis = []
+
+    for difficulty, scores in difficulty_data.items():
+        difficulty_analysis.append({
+            "difficulty": difficulty,
+            "average": round(sum(scores) / len(scores), 1),
+            "attempts": len(scores),
+        })
+
+    strong_topics = [
+        item for item in topic_analysis
+        if item["average"] >= 80
+    ]
+
+    weak_topics = [
+        item for item in topic_analysis
+        if item["average"] < 60
+    ]
+
+    if total_attempts >= 2:
+        first_score = attempts.first().score
+        last_score = attempts.last().score
+        improvement = last_score - first_score
+
+        if improvement > 5:
+            trend = "Improving"
+        elif improvement < -5:
+            trend = "Declining"
+        else:
+            trend = "Stable"
+    else:
+        improvement = 0
+        trend = "Insufficient data"
+
+    return {
+        "total_attempts": total_attempts,
+        "average_score": round(average_score, 1),
+        "topic_analysis": topic_analysis,
+        "difficulty_analysis": difficulty_analysis,
+        "strong_topics": strong_topics,
+        "weak_topics": weak_topics,
+        "recommended_topics": sorted(
+            topic_analysis,
+            key=lambda item: item["average"],
+        )[:3],
+        "trend": trend,
+        "improvement": round(improvement, 1),
+    }
 
 
 # ============================================================
@@ -390,312 +394,55 @@ def learning_analysis(request):
     ).order_by("created_at")
 
     if not attempts.exists():
-
         return render(
             request,
             "assessment/learning_analysis.html",
-            {
-                "has_data": False
-            }
+            {"has_data": False},
         )
 
-    # --------------------------------------------------------
-    # OVERALL PERFORMANCE
-    # --------------------------------------------------------
-
-    total_attempts = attempts.count()
-
-    average_score = (
-        sum(
-            attempt.score
-            for attempt in attempts
-        )
-        / total_attempts
-    )
-
-    # --------------------------------------------------------
-    # TOPIC PERFORMANCE
-    # --------------------------------------------------------
-
-    topic_data = {}
-
-    for attempt in attempts:
-
-        topic = attempt.topic
-
-        if topic not in topic_data:
-
-            topic_data[topic] = {
-                "scores": [],
-                "attempts": 0
-            }
-
-        topic_data[topic][
-            "scores"
-        ].append(
-            attempt.score
-        )
-
-        topic_data[topic][
-            "attempts"
-        ] += 1
-
-    topic_analysis = []
-
-    for topic, data in topic_data.items():
-
-        average = (
-            sum(data["scores"])
-            / len(data["scores"])
-        )
-
-        topic_analysis.append({
-
-            "topic": topic,
-
-            "average": round(
-                average,
-                1
-            ),
-
-            "attempts":
-                data["attempts"]
-
-        })
-
-    topic_analysis.sort(
-        key=lambda x: x["average"],
-        reverse=True
-    )
-
-    # --------------------------------------------------------
-    # STRONG / WEAK TOPICS
-    # --------------------------------------------------------
-
-    strong_topics = [
-
-        topic
-        for topic in topic_analysis
-        if topic["average"] >= 80
-
-    ]
-
-    weak_topics = [
-
-        topic
-        for topic in topic_analysis
-        if topic["average"] < 60
-
-    ]
-
-    # --------------------------------------------------------
-    # DIFFICULTY ANALYSIS
-    # --------------------------------------------------------
-
-    difficulty_data = {}
-
-    for attempt in attempts:
-
-        difficulty = attempt.difficulty
-
-        if difficulty not in difficulty_data:
-
-            difficulty_data[difficulty] = []
-
-        difficulty_data[
-            difficulty
-        ].append(
-            attempt.score
-        )
-
-    difficulty_analysis = []
-
-    for difficulty, scores in difficulty_data.items():
-
-        average = (
-            sum(scores)
-            / len(scores)
-        )
-
-        difficulty_analysis.append({
-
-            "difficulty": difficulty,
-
-            "average": round(
-                average,
-                1
-            ),
-
-            "attempts": len(scores)
-
-        })
-
-    # --------------------------------------------------------
-    # LEARNING TREND
-    # --------------------------------------------------------
-
-    if total_attempts >= 2:
-
-        first_score = attempts.first().score
-
-        last_score = attempts.last().score
-
-        improvement = (
-            last_score - first_score
-        )
-
-        if improvement > 5:
-
-            trend = "improving"
-
-        elif improvement < -5:
-
-            trend = "declining"
-
-        else:
-
-            trend = "stable"
-
-    else:
-
-        improvement = 0
-
-        trend = "insufficient"
-
-    # --------------------------------------------------------
-    # RECOMMENDED TOPICS
-    # --------------------------------------------------------
-
-    recommended_topics = sorted(
-        topic_analysis,
-        key=lambda x: x["average"]
-    )[:3]
-
-    # --------------------------------------------------------
-    # DATA FOR GEMINI
-    # --------------------------------------------------------
+    data = get_student_performance(attempts)
 
     student_data = {
-
-        "overall_score":
-            round(
-                average_score,
-                1
-            ),
-
-        "total_attempts":
-            total_attempts,
-
-        "topics":
-            topic_analysis,
-
-        "strong_topics":
-            strong_topics,
-
-        "weak_topics":
-            weak_topics,
-
-        "difficulty_analysis":
-            difficulty_analysis,
-
-        "learning_trend":
-            trend,
-
-        "score_improvement":
-            round(
-                improvement,
-                1
-            )
-
+        "overall_score": data["average_score"],
+        "total_attempts": data["total_attempts"],
+        "topics": data["topic_analysis"],
+        "strong_topics": data["strong_topics"],
+        "weak_topics": data["weak_topics"],
+        "difficulty_analysis": data["difficulty_analysis"],
+        "learning_trend": data["trend"],
+        "score_improvement": data["improvement"],
     }
 
-    # --------------------------------------------------------
-    # AI PLAN
-    # --------------------------------------------------------
-
     try:
+        plan = generate_learning_plan(student_data)
 
-        plan = generate_learning_plan(
-            student_data
-        )
+    except Exception as error:
+        print("Learning analysis AI error:", error)
 
-    except Exception as e:
+        plan = """
+## Personalized Learning Plan Temporarily Unavailable
 
-        if (
-            "429" in str(e)
-            or
-            "RESOURCE_EXHAUSTED"
-            in str(e)
-        ):
-
-            plan = """
-## 🤖 AI Plan Temporarily Unavailable
-
-Your learning analysis has been calculated successfully.
-
-The Gemini API has temporarily reached its quota.
-
-You can still use:
-
-📊 Performance Analysis  
-🎯 Topic Recommendations  
-📝 Assessments  
-🧠 Adaptive Learning  
-
-Please try the AI plan again later.
+Your assessment results and performance analysis are still available.
+Practise your weak topics and revisit difficult concepts while the
+AI service is unavailable.
 """
-
-        else:
-
-            plan = """
-## 🤖 AI Plan Temporarily Unavailable
-
-Your performance data is safe.
-
-Please try again later.
-"""
-
-    # --------------------------------------------------------
-    # CONTEXT
-    # --------------------------------------------------------
 
     context = {
-
         "has_data": True,
-
-        "average_score":
-            round(
-                average_score,
-                1
-            ),
-
-        "total_attempts":
-            total_attempts,
-
-        "trend":
-            trend,
-
-        "strong_topics":
-            strong_topics[:3],
-
-        "weak_topics":
-            weak_topics[:3],
-
-        "recommended_topics":
-            recommended_topics,
-
-        "difficulty_analysis":
-            difficulty_analysis,
-
-        "plan":
-            plan
-
+        "average_score": data["average_score"],
+        "total_attempts": data["total_attempts"],
+        "trend": data["trend"],
+        "strong_topics": data["strong_topics"][:3],
+        "weak_topics": data["weak_topics"][:3],
+        "recommended_topics": data["recommended_topics"],
+        "difficulty_analysis": data["difficulty_analysis"],
+        "plan": plan,
     }
 
     return render(
         request,
         "assessment/learning_analysis.html",
-        context
+        context,
     )
 
 
@@ -711,270 +458,54 @@ def personalized_plan(request):
     ).order_by("created_at")
 
     if not attempts.exists():
-
         return render(
             request,
             "assessment/personalized_plan.html",
-            {
-                "has_data": False
-            }
+            {"has_data": False},
         )
 
-    # --------------------------------------------------------
-    # OVERALL
-    # --------------------------------------------------------
-
-    total_attempts = attempts.count()
-
-    average_score = (
-        sum(
-            attempt.score
-            for attempt in attempts
-        )
-        / total_attempts
-    )
-
-    # --------------------------------------------------------
-    # TOPIC PERFORMANCE
-    # --------------------------------------------------------
-
-    topic_data = {}
-
-    for attempt in attempts:
-
-        topic = attempt.topic
-
-        if topic not in topic_data:
-
-            topic_data[topic] = []
-
-        topic_data[topic].append(
-            attempt.score
-        )
-
-    topic_analysis = []
-
-    for topic, scores in topic_data.items():
-
-        average = (
-            sum(scores)
-            / len(scores)
-        )
-
-        topic_analysis.append({
-
-            "topic": topic,
-
-            "average": round(
-                average,
-                1
-            ),
-
-            "attempts": len(scores)
-
-        })
-
-    # --------------------------------------------------------
-    # STRONG TOPICS
-    # --------------------------------------------------------
-
-    strong_topics = [
-
-        item
-        for item in topic_analysis
-        if item["average"] >= 80
-
-    ]
-
-    # --------------------------------------------------------
-    # WEAK TOPICS
-    # --------------------------------------------------------
-
-    weak_topics = [
-
-        item
-        for item in topic_analysis
-        if item["average"] < 60
-
-    ]
-
-    # --------------------------------------------------------
-    # DIFFICULTY PERFORMANCE
-    # --------------------------------------------------------
-
-    difficulty_data = {}
-
-    for attempt in attempts:
-
-        difficulty = attempt.difficulty
-
-        if difficulty not in difficulty_data:
-
-            difficulty_data[difficulty] = []
-
-        difficulty_data[
-            difficulty
-        ].append(
-            attempt.score
-        )
-
-    difficulty_analysis = []
-
-    for difficulty, scores in difficulty_data.items():
-
-        average = (
-            sum(scores)
-            / len(scores)
-        )
-
-        difficulty_analysis.append({
-
-            "difficulty": difficulty,
-
-            "average": round(
-                average,
-                1
-            ),
-
-            "attempts": len(scores)
-
-        })
-
-    # --------------------------------------------------------
-    # TREND
-    # --------------------------------------------------------
-
-    if total_attempts >= 2:
-
-        first_score = attempts.first().score
-
-        last_score = attempts.last().score
-
-        improvement = (
-            last_score - first_score
-        )
-
-        if improvement > 5:
-
-            trend = "Improving"
-
-        elif improvement < -5:
-
-            trend = "Declining"
-
-        else:
-
-            trend = "Stable"
-
-    else:
-
-        improvement = 0
-
-        trend = "Insufficient data"
-
-    # --------------------------------------------------------
-    # DATA FOR GEMINI
-    # --------------------------------------------------------
+    data = get_student_performance(attempts)
 
     student_data = f"""
-
 Student Learning Performance
 
-Overall Average:
-{average_score:.1f}%
-
-Total Assessments:
-{total_attempts}
-
-Strong Topics:
-{strong_topics}
-
-Weak Topics:
-{weak_topics}
-
-Topic Performance:
-{topic_analysis}
-
-Difficulty Performance:
-{difficulty_analysis}
-
-Learning Trend:
-{trend}
-
-Score Improvement:
-{improvement}%
-
+Overall Average: {data['average_score']}%
+Total Assessments: {data['total_attempts']}
+Strong Topics: {data['strong_topics']}
+Weak Topics: {data['weak_topics']}
+Topic Performance: {data['topic_analysis']}
+Difficulty Performance: {data['difficulty_analysis']}
+Learning Trend: {data['trend']}
+Score Improvement: {data['improvement']}%
 """
-
-    # --------------------------------------------------------
-    # GENERATE PLAN
-    # --------------------------------------------------------
 
     try:
+        plan = generate_learning_plan(student_data)
 
-        plan = generate_learning_plan(
-            student_data
-        )
+    except Exception as error:
+        print("Personalized plan AI error:", error)
 
-    except Exception as e:
+        plan = """
+## Personalized Plan Temporarily Unavailable
 
-        if (
-            "429" in str(e)
-            or
-            "RESOURCE_EXHAUSTED"
-            in str(e)
-        ):
-
-            plan = """
-## 🤖 AI Plan Temporarily Unavailable
-
-Your performance data is available,
-but the Gemini API quota has temporarily
-been reached.
-
-Please try again later.
+Your performance information is safe. Please try again later.
 """
-
-        else:
-
-            plan = """
-## 🤖 AI Plan Temporarily Unavailable
-
-Something went wrong while generating
-your personalized plan.
-
-Please try again later.
-"""
-
-    context = {
-
-        "has_data": True,
-
-        "plan": plan,
-
-        "average_score":
-            round(
-                average_score,
-                1
-            ),
-
-        "total_attempts":
-            total_attempts,
-
-        "trend":
-            trend,
-
-    }
 
     return render(
         request,
         "assessment/personalized_plan.html",
-        context
+        {
+            "has_data": True,
+            "plan": plan,
+            "average_score": data["average_score"],
+            "total_attempts": data["total_attempts"],
+            "trend": data["trend"],
+        },
     )
 
 
 # ============================================================
-# ADAPTIVE LEARNING
+# ADAPTIVE LEARNING DASHBOARD
 # ============================================================
 
 @login_required
@@ -984,170 +515,85 @@ def adaptive_learning(request):
         user=request.user
     ).order_by("-created_at")
 
-    # --------------------------------------------------------
-    # NO DATA
-    # --------------------------------------------------------
-
     if not attempts.exists():
-
         return render(
             request,
             "assessment/adaptive_learning.html",
-            {
-                "topics": []
-            }
+            {"topics": []},
         )
-
-    # --------------------------------------------------------
-    # GROUP BY TOPIC
-    # --------------------------------------------------------
 
     topic_data = {}
 
     for attempt in attempts:
 
-        topic = attempt.topic
-
-        if topic not in topic_data:
-
-            topic_data[topic] = {
-
-                "subject":
-                    attempt.subject,
-
+        if attempt.topic not in topic_data:
+            topic_data[attempt.topic] = {
+                "subject": attempt.subject,
                 "scores": [],
-
-                "latest_score":
-                    attempt.score
-
             }
 
-        topic_data[
-            topic
-        ][
-            "scores"
-        ].append(
+        topic_data[attempt.topic]["scores"].append(
             attempt.score
         )
-
-    # --------------------------------------------------------
-    # CREATE ADAPTIVE TOPICS
-    # --------------------------------------------------------
 
     topics = []
 
     for topic, data in topic_data.items():
 
-        scores = data["scores"]
-
-        average_score = (
-            sum(scores)
-            / len(scores)
-        )
-
         average_score = round(
-            average_score,
-            1
+            sum(data["scores"]) / len(data["scores"]),
+            1,
         )
 
-        # ================================================
-        # ADAPTIVE LEVEL
-        # ================================================
+        level = get_adaptive_difficulty(average_score)
 
-        if average_score < 40:
+        recommendations = {
+            "Beginner": (
+                "Start with fundamentals, simple explanations "
+                "and examples."
+            ),
+            "Easy": (
+                "Strengthen your basics using easy notes "
+                "and guided practice."
+            ),
+            "Medium": (
+                "Practise medium-level concepts and apply "
+                "what you have learned."
+            ),
+            "Advanced": (
+                "Challenge yourself with advanced concepts "
+                "and problems."
+            ),
+            "Expert": (
+                "Continue with expert problems, projects "
+                "and real-world challenges."
+            ),
+        }
 
-            level = "Beginner"
-
-            recommendation = (
-                "Start with fundamentals, "
-                "simple explanations and examples."
-            )
-
-            next_goal = 60
-
-        elif average_score < 60:
-
-            level = "Easy"
-
-            recommendation = (
-                "Strengthen your basics using "
-                "easy notes and guided practice."
-            )
-
-            next_goal = 70
-
-        elif average_score < 80:
-
-            level = "Medium"
-
-            recommendation = (
-                "Your foundation is developing. "
-                "Practice medium-level concepts."
-            )
-
-            next_goal = 80
-
-        elif average_score < 100:
-
-            level = "Advanced"
-
-            recommendation = (
-                "Excellent progress. Challenge yourself "
-                "with advanced concepts and problems."
-            )
-
-            next_goal = 100
-
-        else:
-
-            level = "Expert"
-
-            recommendation = (
-                "🎉 Mastered! Continue with expert "
-                "problems, projects and real-world challenges."
-            )
-
-            next_goal = 100
+        next_goal = {
+            "Beginner": 60,
+            "Easy": 70,
+            "Medium": 80,
+            "Advanced": 100,
+            "Expert": 100,
+        }
 
         topics.append({
-
-            "topic":
-                topic,
-
-            "subject":
-                data["subject"],
-
-            "score":
-                average_score,
-
-            "level":
-                level,
-
-            "recommendation":
-                recommendation,
-
-            "next_goal":
-                next_goal,
-
-            "attempts":
-                len(scores)
-
+            "topic": topic,
+            "subject": data["subject"],
+            "score": average_score,
+            "level": level,
+            "recommendation": recommendations[level],
+            "next_goal": next_goal[level],
+            "attempts": len(data["scores"]),
         })
 
-    # --------------------------------------------------------
-    # LOWEST PERFORMANCE FIRST
-    # --------------------------------------------------------
-
-    topics.sort(
-        key=lambda x: x["score"]
-    )
+    topics.sort(key=lambda item: item["score"])
 
     return render(
         request,
         "assessment/adaptive_learning.html",
-        {
-            "topics": topics
-        }
+        {"topics": topics},
     )
 
 
@@ -1160,229 +606,201 @@ def adaptive_content(request):
 
     topic = request.GET.get("topic", "").strip()
     content_type = request.GET.get(
-        "type",
-        "notes"
-    )
+        "type", "notes"
+    ).strip().lower()
+
+    allowed_types = {
+        "notes",
+        "questions",
+        "realworld",
+        "videos",
+    }
 
     if not topic:
+        messages.warning(
+            request,
+            "Please select a topic.",
+        )
         return redirect("adaptive_learning")
 
-    # ========================================================
-    # GET STUDENT ATTEMPTS FOR THIS TOPIC
-    # ========================================================
+    if content_type not in allowed_types:
+        content_type = "notes"
 
     attempts = AssessmentAttempt.objects.filter(
         user=request.user,
-        topic=topic
+        topic__iexact=topic,
     ).order_by("-created_at")
 
     if attempts.exists():
-
-        score = (
-            sum(
-                attempt.score
-                for attempt in attempts
-            )
-            / attempts.count()
-        )
-
+        score = sum(
+            attempt.score for attempt in attempts
+        ) / attempts.count()
     else:
-
         score = 0
 
     score = round(score, 1)
-
-    # ========================================================
-    # ADAPTIVE DIFFICULTY
-    # ========================================================
-
-    if score < 40:
-
-        difficulty = "Beginner"
-
-    elif score < 60:
-
-        difficulty = "Easy"
-
-    elif score < 80:
-
-        difficulty = "Medium"
-
-    elif score < 100:
-
-        difficulty = "Advanced"
-
-    else:
-
-        difficulty = "Expert"
-
-    # ========================================================
-    # VARIABLES
-    # ========================================================
+    difficulty = get_adaptive_difficulty(score)
 
     content = ""
     content_html = ""
     videos = []
 
-    # ========================================================
+    # --------------------------------------------------------
     # VIDEOS
-    # ========================================================
+    # --------------------------------------------------------
 
     if content_type == "videos":
 
         try:
-
             latest_attempt = attempts.first()
 
-            subject = ""
-
-            if latest_attempt:
-                subject = latest_attempt.subject
+            subject = (
+                latest_attempt.subject
+                if latest_attempt
+                else ""
+            )
 
             videos = search_adaptive_videos(
                 topic=topic,
                 difficulty=difficulty,
                 max_results=8,
-                subject=subject
+                subject=subject,
             )
 
-        except Exception as e:
-
+        except Exception as error:
             print(
-                "YouTube Error:",
-                e
+                "YouTube search error:",
+                error,
             )
 
-            videos = []
+            messages.warning(
+                request,
+                "Videos are temporarily unavailable. "
+                "Please try again later.",
+            )
 
-    # ========================================================
-    # NOTES / QUESTIONS / REAL WORLD
-    # ========================================================
+    # --------------------------------------------------------
+    # CACHED CONTENT OR NEW AI CONTENT
+    # --------------------------------------------------------
 
     else:
 
         saved_content = LearningContent.objects.filter(
-            topic=topic,
+            topic__iexact=topic,
             content_type=content_type,
-            difficulty=difficulty
+            difficulty=difficulty,
         ).first()
 
-        if saved_content:
+        if (
+            saved_content
+            and saved_content.content
+            and saved_content.content.strip()
+        ):
 
             content = saved_content.content
+
+            print(
+                "Using cached learning content:",
+                topic,
+                content_type,
+                difficulty,
+            )
 
         else:
 
             try:
-
-                content = generate_adaptive_content(
+                content = generate_learning_content(
                     topic=topic,
                     content_type=content_type,
-                    difficulty=difficulty
+                    difficulty=difficulty,
                 )
+
+                if not content or not content.strip():
+                    raise ValueError(
+                        "The AI provider returned empty content."
+                    )
 
                 LearningContent.objects.create(
                     topic=topic,
                     content_type=content_type,
                     difficulty=difficulty,
-                    content=content
+                    content=content,
                 )
-
-            except Exception as e:
 
                 print(
-                    "Gemini Error:",
-                    e
+                    "Saved new learning content:",
+                    topic,
+                    content_type,
+                    difficulty,
                 )
 
-                if content_type == "questions":
+            except Exception as error:
+                print(
+                    "Adaptive content generation error:",
+                    error,
+                )
 
-                    content = """
-# Practice Questions
+                content = (
+                    "## Learning Content Temporarily Unavailable\n\n"
+                    "The AI providers could not generate content "
+                    "right now. Please try again later. "
+                    "Your assessment data has not been affected."
+                )
 
-Content is temporarily unavailable.
+                messages.warning(
+                    request,
+                    "AI content generation failed. "
+                    "Please try again later.",
+                )
 
-Please try again later.
-"""
-
-                elif content_type == "realworld":
-
-                    content = """
-# Real-World Challenges
-
-Problems are temporarily unavailable.
-
-Please try again later.
-"""
-
-                else:
-
-                    content = """
-# Personalized Learning Content
-
-Content is temporarily unavailable.
-
-Please try again later.
-"""
-
-        # ====================================================
-        # MARKDOWN → HTML
-        # ====================================================
+        # ----------------------------------------------------
+        # MARKDOWN TO HTML
+        # ----------------------------------------------------
 
         try:
-
-            import markdown
-
             content_html = markdown.markdown(
                 content,
                 extensions=[
                     "extra",
                     "tables",
                     "fenced_code",
-                    "nl2br"
-                ]
+                    "pymdownx.arithmatex",
+                ],
+                extension_configs={
+                    "pymdownx.arithmatex": {
+                        "generic": True,
+                    },
+                },
             )
 
-        except Exception as e:
-
+        except Exception as error:
             print(
-                "Markdown Error:",
-                e
+                "Markdown conversion error:",
+                error,
             )
 
-            content_html = content
-
-    # ========================================================
-    # CONTEXT
-    # ========================================================
+            # Fallback: render Markdown without the math extension.
+            content_html = markdown.markdown(
+                content,
+                extensions=[
+                    "extra",
+                    "tables",
+                    "fenced_code",
+                ],
+            )
 
     context = {
-
-        "topic":
-            topic,
-
-        "content_type":
-            content_type,
-
-        "difficulty":
-            difficulty,
-
-        "score":
-            score,
-
-        "content":
-            content,
-
-        "content_html":
-            content_html,
-
-        "videos":
-            videos,
-
+        "topic": topic,
+        "content_type": content_type,
+        "difficulty": difficulty,
+        "score": score,
+        "content": content,
+        "content_html": content_html,
+        "videos": videos,
     }
 
     return render(
         request,
         "assessment/adaptive_content.html",
-        context
+        context,
     )

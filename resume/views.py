@@ -106,6 +106,74 @@ def resume_home(request):
     )
 
 
+def _create_saved_resume_version(user, profile):
+    """Create a version snapshot after the resume form has been saved."""
+    education = list(ResumeEducation.objects.filter(user=user))
+    projects = list(ResumeProject.objects.filter(user=user))
+    experience = list(ResumeExperience.objects.filter(user=user))
+    certifications = list(ResumeCertification.objects.filter(user=user))
+    skills = list(ResumeSkill.objects.filter(user=user))
+    achievements = list(get_verified_learning_achievements(user))
+
+    ai_resume = generate_resume(
+        profile=profile, education=education, projects=projects,
+        experience=experience, certifications=certifications,
+        achievements=achievements, skills=skills,
+    )
+    data = ai_resume.model_dump()
+    data["_snapshot"] = {
+        "profile": {
+            "resume_name": profile.resume_name or "",
+            "email": user.email or "",
+            "phone": profile.phone or "",
+            "location": profile.location or "",
+            "professional_summary": profile.professional_summary or "",
+            "linkedin_url": profile.linkedin_url or "",
+            "github_url": profile.github_url or "",
+            "leetcode_url": profile.leetcode_url or "",
+            "portfolio_url": profile.portfolio_url or "",
+        },
+        "education": [{
+            "institution": x.institution, "degree": x.degree,
+            "field_of_study": x.field_of_study,
+            "start_year": x.start_year, "end_year": x.end_year,
+            "percentage_or_cgpa": x.percentage_or_cgpa,
+            "description": x.description,
+        } for x in education],
+        "skills": [{"category": x.category, "skill": x.skill} for x in skills],
+        "projects": [{
+            "title": x.title, "description": x.description,
+            "technologies": x.technologies, "github_url": x.github_url,
+            "live_url": x.live_url,
+            "start_date": x.start_date.isoformat() if x.start_date else None,
+            "end_date": x.end_date.isoformat() if x.end_date else None,
+        } for x in projects],
+        "experience": [{
+            "job_title": x.job_title, "company": x.company,
+            "location": x.location, "description": x.description,
+            "start_date": x.start_date.isoformat() if x.start_date else None,
+            "end_date": x.end_date.isoformat() if x.end_date else None,
+            "currently_working": x.currently_working,
+        } for x in experience],
+        "certifications": [{
+            "name": x.name, "issuing_organization": x.issuing_organization,
+            "issue_date": x.issue_date.isoformat() if x.issue_date else None,
+            "credential_id": x.credential_id, "credential_url": x.credential_url,
+        } for x in certifications],
+        "achievements": [{
+            "title": x.title, "description": x.description,
+            "source": x.source, "verified": x.verified,
+            "source_reference": x.source_reference,
+        } for x in achievements],
+    }
+    latest = ResumeVersion.objects.filter(user=user).order_by("-version_number").first()
+    next_number = latest.version_number + 1 if latest else 1
+    return ResumeVersion.objects.create(
+        user=user, version_number=next_number, resume_data=data,
+        change_summary=f"Saved resume version {next_number}",
+    )
+
+
 @login_required
 @transaction.atomic
 def save_resume(request):
@@ -125,6 +193,11 @@ def save_resume(request):
         "resume_name",
         ""
     ).strip()
+
+    # Email belongs to Django's User model, not ResumeProfile.
+    submitted_email = request.POST.get("email", request.user.email).strip()
+    request.user.email = submitted_email
+    request.user.save(update_fields=["email"])
 
     profile.phone = request.POST.get(
         "phone",
@@ -672,6 +745,9 @@ def save_resume(request):
         )
 
 
+    # Every explicit Save creates a version visible in Resume Versions.
+    _create_saved_resume_version(request.user, profile)
+
     messages.success(
         request,
         "Resume saved successfully."
@@ -681,59 +757,41 @@ def save_resume(request):
 
 
 @login_required
+@transaction.atomic
 def generate_ai_resume(request):
+    if request.method != "POST":
+        return redirect("resume_home")
+
     profile, created = ResumeProfile.objects.get_or_create(
         user=request.user,
         defaults={
-            "resume_name": "",
-            "phone": "",
-            "linkedin_url": "",
-            "github_url": "",
-            "leetcode_url": "",
-            "portfolio_url": "",
+            "resume_name": (
+                request.user.get_full_name()
+                or request.user.username
+            ),
         },
     )
 
     education = list(
-        ResumeEducation.objects.filter(
-            user=request.user
-        )
+        ResumeEducation.objects.filter(user=request.user)
     )
-
     projects = list(
-        ResumeProject.objects.filter(
-            user=request.user
-        )
+        ResumeProject.objects.filter(user=request.user)
     )
-
     experience = list(
-        ResumeExperience.objects.filter(
-            user=request.user
-        )
+        ResumeExperience.objects.filter(user=request.user)
     )
-
     certifications = list(
-        ResumeCertification.objects.filter(
-            user=request.user
-        )
+        ResumeCertification.objects.filter(user=request.user)
     )
-
     skills = list(
-        ResumeSkill.objects.filter(
-            user=request.user
-        )
+        ResumeSkill.objects.filter(user=request.user)
     )
-
     achievements = list(
-        get_verified_learning_achievements(
-            request.user
-        )
+        get_verified_learning_achievements(request.user)
     )
 
-    # --------------------------------------------------
-    # GENERATE AI RESUME
-    # --------------------------------------------------
-
+    # Generate resume while preserving original entries.
     ai_resume = generate_resume(
         profile=profile,
         education=education,
@@ -744,12 +802,9 @@ def generate_ai_resume(request):
         skills=skills,
     )
 
-    # --------------------------------------------------
-    # CREATE COMPLETE HISTORICAL SNAPSHOT
-    # --------------------------------------------------
-
     resume_data = ai_resume.model_dump()
 
+    # Save a complete historical snapshot.
     resume_data["_snapshot"] = {
         "profile": {
             "resume_name": profile.resume_name,
@@ -761,7 +816,6 @@ def generate_ai_resume(request):
             "leetcode_url": profile.leetcode_url,
             "portfolio_url": profile.portfolio_url,
         },
-
         "education": [
             {
                 "institution": item.institution,
@@ -774,7 +828,6 @@ def generate_ai_resume(request):
             }
             for item in education
         ],
-
         "skills": [
             {
                 "category": item.category,
@@ -782,7 +835,6 @@ def generate_ai_resume(request):
             }
             for item in skills
         ],
-
         "projects": [
             {
                 "title": item.title,
@@ -792,18 +844,15 @@ def generate_ai_resume(request):
                 "live_url": item.live_url,
                 "start_date": (
                     item.start_date.isoformat()
-                    if item.start_date
-                    else None
+                    if item.start_date else None
                 ),
                 "end_date": (
                     item.end_date.isoformat()
-                    if item.end_date
-                    else None
+                    if item.end_date else None
                 ),
             }
             for item in projects
         ],
-
         "experience": [
             {
                 "job_title": item.job_title,
@@ -812,34 +861,29 @@ def generate_ai_resume(request):
                 "description": item.description,
                 "start_date": (
                     item.start_date.isoformat()
-                    if item.start_date
-                    else None
+                    if item.start_date else None
                 ),
                 "end_date": (
                     item.end_date.isoformat()
-                    if item.end_date
-                    else None
+                    if item.end_date else None
                 ),
                 "currently_working": item.currently_working,
             }
             for item in experience
         ],
-
         "certifications": [
             {
                 "name": item.name,
                 "issuing_organization": item.issuing_organization,
                 "issue_date": (
                     item.issue_date.isoformat()
-                    if item.issue_date
-                    else None
+                    if item.issue_date else None
                 ),
                 "credential_id": item.credential_id,
                 "credential_url": item.credential_url,
             }
             for item in certifications
         ],
-
         "achievements": [
             {
                 "title": item.title,
@@ -852,10 +896,6 @@ def generate_ai_resume(request):
         ],
     }
 
-    # --------------------------------------------------
-    # VERSION NUMBER
-    # --------------------------------------------------
-
     latest_version = (
         ResumeVersion.objects
         .filter(user=request.user)
@@ -863,30 +903,17 @@ def generate_ai_resume(request):
         .first()
     )
 
-    if latest_version:
-        next_version = (
-            latest_version.version_number + 1
-        )
-    else:
-        next_version = 1
-
-    # --------------------------------------------------
-    # SAVE VERSION
-    # --------------------------------------------------
+    next_version = (
+        latest_version.version_number + 1
+        if latest_version else 1
+    )
 
     version = ResumeVersion.objects.create(
         user=request.user,
         version_number=next_version,
         resume_data=resume_data,
-        change_summary=(
-            "AI-generated resume version "
-            f"{next_version}"
-        ),
+        change_summary=f"AI-generated resume version {next_version}",
     )
-
-    # --------------------------------------------------
-    # SHOW PREVIEW
-    # --------------------------------------------------
 
     return render(
         request,
@@ -895,132 +922,138 @@ def generate_ai_resume(request):
             "ai_resume": ai_resume,
             "version": version,
             "profile": profile,
+            "education": education,
+            "skills": skills,
+            "projects": projects,
+            "experience": experience,
+            "certifications": certifications,
+            "achievements": achievements,
         },
     )
+
+def _namespace(data):
+    """Convert a snapshot dictionary into an attribute-style object."""
+    return SimpleNamespace(**(data or {}))
+
+
+def _historical_pdf_inputs(user, resume_data):
+    """Rebuild all PDF inputs from a saved version, not today's database."""
+    resume_data = resume_data or {}
+    snapshot = resume_data.get("_snapshot") or {}
+    profile_data = snapshot.get("profile") or {}
+
+    # Legacy versions without snapshots use current records as a fallback.
+    if not snapshot:
+        profile_obj = ResumeProfile.objects.filter(user=user).first()
+        if profile_obj:
+            profile_data = {
+                "resume_name": profile_obj.resume_name,
+                "phone": profile_obj.phone,
+                "location": profile_obj.location,
+                "linkedin_url": profile_obj.linkedin_url,
+                "github_url": profile_obj.github_url,
+                "leetcode_url": profile_obj.leetcode_url,
+                "portfolio_url": profile_obj.portfolio_url,
+            }
+        education_objects = list(ResumeEducation.objects.filter(user=user))
+        achievement_objects = list(get_verified_learning_achievements(user))
+    else:
+        education_objects = [_namespace(item) for item in snapshot.get("education", [])]
+        achievement_objects = [_namespace(item) for item in snapshot.get("achievements", [])]
+
+    profile = _namespace({
+        "resume_name": profile_data.get("resume_name", ""),
+        "phone": profile_data.get("phone", ""),
+        "location": profile_data.get("location", ""),
+        "linkedin_url": profile_data.get("linkedin_url", ""),
+        "github_url": profile_data.get("github_url", ""),
+        "leetcode_url": profile_data.get("leetcode_url", ""),
+        "portfolio_url": profile_data.get("portfolio_url", ""),
+    })
+
+    # The snapshot is the source of truth for original project, experience,
+    # and certification details. Merge it into older AI data where needed.
+    def merge_snapshot(ai_items, snapshot_items, identity_fields, extra_fields):
+        ai_items = list(ai_items or [])
+        snapshot_items = list(snapshot_items or [])
+        merged = []
+        used = set()
+        for ai_item in ai_items:
+            item = dict(ai_item) if isinstance(ai_item, dict) else ai_item.model_dump()
+            match_index = None
+            for idx, original in enumerate(snapshot_items):
+                if idx in used:
+                    continue
+                if all(str(item.get(key, "")).strip().casefold() == str(original.get(key, "")).strip().casefold() for key in identity_fields):
+                    match_index = idx
+                    break
+            if match_index is not None:
+                original = snapshot_items[match_index]
+                used.add(match_index)
+                # Override with saved original facts, including descriptions.
+                for key in extra_fields:
+                    if key in original:
+                        item[key] = original[key] or ""
+            merged.append(item)
+        # If a legacy AI payload omitted an item, add it from the snapshot.
+        for idx, original in enumerate(snapshot_items):
+            if idx not in used:
+                item = dict(original)
+                if "technologies" in item and isinstance(item["technologies"], str):
+                    item["technologies"] = [v.strip() for v in item["technologies"].split(",") if v.strip()]
+                merged.append(item)
+        return merged
+
+    project_data = merge_snapshot(
+        resume_data.get("projects", []), snapshot.get("projects", []),
+        ("title",), ("description", "technologies", "github_url", "live_url", "start_date", "end_date")
+    )
+    experience_data = merge_snapshot(
+        resume_data.get("experience", []), snapshot.get("experience", []),
+        ("job_title", "company"), ("description", "location", "start_date", "end_date", "currently_working")
+    )
+    certification_data = merge_snapshot(
+        resume_data.get("certifications", []), snapshot.get("certifications", []),
+        ("name",), ("issuing_organization", "credential_id", "issue_date", "credential_url")
+    )
+
+    # Convert comma-separated technologies from snapshots into lists.
+    for project in project_data:
+        if isinstance(project.get("technologies", []), str):
+            project["technologies"] = [v.strip() for v in project["technologies"].split(",") if v.strip()]
+
+    ai_resume = AIResumeOutput.model_validate({
+        "professional_summary": resume_data.get("professional_summary", ""),
+        "technical_skills": resume_data.get("technical_skills", []),
+        "projects": project_data,
+        "experience": experience_data,
+        "certifications": certification_data,
+        "achievements": resume_data.get("achievements", []),
+    })
+    return profile, education_objects, ai_resume, achievement_objects, profile_data.get("email", "")
 
 
 @login_required
 def download_resume_pdf(request):
-
-    latest_version = (
-        ResumeVersion.objects
-        .filter(user=request.user)
-        .order_by("-version_number")
-        .first()
-    )
-
+    latest_version = ResumeVersion.objects.filter(user=request.user).order_by("-version_number").first()
     if not latest_version:
-
-        messages.error(
-            request,
-            "Please generate a resume first."
-        )
-
+        messages.error(request, "Please generate a resume first.")
         return redirect("resume_home")
 
-
-    profile = ResumeProfile.objects.get(
-        user=request.user
+    profile, education, ai_resume, achievements, saved_email = _historical_pdf_inputs(
+        request.user, latest_version.resume_data
     )
-
-    education = ResumeEducation.objects.filter(
-        user=request.user
-    )
-
-    achievements = get_verified_learning_achievements(
-        request.user
-    )
-
-
-    # ==================================================
-    # RECREATE AI RESUME OBJECT
-    # ==================================================
-
-    data = latest_version.resume_data
-
-    technical_skills = []
-
-    for category in data.get(
-        "technical_skills",
-        []
-    ):
-
-        technical_skills.append(
-            SimpleNamespace(
-                category=category.get(
-                    "category",
-                    ""
-                ),
-                skills=category.get(
-                    "skills",
-                    []
-                )
-            )
-        )
-
-
-    ai_resume = SimpleNamespace(
-
-        professional_summary=data.get(
-            "professional_summary",
-            ""
-        ),
-
-        technical_skills=technical_skills,
-
-        projects=[
-            SimpleNamespace(**project)
-            for project in data.get(
-                "projects",
-                []
-            )
-        ],
-
-        experience=[
-            SimpleNamespace(**experience)
-            for experience in data.get(
-                "experience",
-                []
-            )
-        ],
-
-        certifications=[
-            SimpleNamespace(**certification)
-            for certification in data.get(
-                "certifications",
-                []
-            )
-        ],
-
-    )
-
-
-    # ==================================================
-    # GENERATE PDF
-    # ==================================================
-
+    pdf_user = _namespace({
+        "username": request.user.username,
+        "email": saved_email or request.user.email,
+        "get_full_name": request.user.get_full_name,
+    })
     pdf_buffer = generate_resume_pdf(
-        user=request.user,
-        profile=profile,
-        education=education,
-        ai_resume=ai_resume,
-        achievements=achievements,
+        user=pdf_user, profile=profile, education=education,
+        ai_resume=ai_resume, achievements=achievements,
     )
-
-
-    filename = (
-        f"{request.user.username}_resume_"
-        f"v{latest_version.version_number}.pdf"
-    )
-
-
-    return FileResponse(
-        pdf_buffer,
-        as_attachment=True,
-        filename=filename,
-        content_type="application/pdf"
-    )
-
+    filename = f"{request.user.username}_resume_v{latest_version.version_number}.pdf"
+    return FileResponse(pdf_buffer, as_attachment=True, filename=filename, content_type="application/pdf")
 
 # ==========================================================
 # SAVED RESUME VERSIONS
@@ -1148,217 +1181,19 @@ def view_resume_version(request, version_id):
 
 @login_required
 def download_resume_version_pdf(request, version_id):
-
-    version = get_object_or_404(
-        ResumeVersion,
-        id=version_id,
-        user=request.user,
+    version = get_object_or_404(ResumeVersion, id=version_id, user=request.user)
+    profile, education, ai_resume, achievements, saved_email = _historical_pdf_inputs(
+        request.user, version.resume_data
     )
-
-    resume_data = version.resume_data or {}
-
-    snapshot = resume_data.get(
-        "_snapshot",
-        {}
-    )
-
-    profile_data = snapshot.get(
-        "profile",
-        {}
-    )
-
-    education_data = snapshot.get(
-        "education",
-        []
-    )
-
-    achievements_data = snapshot.get(
-        "achievements",
-        []
-    )
-
-    # --------------------------------------------------
-    # Reconstruct profile information from the snapshot
-    # --------------------------------------------------
-
-    class HistoricalProfile:
-        pass
-
-    profile = HistoricalProfile()
-
-    profile.resume_name = profile_data.get(
-        "resume_name",
-        ""
-    )
-
-    profile.phone = profile_data.get(
-        "phone",
-        ""
-    )
-
-    profile.location = profile_data.get(
-        "location",
-        ""
-    )
-
-    profile.linkedin_url = profile_data.get(
-        "linkedin_url",
-        ""
-    )
-
-    profile.github_url = profile_data.get(
-        "github_url",
-        ""
-    )
-
-    profile.leetcode_url = profile_data.get(
-        "leetcode_url",
-        ""
-    )
-
-    profile.portfolio_url = profile_data.get(
-        "portfolio_url",
-        ""
-    )
-
-    # --------------------------------------------------
-    # Reconstruct education
-    # --------------------------------------------------
-
-    class HistoricalEducation:
-        pass
-
-    education = []
-
-    for item in education_data:
-
-        education_item = HistoricalEducation()
-
-        education_item.institution = item.get(
-            "institution",
-            ""
-        )
-
-        education_item.degree = item.get(
-            "degree",
-            ""
-        )
-
-        education_item.field_of_study = item.get(
-            "field_of_study",
-            ""
-        )
-
-        education_item.start_year = item.get(
-            "start_year"
-        )
-
-        education_item.end_year = item.get(
-            "end_year"
-        )
-
-        education_item.percentage_or_cgpa = item.get(
-            "percentage_or_cgpa",
-            ""
-        )
-
-        education_item.description = item.get(
-            "description",
-            ""
-        )
-
-        education.append(
-            education_item
-        )
-
-    # --------------------------------------------------
-    # Reconstruct achievements
-    # --------------------------------------------------
-
-    class HistoricalAchievement:
-        pass
-
-    achievements = []
-
-    for item in achievements_data:
-
-        achievement = HistoricalAchievement()
-
-        achievement.title = item.get(
-            "title",
-            ""
-        )
-
-        achievement.description = item.get(
-            "description",
-            ""
-        )
-
-        achievements.append(
-            achievement
-        )
-
-    # --------------------------------------------------
-    # Reconstruct AI resume output
-    # --------------------------------------------------
-
-    ai_resume = AIResumeOutput.model_validate(
-        {
-            "professional_summary": resume_data.get(
-                "professional_summary",
-                ""
-            ),
-
-            "technical_skills": resume_data.get(
-                "technical_skills",
-                []
-            ),
-
-            "projects": resume_data.get(
-                "projects",
-                []
-            ),
-
-            "experience": resume_data.get(
-                "experience",
-                []
-            ),
-
-            "certifications": resume_data.get(
-                "certifications",
-                []
-            ),
-
-            "achievements": resume_data.get(
-                "achievements",
-                []
-            ),
-        }
-    )
-
-    # --------------------------------------------------
-    # Create PDF
-    # --------------------------------------------------
-
+    pdf_user = _namespace({
+        "username": request.user.username,
+        "email": saved_email or request.user.email,
+        "get_full_name": request.user.get_full_name,
+    })
     pdf_buffer = generate_resume_pdf(
-        user=request.user,
-        profile=profile,
-        education=education,
-        ai_resume=ai_resume,
-        achievements=achievements,
+        user=pdf_user, profile=profile, education=education,
+        ai_resume=ai_resume, achievements=achievements,
     )
-
-    filename = (
-        f"resume_version_{version.version_number}.pdf"
-    )
-
-    response = HttpResponse(
-        pdf_buffer.getvalue(),
-        content_type="application/pdf",
-    )
-
-    response[
-        "Content-Disposition"
-    ] = f'attachment; filename="{filename}"'
-
+    response = HttpResponse(pdf_buffer.getvalue(), content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="resume_version_{version.version_number}.pdf"'
     return response

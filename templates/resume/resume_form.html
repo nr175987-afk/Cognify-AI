@@ -370,14 +370,15 @@ Resume Builder
 
                     <input
                         type="email"
+                        name="email"
                         class="form-control"
                         value="{{ request.user.email }}"
-                        readonly
+                        autocomplete="email"
                         required
                     >
 
                     <div class="help-text">
-                        Email is taken from your account.
+                        You can edit the email used on your resume. Saving updates your account email too.
                     </div>
 
                 </div>
