@@ -7,6 +7,8 @@ from google import genai
 from pydantic import BaseModel
 from googleapiclient.discovery import build
 
+from .ai_service import generate_ai_response
+
 
 # ============================================================
 # LOAD ENVIRONMENT VARIABLES
@@ -23,33 +25,32 @@ client = genai.Client(api_key=API_KEY) if API_KEY else None
 MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
 
-def _generate_text(prompt, response_schema=None):
-    """Generate text with Gemini and return the response text."""
+# ============================================================
+# SHARED AI GENERATION HELPER
+# ============================================================
 
-    if client is None:
-        raise RuntimeError(
-            "GEMINI_API_KEY is missing from your .env file. "
-            "Configure Gemini or use the Ollama fallback in ai_service.py."
-        )
+def _generate_text(
+    prompt,
+    response_schema=None,
+    use_cache=True,
+    task="assessment_generation",
+):
+    """
+    Generate text through the shared AI service.
 
-    config = None
+    Supports caching, Gemini, Ollama fallback,
+    and structured Pydantic responses.
+    """
 
-    if response_schema is not None:
-        config = {
-            "response_mime_type": "application/json",
-            "response_schema": response_schema,
-        }
-
-    response = client.models.generate_content(
-        model=MODEL_NAME,
-        contents=prompt,
-        config=config,
+    result = generate_ai_response(
+        task=task,
+        prompt=prompt,
+        schema=response_schema,
+        use_cache=use_cache,
     )
 
-    result = (getattr(response, "text", None) or "").strip()
-
-    if not result:
-        raise RuntimeError("Gemini returned an empty response.")
+    if response_schema is not None:
+        return result.model_dump_json()
 
     return result
 
@@ -78,16 +79,20 @@ class QuestionSet(BaseModel):
 
 def generate_questions(subject, topic, difficulty, number_of_questions):
 
+    if not 1 <= number_of_questions <= 20:
+        raise ValueError("Choose between 1 and 20 questions.")
+
     prompt = f"""
 You are CognifyAI, an expert educational assessment generator.
 
 Generate exactly {number_of_questions} multiple-choice questions.
 
-Subject: {subject}
-Topic: {topic}
-Difficulty: {difficulty}
+SUBJECT: {subject}
+TOPIC: {topic}
+DIFFICULTY: {difficulty}
 
-Requirements:
+REQUIREMENTS:
+
 1. Every question must directly test the requested topic.
 2. Match the requested difficulty.
 3. Each question must have exactly four options.
@@ -97,25 +102,32 @@ Requirements:
 7. Test understanding and application, not only memorization.
 8. Give a short, accurate educational explanation for every answer.
 9. Keep all questions appropriate for a college student.
-10. Return only data matching the requested JSON schema.
+10. Ensure numerical answers and calculations are accurate.
+11. Return only data matching the requested JSON schema.
 """
 
     result = QuestionSet.model_validate_json(
-        _generate_text(prompt, response_schema=QuestionSet)
+        _generate_text(
+            prompt,
+            response_schema=QuestionSet,
+        )
     )
 
     if len(result.questions) != number_of_questions:
         raise RuntimeError(
-            f"Gemini returned {len(result.questions)} questions; "
+            f"AI returned {len(result.questions)} questions; "
             f"{number_of_questions} were requested."
         )
 
     for question in result.questions:
-        question.correct_answer = question.correct_answer.strip().upper()
+
+        question.correct_answer = (
+            question.correct_answer.strip().upper()
+        )
 
         if question.correct_answer not in {"A", "B", "C", "D"}:
             raise RuntimeError(
-                "Gemini returned an invalid correct_answer. "
+                "AI returned an invalid correct_answer. "
                 "Expected A, B, C, or D."
             )
 
@@ -160,6 +172,7 @@ def generate_learning_plan(student_data):
 
     if isinstance(student_data, str):
         student_information = student_data
+
     else:
         student_information = json.dumps(
             student_data,
@@ -168,34 +181,264 @@ def generate_learning_plan(student_data):
         )
 
     prompt = f"""
-You are CognifyAI, an adaptive AI learning assistant.
+You are CognifyAI, an intelligent adaptive learning assistant
+that creates personalized learning paths for college students.
 
-Analyze the student's performance and recommend what they should learn next.
+Your responsibility is to analyze actual student performance
+and recommend the most appropriate next learning activities.
 
-STUDENT PERFORMANCE DATA:
+============================================================
+STUDENT PERFORMANCE DATA
+============================================================
+
 {student_information}
 
-ADAPTIVE RULES:
 
-- Score below 60%: Beginner; focus on fundamentals and easy content.
-- Score from 60% to below 80%: Intermediate; strengthen concepts and apply them.
-- Score from 80% to below 100%: Advanced; recommend challenging concepts and real applications.
-- Score exactly 100%: Mastery; do not stop learning. Recommend expert-level and interview-level challenges.
-- Easy completed successfully: recommend Medium.
-- Medium completed successfully: recommend Advanced.
-- Advanced completed successfully: recommend Expert/Mastery.
-- Avoid repeatedly recommending concepts the student has already mastered.
-- Recommendations must be specific to the student's actual topics and performance.
-- Include notes, videos, practice questions, and real-world problems.
-- Increase difficulty when performance is strong.
-- Never say learning is complete.
+============================================================
+1. PERFORMANCE ANALYSIS RULES
+============================================================
 
-Return structured data only.
-Do not include Markdown outside the required structure.
+Analyze the student's:
+
+- Overall average score.
+- Individual topic scores.
+- Strong topics.
+- Weak topics.
+- Number of assessment attempts.
+- Difficulty-wise performance.
+- Learning trend.
+- Score improvement.
+
+Base every recommendation on the supplied information.
+
+Never invent assessment scores, weak topics, mastered concepts,
+or learning achievements.
+
+Do not confuse difficulty-wise performance with topic-wise
+performance.
+
+
+============================================================
+2. ADAPTIVE DIFFICULTY LEVELS
+============================================================
+
+Determine the current level using these exact score ranges:
+
+- Below 40%: Beginner
+- 40% to below 60%: Easy
+- 60% to below 80%: Medium
+- 80% to below 100%: Advanced
+- Exactly 100%: Expert / Mastery
+
+The current level must reflect the student's demonstrated
+performance.
+
+Do not recommend Beginner-level learning to a student who
+has already demonstrated strong performance.
+
+
+============================================================
+3. TOPIC-BASED RECOMMENDATIONS
+============================================================
+
+Analyze each topic separately.
+
+For topics below 60%:
+- Prioritize the concepts the student struggles with.
+- Recommend clear explanations and guided practice.
+- Strengthen prerequisite knowledge.
+- Gradually increase difficulty.
+
+For topics scoring 60% to below 80%:
+- Strengthen conceptual understanding.
+- Recommend application-based questions.
+- Include intermediate exercises.
+- Prepare the student for advanced concepts.
+
+For topics scoring 80% to below 100%:
+- Treat the topic as a strong area.
+- Avoid unnecessary beginner-level repetition.
+- Recommend advanced applications.
+- Include challenging exercises and analytical problems.
+- Introduce deeper concepts and practical implementations.
+
+For topics scoring exactly 100%:
+- Treat the topic as demonstrated mastery.
+- Recommend expert-level applications.
+- Include complex projects and interview-level challenges.
+- Introduce related advanced concepts.
+- Never tell the student to stop learning.
+
+If weak topics are provided, prioritize them.
+
+If there are no weak topics, do not manufacture weaknesses.
+Instead, recommend advanced applications and related concepts
+that can extend the student's knowledge.
+
+
+============================================================
+4. DIFFICULTY-WISE PERFORMANCE
+============================================================
+
+Use difficulty_analysis when deciding what to recommend.
+
+If the student performs well in Easy assessments:
+- Do not repeatedly recommend only basic content.
+- Introduce Medium-level learning activities.
+
+If the student performs well in Medium assessments:
+- Progress towards Advanced content.
+
+If the student performs well in Hard assessments:
+- Recommend more challenging applications.
+- Include complex analytical problems and projects.
+
+If the student struggles with a particular difficulty:
+- Recommend targeted practice at that level.
+- Explain what needs improvement.
+
+Do not assume that a student has mastered a difficulty level
+unless the supplied assessment data supports that conclusion.
+
+
+============================================================
+5. LEARNING PROGRESSION
+============================================================
+
+Follow this progression:
+
+Beginner → Easy → Medium → Advanced → Expert
+
+However, do not automatically restart the student at Beginner.
+
+Use actual assessment performance to determine the appropriate
+starting point.
+
+A strong student should continue progressing rather than
+repeating content they have already demonstrated.
+
+
+============================================================
+6. RECOMMENDATION CONTENT
+============================================================
+
+Provide useful recommendations for:
+
+- Study notes and explanations.
+- Practice questions.
+- Advanced exercises.
+- Video learning.
+- Real-world problem solving.
+- Projects and practical implementation.
+- Interview-level questions where appropriate.
+
+Every recommendation must:
+
+1. Relate directly to the student's actual topic.
+2. Match the student's demonstrated ability.
+3. Explain what the student should learn or practise.
+4. Provide a meaningful next step.
+5. Avoid unnecessary repetition.
+
+
+============================================================
+7. PERSONALIZATION EXAMPLE
+============================================================
+
+If the student has:
+
+- Overall score: 93.3%
+- Linear Regression score: 93.3%
+- Three assessment attempts.
+- No weak topics.
+- Easy average: 90%.
+- Hard average: 100%.
+
+Then:
+
+- Current level should be Advanced.
+- The student should not be sent back to Beginner.
+- Recommend advanced Linear Regression applications.
+- Include model diagnostics, regularization, feature selection,
+  optimization, and practical projects where appropriate.
+- Recommend challenging problems and interview-level exercises.
+- Do not invent weak concepts or claim the student failed topics.
+
+This is an example of how to interpret performance, not a
+replacement for the actual supplied student data.
+
+
+============================================================
+8. REQUIRED OUTPUT
+============================================================
+
+Return data matching the AdaptiveLearningPlan schema.
+
+Field requirements:
+
+topic:
+The main topic or learning focus selected from the supplied data.
+
+current_score:
+The actual overall score used for the learning plan.
+
+current_level:
+The student's current adaptive difficulty level.
+
+next_level:
+The next appropriate learning level.
+
+learning_summary:
+A personalized explanation of the student's performance.
+
+priority_concepts:
+A list of specific concepts that should receive attention next.
+Prioritize weak concepts when they exist. Otherwise, recommend
+meaningful advanced concepts.
+
+recommended_mode:
+The most suitable learning approach for the student.
+
+easy:
+Provide suitable content for the Easy level.
+If the student has already demonstrated strong performance,
+mark this level as lower priority rather than recommending
+unnecessary revision.
+
+medium:
+Provide suitable content for the Medium level.
+Indicate whether the student should revise or progress through
+this level.
+
+advanced:
+Provide suitable content for the Advanced level.
+Prioritize this level for students with strong performance.
+
+real_world_problem:
+Create one realistic problem related to the student's topic.
+Its difficulty must match the student's demonstrated ability.
+
+next_action:
+Give one clear and actionable next step.
+
+IMPORTANT:
+
+- Do not fabricate performance information.
+- Do not contradict the supplied scores.
+- Do not recommend easier content unnecessarily.
+- Do not claim mastery of topics without evidence.
+- Never say that learning is complete.
+- Return structured data only.
+- Do not include Markdown outside the required structure.
 """
 
     return AdaptiveLearningPlan.model_validate_json(
-        _generate_text(prompt, response_schema=AdaptiveLearningPlan)
+        _generate_text(
+            prompt,
+            response_schema=AdaptiveLearningPlan,
+            use_cache=False,
+            task="personalized_learning_plan",
+        )
     )
 
 
@@ -206,7 +449,6 @@ Do not include Markdown outside the required structure.
 def generate_adaptive_notes(topic, level, score):
     """
     Generate detailed study notes personalized to the learner's level.
-    Uses the existing _generate_text() helper.
     """
 
     prompt = f"""
@@ -388,11 +630,7 @@ Return only the finished Markdown notes.
 
 def generate_adaptive_content(topic, content_type, difficulty):
     """
-    Generate adaptive learning content using Gemini.
-
-    Requires existing module-level variables:
-        client
-        MODEL_NAME
+    Generate adaptive learning content.
 
     Returns raw Markdown. HTML conversion is handled by views.py.
     """
@@ -407,7 +645,9 @@ def generate_adaptive_content(topic, content_type, difficulty):
     allowed_types = {"notes", "questions", "realworld"}
 
     if content_type not in allowed_types:
-        raise ValueError(f"Unsupported content type: {content_type}")
+        raise ValueError(
+            f"Unsupported content type: {content_type}"
+        )
 
     allowed_difficulties = {
         "Beginner",
@@ -422,27 +662,33 @@ def generate_adaptive_content(topic, content_type, difficulty):
         difficulty = "Medium"
 
     difficulty_instructions = {
+
         "Beginner": """
 Assume no prior knowledge. Define every important term.
 Explain concepts step by step using simple examples and
 fully worked calculations. Avoid unexplained jargon.
 """,
+
         "Easy": """
 Focus on fundamentals, straightforward applications,
 clear formula explanations, and simple worked examples.
 """,
+
         "Medium": """
 Provide intermediate theory, multi-step examples,
 formula applications, common mistakes, and interpretation.
 """,
+
         "Hard": """
 Include advanced theory, derivations, challenging examples,
 assumptions, limitations, diagnostics, and edge cases.
 """,
+
         "Advanced": """
 Emphasize deeper theory, mathematical reasoning, derivations,
 evaluation methods, limitations, optimization, and applications.
 """,
+
         "Expert": """
 Produce genuinely expert-level material for a college student
 who already understands the fundamentals.
@@ -460,7 +706,12 @@ Never title the content beginner-friendly.
 """,
     }
 
+    # --------------------------------------------------------
+    # NOTES
+    # --------------------------------------------------------
+
     if content_type == "notes":
+
         content_instructions = f"""
 Create comprehensive, textbook-quality study notes on {topic}.
 
@@ -469,6 +720,7 @@ Aim for approximately 1,800–2,500 words when the topic supports
 that depth. Do not add repetitive filler merely to reach the target.
 
 REQUIRED CONTENT:
+
 1. A descriptive title matching the requested difficulty.
 2. Learning objectives.
 3. Prerequisites and terminology.
@@ -493,8 +745,10 @@ Include tables when they make comparisons easier to understand.
 Include code only when useful, and explain its important steps.
 
 MATHEMATICAL NOTATION:
+
 - Inline mathematics: $y = mx + c$
 - Display mathematics on separate lines:
+
   $$
   y = \\beta_0 + \\beta_1 x + \\epsilon
   $$
@@ -506,6 +760,7 @@ Define variables, subscripts, and parameters explicitly.
 Use literal Markdown table pipes, not escaped pipes.
 
 NUMERICAL VALIDATION:
+
 Verify every worked calculation and final result.
 Do not invent coefficients, evaluation scores, or measurements.
 Distinguish hypothetical examples from actual observations.
@@ -518,17 +773,24 @@ DIFFICULTY:
 Return only the completed Markdown notes.
 """
 
+    # --------------------------------------------------------
+    # PRACTICE QUESTIONS
+    # --------------------------------------------------------
+
     elif content_type == "questions":
+
         content_instructions = f"""
 Create exactly 12 well-designed practice questions about {topic}.
 
 Match all questions to the requested difficulty:
+
 {difficulty_instructions[difficulty]}
 
 Use a suitable mixture of conceptual, analytical, application-based,
 and numerical questions where relevant.
 
-Structure:
+STRUCTURE:
+
 # Practice Questions: {topic}
 
 ## Questions
@@ -550,14 +812,21 @@ Use valid LaTeX and ordinary Markdown.
 Return only the completed Markdown.
 """
 
+    # --------------------------------------------------------
+    # REAL-WORLD PROBLEMS
+    # --------------------------------------------------------
+
     else:
+
         content_instructions = f"""
 Create exactly three substantial real-world challenges about {topic}.
 
 Match the complexity to the requested difficulty:
+
 {difficulty_instructions[difficulty]}
 
 For each challenge, include:
+
 1. A descriptive title.
 2. A realistic scenario and the problem to solve.
 3. All required illustrative data, constraints, and assumptions.
@@ -568,12 +837,16 @@ For each challenge, include:
 8. Relevant mathematical formulations, where applicable.
 9. Potential edge cases or limitations to consider.
 
-Label hypothetical data as illustrative. Do not invent research
-results or claim illustrative outcomes are real.
+Label hypothetical data as illustrative.
+Do not invent research results or claim illustrative outcomes are real.
 
 Use valid LaTeX and ordinary Markdown.
 Return only the completed Markdown.
 """
+
+    # --------------------------------------------------------
+    # FINAL PROMPT
+    # --------------------------------------------------------
 
     prompt = f"""
 You are CognifyAI, an experienced university lecturer,
@@ -595,6 +868,7 @@ CONTENT REQUIREMENTS:
 {content_instructions}
 
 FINAL VALIDATION:
+
 - Match the requested topic and difficulty.
 - Explain concepts in sufficient depth.
 - Check every formula and numerical calculation.
@@ -606,12 +880,11 @@ FINAL VALIDATION:
 - Return only the requested content.
 """
 
-    response = client.models.generate_content(
-        model=MODEL_NAME,
-        contents=prompt,
+    generated_text = generate_ai_response(
+        task=f"adaptive_{content_type}",
+        prompt=prompt,
+        use_cache=True,
     )
-
-    generated_text = getattr(response, "text", None)
 
     if not generated_text or not generated_text.strip():
         raise ValueError(
@@ -619,6 +892,7 @@ FINAL VALIDATION:
         )
 
     return generated_text.strip()
+
 
 # ============================================================
 # SEARCH RELEVANT ADAPTIVE VIDEOS
@@ -747,6 +1021,7 @@ def search_adaptive_videos(
             matching_words = 0
 
             for word in topic_words:
+
                 if re.search(
                     r"\b" + re.escape(word) + r"\b",
                     title_lower,

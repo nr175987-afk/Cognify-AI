@@ -60,7 +60,8 @@
 .topic-title {
     font-weight: 800;
     color: #172033;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
+    word-break: normal;
 }
 
 .topic-subtitle {
@@ -142,8 +143,12 @@
     color: #334155;
     line-height: 1.85;
     font-size: 16px;
-    overflow-wrap: anywhere;
     min-width: 0;
+
+    /* Wrap at normal word boundaries wherever possible. */
+    overflow-wrap: break-word;
+    word-break: normal;
+    white-space: normal;
 }
 
 .study-content h1,
@@ -155,6 +160,8 @@
     margin-top: 28px;
     margin-bottom: 14px;
     line-height: 1.35;
+    overflow-wrap: break-word;
+    word-break: normal;
 }
 
 .study-content h1 {
@@ -258,8 +265,6 @@
     padding: 8px 0;
 }
 
-/* Keep wide tables usable on small screens */
-
 .study-table-wrapper {
     width: 100%;
     overflow-x: auto;
@@ -298,7 +303,8 @@
     color: #172033;
     font-weight: 750;
     line-height: 1.4;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
+    word-break: normal;
 }
 
 .video-channel {
@@ -464,10 +470,10 @@
 }
 </style>
 
+
 <div class="content-page">
 
     <!-- BACK LINK -->
-
     <div class="mb-4">
         <a href="{% url 'adaptive_learning' %}" class="back-link">
             <i class="bi bi-arrow-left me-2"></i>
@@ -476,13 +482,11 @@
     </div>
 
     <!-- PAGE HEADER -->
-
     <section class="content-hero">
         <div class="row align-items-center">
 
             <div class="col-lg-8">
                 <div class="d-flex align-items-center gap-3">
-
                     <div class="topic-icon">🧠</div>
 
                     <div>
@@ -497,13 +501,11 @@
                             Personalized content based on your current performance.
                         </p>
                     </div>
-
                 </div>
             </div>
 
             <div class="col-lg-4 mt-4 mt-lg-0 d-flex justify-content-lg-end">
                 <div class="score-box">
-
                     <div class="small text-muted">Your current score</div>
 
                     <div class="score-number">
@@ -511,17 +513,15 @@
                     </div>
 
                     <span class="level-badge">{{ difficulty }}</span>
-
                 </div>
             </div>
 
         </div>
     </section>
 
+
     <!-- STUDY NOTES -->
-
     {% if content_type == "notes" %}
-
     <section class="content-card">
 
         <div class="content-heading">
@@ -540,13 +540,11 @@
         </div>
 
     </section>
-
     {% endif %}
 
+
     <!-- PRACTICE QUESTIONS -->
-
     {% if content_type == "questions" %}
-
     <section class="content-card">
 
         <div class="content-heading">
@@ -576,13 +574,11 @@
         </div>
 
     </section>
-
     {% endif %}
 
+
     <!-- VIDEOS -->
-
     {% if content_type == "videos" %}
-
     <section class="content-card">
 
         <div class="content-heading">
@@ -597,11 +593,9 @@
         </div>
 
         {% if videos %}
-
         <div class="row g-4">
 
             {% for video in videos %}
-
             <div class="col-lg-6">
                 <div class="video-card">
 
@@ -615,7 +609,6 @@
                     {% endif %}
 
                     <div class="video-body">
-
                         <h5 class="video-title">{{ video.title }}</h5>
 
                         <div class="video-channel mb-3">
@@ -636,17 +629,14 @@
                             <i class="bi bi-play-fill me-1"></i>
                             Watch Video
                         </a>
-
                     </div>
+
                 </div>
             </div>
-
             {% endfor %}
 
         </div>
-
         {% else %}
-
         <div class="text-center py-5">
             <div style="font-size:60px;">🎥</div>
 
@@ -656,17 +646,14 @@
                 Try again later or check your YouTube API key and topic.
             </p>
         </div>
-
         {% endif %}
 
     </section>
-
     {% endif %}
 
+
     <!-- REAL-WORLD CHALLENGES -->
-
     {% if content_type == "realworld" %}
-
     <section class="content-card">
 
         <div class="content-heading">
@@ -674,7 +661,6 @@
 
             <div>
                 <h2>Real-World Challenges</h2>
-
                 <p>
                     Practical {{ difficulty }}-level problems based on {{ topic }}.
                 </p>
@@ -686,11 +672,9 @@
         </div>
 
         <!-- CODING WORKSPACE -->
-
         <div class="workspace">
 
             <div class="workspace-header">
-
                 <div>
                     <div class="workspace-title">
                         <i class="bi bi-code-slash me-2"></i>
@@ -713,7 +697,6 @@
                     <option>Java</option>
                     <option>JavaScript</option>
                 </select>
-
             </div>
 
             <label for="codeEditor" class="visually-hidden">Code editor</label>
@@ -726,7 +709,6 @@
             ></textarea>
 
             <div class="mt-3 d-flex gap-2 flex-wrap">
-
                 <button
                     type="button"
                     class="btn btn-success rounded-pill px-4"
@@ -744,7 +726,6 @@
                     <i class="bi bi-arrow-counterclockwise me-1"></i>
                     Reset
                 </button>
-
             </div>
 
             <div
@@ -756,17 +737,14 @@
             ></div>
 
         </div>
-
     </section>
-
     {% endif %}
 
-    <!-- ADAPTIVE FEEDBACK -->
 
+    <!-- ADAPTIVE FEEDBACK -->
     <div class="adaptive-message">
 
         {% if score >= 100 %}
-
         <h5>🏆 Mastery achieved!</h5>
         <p>
             You've mastered this level. Keep progressing toward expert concepts
@@ -774,7 +752,6 @@
         </p>
 
         {% elif score >= 80 %}
-
         <h5>🚀 Excellent performance!</h5>
         <p>
             You're ready for advanced concepts, challenging questions,
@@ -782,7 +759,6 @@
         </p>
 
         {% elif score >= 60 %}
-
         <h5>📈 Good progress!</h5>
         <p>
             Your foundation is developing. Continue strengthening your concepts
@@ -790,19 +766,17 @@
         </p>
 
         {% else %}
-
         <h5>🌱 Build your foundation!</h5>
         <p>
             Focus on fundamentals first. CognifyAI can gradually increase
             the difficulty as your performance improves.
         </p>
-
         {% endif %}
 
     </div>
 
-    <!-- CONTINUE LEARNING -->
 
+    <!-- CONTINUE LEARNING -->
     <section class="next-section">
 
         <h3 class="next-section-title">Continue Learning</h3>
@@ -862,8 +836,8 @@
             </div>
 
         </div>
-
     </section>
+
 
     <div class="text-center mt-5 mb-4">
         <a href="{% url 'adaptive_learning' %}" class="back-link">
@@ -874,10 +848,9 @@
 
 </div>
 
+
 <!-- CODING WORKSPACE JAVASCRIPT -->
-
 {% if content_type == "realworld" %}
-
 <script>
 (function () {
     const workspaceKey = "cognify_workspace_{{ topic|escapejs }}";
@@ -947,13 +920,11 @@
     }
 })();
 </script>
-
 {% endif %}
 
+
 <!-- MATHEMATICAL EQUATION RENDERING -->
-
 {% if content_type == "notes" %}
-
 <script>
 window.MathJax = {
     tex: {
@@ -982,7 +953,6 @@ window.MathJax = {
     defer
     src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"
 ></script>
-
 {% endif %}
 
 {% endblock %}

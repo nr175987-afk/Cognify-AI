@@ -57,3 +57,13 @@ class LearningContent(models.Model):
 
     def __str__(self):
         return f"{self.topic} - {self.content_type} - {self.difficulty}"
+
+
+class AIResponseCache(models.Model):
+    cache_key = models.CharField(max_length=64, unique=True)
+    response_text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.cache_key

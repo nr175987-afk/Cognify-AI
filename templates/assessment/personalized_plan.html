@@ -4,26 +4,131 @@
 Personalized Learning Plan | CognifyAI
 {% endblock %}
 
-
 {% block content %}
+
+<style>
+
+.plan-header {
+    text-align: center;
+    margin-bottom: 45px;
+}
+
+.plan-header .brain {
+    font-size: 65px;
+}
+
+.plan-card {
+    background: white;
+    border-radius: 20px;
+    padding: 25px;
+    height: 100%;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+    border: 1px solid #e9edf5;
+}
+
+.plan-section {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 25px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+    border: 1px solid #e9edf5;
+}
+
+.level-card {
+    border-radius: 16px;
+    padding: 22px;
+    height: 100%;
+    background: #f8faff;
+    border: 1px solid #e4eaf5;
+}
+
+.level-card ul {
+    padding-left: 20px;
+}
+
+.level-card li {
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+.plan-label {
+    font-size: 13px;
+    color: #718096;
+}
+
+.plan-value {
+    font-size: 30px;
+    font-weight: 700;
+}
+
+.concept-badge {
+    display: inline-block;
+    background: #eef2ff;
+    color: #4338ca;
+    padding: 9px 15px;
+    margin: 5px;
+    border-radius: 20px;
+    font-size: 14px;
+}
+
+.level-status {
+    display: inline-block;
+    padding: 7px 13px;
+    border-radius: 20px;
+    background: #e0f2fe;
+    color: #0369a1;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.challenge-card {
+    background: linear-gradient(135deg, #eef2ff, #f5f3ff);
+    border-radius: 18px;
+    padding: 25px;
+}
+
+.next-action {
+    background: #eff6ff;
+    border-left: 5px solid #2563eb;
+    padding: 20px;
+    border-radius: 12px;
+    line-height: 1.7;
+}
+
+.progression-card {
+    background: linear-gradient(135deg, #ecfdf5, #eff6ff);
+    border: 1px solid #cfe9dc;
+    border-radius: 18px;
+    padding: 25px;
+}
+
+.revision-note {
+    background: rgba(255,255,255,0.8);
+    border-left: 4px solid #64748b;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-top: 18px;
+}
+
+</style>
+
 
 <div class="container py-5">
 
+
     <!-- HEADER -->
 
-    <div class="text-center mb-5">
+    <div class="plan-header">
 
-        <div style="font-size:70px;">
-            🧠
-        </div>
+        <div class="brain">🧠</div>
 
         <h1 class="fw-bold">
             Your Personalized Learning Plan
         </h1>
 
         <p class="text-muted">
-            CognifyAI analyzed your assessment history
-            and created a study plan specifically for you.
+            Your learning journey, analyzed and personalized by CognifyAI.
         </p>
 
     </div>
@@ -31,21 +136,21 @@ Personalized Learning Plan | CognifyAI
 
     {% if not has_data %}
 
-        <div class="feature-card text-center p-5">
+
+        <!-- NO ASSESSMENT DATA -->
+
+        <div class="plan-section text-center">
 
             <div style="font-size:60px;">
                 📚
             </div>
 
-            <h3 class="fw-bold mt-3">
+            <h3>
                 We Need More Learning Data
             </h3>
 
             <p class="text-muted">
-
-                Complete at least one assessment before
-                generating your personalized learning plan.
-
+                Complete an assessment to generate your personalized plan.
             </p>
 
             <a
@@ -57,24 +162,29 @@ Personalized Learning Plan | CognifyAI
 
         </div>
 
+
     {% else %}
 
 
-        <!-- SUMMARY -->
+        {% if plan %}
 
-        <div class="row g-4 mb-5">
+
+        <!-- PERFORMANCE OVERVIEW -->
+
+        <div class="row g-4 mb-4">
+
 
             <div class="col-md-4">
 
-                <div class="feature-card p-4 text-center">
+                <div class="plan-card text-center">
 
-                    <p class="text-muted">
+                    <div class="plan-label">
                         Average Score
-                    </p>
+                    </div>
 
-                    <h2 class="fw-bold text-primary">
+                    <div class="plan-value text-primary">
                         {{ average_score }}%
-                    </h2>
+                    </div>
 
                 </div>
 
@@ -83,15 +193,15 @@ Personalized Learning Plan | CognifyAI
 
             <div class="col-md-4">
 
-                <div class="feature-card p-4 text-center">
+                <div class="plan-card text-center">
 
-                    <p class="text-muted">
+                    <div class="plan-label">
                         Assessments
-                    </p>
+                    </div>
 
-                    <h2 class="fw-bold">
+                    <div class="plan-value">
                         {{ total_attempts }}
-                    </h2>
+                    </div>
 
                 </div>
 
@@ -100,16 +210,330 @@ Personalized Learning Plan | CognifyAI
 
             <div class="col-md-4">
 
-                <div class="feature-card p-4 text-center">
+                <div class="plan-card text-center">
 
-                    <p class="text-muted">
+                    <div class="plan-label">
                         Learning Trend
+                    </div>
+
+                    <div class="plan-value fs-4
+
+                        {% if trend == 'Improving' %}
+                            text-success
+
+                        {% elif trend == 'Declining' %}
+                            text-danger
+
+                        {% else %}
+                            text-secondary
+
+                        {% endif %}
+
+                    ">
+
+                        {% if trend == 'Improving' %}
+
+                            📈
+
+                        {% elif trend == 'Declining' %}
+
+                            📉
+
+                        {% else %}
+
+                            ➖
+
+                        {% endif %}
+
+                        {{ trend }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- LEARNING SUMMARY -->
+
+        <div class="plan-section">
+
+            <h3 class="fw-bold mb-3">
+                🤖 CognifyAI Learning Analysis
+            </h3>
+
+            <p class="text-muted mb-4">
+                {{ plan.learning_summary }}
+            </p>
+
+
+            <div class="row g-3">
+
+
+                <div class="col-md-4">
+
+                    <div class="plan-card">
+
+                        <div class="plan-label">
+                            Current Learning Level
+                        </div>
+
+                        <h4 class="fw-bold text-primary mt-2">
+                            {{ plan.current_level }}
+                        </h4>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <div class="plan-card">
+
+                        <div class="plan-label">
+                            Next Learning Level
+                        </div>
+
+                        <h4 class="fw-bold text-success mt-2">
+                            {{ plan.next_level }}
+                        </h4>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <div class="plan-card">
+
+                        <div class="plan-label">
+                            Recommended Learning Mode
+                        </div>
+
+                        <h5 class="fw-bold mt-2">
+                            {{ plan.recommended_mode }}
+                        </h5>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+        <!-- PRIORITY CONCEPTS -->
+
+        <div class="plan-section">
+
+            <h3 class="fw-bold mb-3">
+                🎯 Priority Concepts
+            </h3>
+
+            <p class="text-muted">
+                Focus on these concepts to strengthen your understanding.
+            </p>
+
+
+            {% for concept in plan.priority_concepts %}
+
+                <span class="concept-badge">
+                    {{ concept }}
+                </span>
+
+            {% empty %}
+
+                <p class="text-muted">
+                    No specific priority concepts identified.
+                </p>
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- LEARNING LEVELS -->
+
+        <div class="plan-section">
+
+            <h3 class="fw-bold mb-4">
+                📚 Recommended Learning Content
+            </h3>
+
+
+            <div class="row g-4">
+
+
+                <!-- EASY -->
+
+                <div class="col-lg-4">
+
+                    <div class="level-card">
+
+                        <h4 class="fw-bold">
+                            🌱 Easy
+                        </h4>
+
+                        <span class="level-status">
+                            {{ plan.easy.status }}
+                        </span>
+
+                        <hr>
+
+                        <h6 class="fw-bold">
+                            Recommended Content
+                        </h6>
+
+                        <ul>
+
+                            {% for item in plan.easy.recommended_content %}
+
+                                <li>
+                                    {{ item }}
+                                </li>
+
+                            {% empty %}
+
+                                <li>
+                                    No recommendations available.
+                                </li>
+
+                            {% endfor %}
+
+                        </ul>
+
+                    </div>
+
+                </div>
+
+
+                <!-- MEDIUM -->
+
+                <div class="col-lg-4">
+
+                    <div class="level-card">
+
+                        <h4 class="fw-bold">
+                            ⚡ Medium
+                        </h4>
+
+                        <span class="level-status">
+                            {{ plan.medium.status }}
+                        </span>
+
+                        <hr>
+
+                        <h6 class="fw-bold">
+                            Recommended Content
+                        </h6>
+
+                        <ul>
+
+                            {% for item in plan.medium.recommended_content %}
+
+                                <li>
+                                    {{ item }}
+                                </li>
+
+                            {% empty %}
+
+                                <li>
+                                    No recommendations available.
+                                </li>
+
+                            {% endfor %}
+
+                        </ul>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ADVANCED -->
+
+                <div class="col-lg-4">
+
+                    <div class="level-card">
+
+                        <h4 class="fw-bold">
+                            🚀 Advanced
+                        </h4>
+
+                        <span class="level-status">
+                            {{ plan.advanced.status }}
+                        </span>
+
+                        <hr>
+
+                        <h6 class="fw-bold">
+                            Recommended Content
+                        </h6>
+
+                        <ul>
+
+                            {% for item in plan.advanced.recommended_content %}
+
+                                <li>
+                                    {{ item }}
+                                </li>
+
+                            {% empty %}
+
+                                <li>
+                                    No recommendations available.
+                                </li>
+
+                            {% endfor %}
+
+                        </ul>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+
+        <!-- NEXT LEARNING DIRECTION -->
+
+        <div class="plan-section">
+
+            <div class="progression-card">
+
+                <h3 class="fw-bold mb-3">
+                    🚀 Your Next Learning Direction
+                </h3>
+
+                <h4 class="fw-bold text-success">
+                    {{ progression.next_level }} Level
+                </h4>
+
+                <p class="mb-0">
+                    {{ progression.focus }}
+                </p>
+
+
+                <div class="revision-note">
+
+                    <strong>
+                        Optional Revision
+                    </strong>
+
+                    <p class="mb-0">
+                        {{ progression.revision }}
                     </p>
 
-                    <h4 class="fw-bold text-success">
-                        📈 {{ trend }}
-                    </h4>
-
                 </div>
 
             </div>
@@ -117,73 +541,87 @@ Personalized Learning Plan | CognifyAI
         </div>
 
 
-        <!-- AI PLAN -->
+        <!-- REAL WORLD PROBLEM -->
 
-        <div
-            class="feature-card p-5"
-            style="
-                border-radius:24px;
-                box-shadow:
-                0 10px 35px rgba(0,0,0,0.08);
-            "
-        >
+        <div class="plan-section">
 
-            <div class="d-flex align-items-center mb-4">
-
-                <div
-                    class="d-flex align-items-center
-                    justify-content-center rounded-4 me-3"
-                    style="
-                        width:55px;
-                        height:55px;
-                        background:#eef2ff;
-                        font-size:28px;
-                    "
-                >
-                    🤖
-                </div>
-
-                <div>
-
-                    <h3 class="fw-bold mb-0">
-                        CognifyAI Recommendation
-                    </h3>
-
-                    <small class="text-muted">
-                        Generated from your actual learning performance
-                    </small>
-
-                </div>
-
-            </div>
+            <h3 class="fw-bold mb-4">
+                🌍 Real-World Challenge
+            </h3>
 
 
-            <!-- GEMINI OUTPUT -->
+            <div class="challenge-card">
 
-            <div
-                class="ai-plan-content"
-                style="
-                    line-height:1.8;
-                    font-size:16px;
-                "
-            >
+                <h4 class="fw-bold">
+                    {{ plan.real_world_problem.title }}
+                </h4>
 
-                {{ plan|linebreaks }}
+                <p class="mt-3">
+                    {{ plan.real_world_problem.description }}
+                </p>
+
+                <span class="badge bg-primary">
+                    {{ plan.real_world_problem.difficulty }}
+                </span>
 
             </div>
 
         </div>
 
 
-        <!-- ACTIONS -->
+        <!-- NEXT ACTION -->
+
+        <div class="plan-section">
+
+            <h3 class="fw-bold mb-3">
+                🧭 Your Next Learning Steps
+            </h3>
+
+            <p class="text-muted">
+                Follow the recommended next-level direction.
+                Previous-level concepts are available for revision whenever needed.
+            </p>
+
+            <div class="next-action">
+                {{ plan.next_action }}
+            </div>
+
+        </div>
+
+
+        {% else %}
+
+
+            <!-- PLAN GENERATION FAILURE -->
+
+            <div class="plan-section text-center">
+
+                <h4 class="text-danger">
+                    Unable to Generate Your Learning Plan
+                </h4>
+
+                <p class="text-muted">
+                    Please try again later.
+                </p>
+
+            </div>
+
+
+        {% endif %}
+
+
+        <!-- ACTION BUTTONS -->
 
         <div class="text-center mt-5">
+
 
             <a
                 href="{% url 'assessment_home' %}"
                 class="btn btn-primary rounded-pill px-4 me-2"
             >
+
                 📝 Take Assessment
+
             </a>
 
 
@@ -191,8 +629,11 @@ Personalized Learning Plan | CognifyAI
                 href="{% url 'learning_analysis' %}"
                 class="btn btn-outline-primary rounded-pill px-4"
             >
+
                 📊 View Analysis
+
             </a>
+
 
         </div>
 
@@ -201,5 +642,6 @@ Personalized Learning Plan | CognifyAI
 
 
 </div>
+
 
 {% endblock %}
