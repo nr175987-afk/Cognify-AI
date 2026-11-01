@@ -12,3 +12,4 @@ pydantic==2.13.4
 # Markdown rendering
 Markdown==3.10.3
 pymdown-extensions==12.1
+google-api-python-client==2.199.0
