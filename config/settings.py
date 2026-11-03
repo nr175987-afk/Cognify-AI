@@ -1,14 +1,22 @@
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 import dj_database_url
+
+
+# ============================================================
+# BASE CONFIGURATION
+# ============================================================
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv(BASE_DIR / ".env")
 
 
+# ============================================================
 # SECURITY SETTINGS
+# ============================================================
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 
@@ -16,6 +24,11 @@ if not SECRET_KEY:
     raise RuntimeError("SECRET_KEY is not configured.")
 
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+
+
+# ============================================================
+# ALLOWED HOSTS
+# ============================================================
 
 ALLOWED_HOSTS = [
     "localhost",
@@ -36,6 +49,11 @@ if extra_hosts:
         if host.strip()
     )
 
+
+# ============================================================
+# CSRF CONFIGURATION
+# ============================================================
+
 CSRF_TRUSTED_ORIGINS = []
 
 if render_hostname:
@@ -53,7 +71,9 @@ if extra_origins:
     )
 
 
+# ============================================================
 # APPLICATIONS
+# ============================================================
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -63,6 +83,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
+    # CognifyAI applications
     "accounts",
     "assessment",
     "interview",
@@ -70,7 +91,9 @@ INSTALLED_APPS = [
 ]
 
 
+# ============================================================
 # MIDDLEWARE
+# ============================================================
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -84,15 +107,25 @@ MIDDLEWARE = [
 ]
 
 
+# ============================================================
+# URL AND WSGI CONFIGURATION
+# ============================================================
+
 ROOT_URLCONF = "config.urls"
 
+WSGI_APPLICATION = "config.wsgi.application"
 
+
+# ============================================================
 # TEMPLATES
+# ============================================================
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [
+            BASE_DIR / "templates",
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -105,10 +138,9 @@ TEMPLATES = [
 ]
 
 
-WSGI_APPLICATION = "config.wsgi.application"
-
-
-# DATABASE
+# ============================================================
+# DATABASE CONFIGURATION
+# ============================================================
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
@@ -120,6 +152,7 @@ if DATABASE_URL:
             ssl_require=True,
         )
     }
+
 else:
     DATABASES = {
         "default": {
@@ -129,7 +162,9 @@ else:
     }
 
 
+# ============================================================
 # PASSWORD VALIDATION
+# ============================================================
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -147,7 +182,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+# ============================================================
 # INTERNATIONALIZATION
+# ============================================================
 
 LANGUAGE_CODE = "en-us"
 
@@ -158,10 +195,16 @@ USE_I18N = True
 USE_TZ = True
 
 
-# STATIC FILES
+# ============================================================
+# STATIC FILE CONFIGURATION
+# ============================================================
 
-STATIC_URL = "static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_URL = "/static/"
+
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 STORAGES = {
@@ -174,28 +217,41 @@ STORAGES = {
 }
 
 
-# MEDIA FILES
+# ============================================================
+# MEDIA FILE CONFIGURATION
+# ============================================================
 
 MEDIA_URL = "/media/"
 
 MEDIA_ROOT = BASE_DIR / "media"
 
 
+# ============================================================
 # EMAIL CONFIGURATION
+# ============================================================
 
 EMAIL_BACKEND = (
     "django.core.mail.backends.console.EmailBackend"
 )
 
 
+# ============================================================
 # AI CONFIGURATION
+# ============================================================
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+GEMINI_MODEL = os.getenv(
+    "GEMINI_MODEL",
+    "gemini-2.5-flash",
+)
 
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 
 
+# ============================================================
 # AUTHENTICATION REDIRECTS
+# ============================================================
 
 LOGIN_URL = "/login/"
 
@@ -204,13 +260,26 @@ LOGIN_REDIRECT_URL = "/dashboard/"
 LOGOUT_REDIRECT_URL = "/login/"
 
 
+# ============================================================
+# DEFAULT PRIMARY KEY
+# ============================================================
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# ============================================================
 # PRODUCTION SECURITY
+# ============================================================
 
 if not DEBUG:
+
     SECURE_PROXY_SSL_HEADER = (
         "HTTP_X_FORWARDED_PROTO",
         "https",
     )
 
     SESSION_COOKIE_SECURE = True
+
     CSRF_COOKIE_SECURE = True
+
+    SECURE_SSL_REDIRECT = True
